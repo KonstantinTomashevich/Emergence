@@ -229,7 +229,7 @@ private:
     struct EventBinding final
     {
         OnChangeEventTrigger *event = nullptr;
-        uint8_t zoneMask = 0u;
+        std::uint8_t zoneMask = 0u;
 
         static_assert (sizeof (zoneMask) * 8u >= CHANGE_TRACKER_MAX_TRACKED_ZONES);
     };
@@ -241,7 +241,7 @@ private:
     StandardLayout::Mapping trackedType;
     Container::InplaceVector<TrackedZone, CHANGE_TRACKER_MAX_TRACKED_ZONES> trackedZones;
     Container::InplaceVector<EventBinding, MAX_ON_CHANGE_EVENTS_PER_TYPE> bindings;
-    std::array<uint8_t, CHANGE_TRACKER_MAX_TRACKING_BUFFER_SIZE> buffer;
+    std::array<std::uint8_t, CHANGE_TRACKER_MAX_TRACKING_BUFFER_SIZE> buffer;
 };
 } // namespace Emergence::Celerity
 

@@ -1,5 +1,5 @@
 sober_implementation_begin (Box2d)
-    sober_implementation_setup_target (STATIC "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+    sober_implementation_setup_target (OBJECT "${SOBER_TEST_RUNNER_STUB_SOURCE}")
     sober_naming_variant_target (CelerityBox2d Original CELERITY_BOX2D_LIBRARY_TARGET)
     sober_implementation_link_library ("${CELERITY_BOX2D_LIBRARY_TARGET}")
 sober_implementation_end ()

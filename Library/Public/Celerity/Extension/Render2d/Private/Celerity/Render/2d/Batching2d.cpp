@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Batching2d.hpp>
@@ -189,7 +191,7 @@ void Batching2dExecutor::Execute () noexcept
                      ++debugShapeCursor)
                 {
                     batching
-                        ->GetBatch (batching->viewports.size () - 1u, std::numeric_limits<uint16_t>::max (),
+                        ->GetBatch (batching->viewports.size () - 1u, std::numeric_limits<std::uint16_t>::max (),
                                     debugShape->materialInstanceId)
                         .debugShapes.emplace_back (debugShape->debugShapeId);
                 }

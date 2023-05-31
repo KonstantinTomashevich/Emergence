@@ -1,5 +1,7 @@
 #define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
+#include <cmath>
+
 #include <imgui.h>
 
 #include <Assert/Assert.hpp>
@@ -33,21 +35,21 @@ uint32_t UI::ExtractGroupColor (const RecordedAllocationGroup *_group,
                                 float _maxBrightness) noexcept
 {
     // Unique string hash values are not very distinct, therefore we sacrifice performance here for better colors.
-    const size_t hash = *_group->GetId () ? std::hash<std::string_view> {}(*_group->GetId ()) : 0u;
+    const std::size_t hash = *_group->GetId () ? std::hash<std::string_view> {}(*_group->GetId ()) : 0u;
 
-    constexpr size_t R_MASK = 255u << 16u;
-    const size_t r = (hash & R_MASK) >> 16u;
+    constexpr std::size_t R_MASK = 255u << 16u;
+    const std::size_t r = (hash & R_MASK) >> 16u;
 
-    constexpr size_t G_MASK = 255u << 8u;
-    const size_t g = (hash & G_MASK) >> 8u;
+    constexpr std::size_t G_MASK = 255u << 8u;
+    const std::size_t g = (hash & G_MASK) >> 8u;
 
-    constexpr size_t B_MASK = 255u << 0u;
-    const size_t b = (hash & B_MASK) >> 0u;
+    constexpr std::size_t B_MASK = 255u << 0u;
+    const std::size_t b = (hash & B_MASK) >> 0u;
 
-    auto applyBrightness = [_minBrightness, _maxBrightness] (size_t _value)
+    auto applyBrightness = [_minBrightness, _maxBrightness] (std::size_t _value)
     {
-        return static_cast<uint32_t> (_minBrightness * 255.0f +
-                                      static_cast<float> (_value) * (_maxBrightness - _minBrightness));
+        return static_cast<std::uint32_t> (_minBrightness * 255.0f +
+                                           static_cast<float> (_value) * (_maxBrightness - _minBrightness));
     };
 
     return IM_COL32 (applyBrightness (r), applyBrightness (g), applyBrightness (b), 255);
@@ -170,16 +172,16 @@ void UI::RenderEventsNearby (Client &_client)
             switch (event->type)
             {
             case EventType::DECLARE_GROUP:
-                return event->uid;
+                return event->declareGroup.uid;
 
             case EventType::ALLOCATE:
             case EventType::ACQUIRE:
             case EventType::RELEASE:
             case EventType::FREE:
-                return event->group;
+                return event->memory.group;
 
             case EventType::MARKER:
-                return event->scope;
+                return event->marker.scope;
             }
 
             EMERGENCE_ASSERT (false);
@@ -202,38 +204,44 @@ void UI::RenderEventsNearby (Client &_client)
         switch (event->type)
         {
         case EventType::DECLARE_GROUP:
-            ImGui::Text ("Declare group %s.", *event->id ? *event->id : "Root");
+            ImGui::Text ("Declare group %s.", *event->declareGroup.id ? *event->declareGroup.id : "Root");
             break;
 
         case EventType::ALLOCATE:
-            ImGui::Text ("Allocate %llu bytes in group %s.", event->bytes, groupId);
+            ImGui::Text ("Allocate %llu bytes in group %s.", static_cast<unsigned long long> (event->memory.bytes),
+                         groupId);
             break;
 
         case EventType::ACQUIRE:
-            ImGui::Text ("Acquire %llu bytes in group %s.", event->bytes, groupId);
+            ImGui::Text ("Acquire %llu bytes in group %s.", static_cast<unsigned long long> (event->memory.bytes),
+                         groupId);
             break;
 
         case EventType::RELEASE:
-            ImGui::Text ("Release %llu bytes in group %s.", event->bytes, groupId);
+            ImGui::Text ("Release %llu bytes in group %s.", static_cast<unsigned long long> (event->memory.bytes),
+                         groupId);
             break;
 
         case EventType::FREE:
-            ImGui::Text ("Free %llu bytes in group %s.", event->bytes, groupId);
+            ImGui::Text ("Free %llu bytes in group %s.", static_cast<unsigned long long> (event->memory.bytes),
+                         groupId);
             break;
 
         case EventType::MARKER:
-            ImGui::Text ("Marker: %s. Scope: %s.", *event->markerId ? *event->markerId : "<Unknown>", groupId);
+            ImGui::Text ("Marker: %s. Scope: %s.", *event->marker.markerId ? *event->marker.markerId : "<Unknown>",
+                         groupId);
             break;
         }
 
         ImGui::SameLine ();
-        uint64_t milliseconds = event->timeNs / 1000000u;
-        uint64_t seconds = milliseconds / 1000u;
+        std::uint64_t milliseconds = event->timeNs / 1000000u;
+        std::uint64_t seconds = milliseconds / 1000u;
         milliseconds %= 1000u;
 
-        uint64_t minutes = seconds / 60u;
+        std::uint64_t minutes = seconds / 60u;
         seconds %= 60u;
-        ImGui::Text ("Time: %llum %llus %llums.", minutes, seconds, milliseconds);
+        ImGui::Text ("Time: %llum %llus %llums.", static_cast<unsigned long long> (minutes),
+                     static_cast<unsigned long long> (seconds), static_cast<unsigned long long> (milliseconds));
 
         ImGui::PopID ();
         ++offset;
@@ -252,17 +260,17 @@ void UI::RenderSelectedGroup (Client &_client)
     if (const RecordedAllocationGroup *group = trackHolder.GetSelectedGroup ())
     {
         ImGui::Text ("Name: %s.", *group->GetId () ? *group->GetId () : "Root");
-        ImGui::Text ("Reserved (bytes): %llu (%f%%).", static_cast<uint64_t> (group->GetReserved ()),
+        ImGui::Text ("Reserved (bytes): %llu (%f%%).", static_cast<unsigned long long> (group->GetReserved ()),
                      group->GetTotal () == 0u ?
                          0.0f :
                          static_cast<float> (group->GetReserved ()) * 100.0f / static_cast<float> (group->GetTotal ()));
 
-        ImGui::Text ("Acquired (bytes): %llu (%f%%).", static_cast<uint64_t> (group->GetAcquired ()),
+        ImGui::Text ("Acquired (bytes): %llu (%f%%).", static_cast<unsigned long long> (group->GetAcquired ()),
                      group->GetTotal () == 0u ?
                          0.0f :
                          static_cast<float> (group->GetAcquired ()) * 100.0f / static_cast<float> (group->GetTotal ()));
 
-        ImGui::Text ("Total (bytes): %llu.", static_cast<uint64_t> (group->GetTotal ()));
+        ImGui::Text ("Total (bytes): %llu.", static_cast<unsigned long long> (group->GetTotal ()));
 
         if (const RecordedAllocationGroup *parent = group->Parent ())
         {
@@ -367,15 +375,15 @@ float UI::RenderFlameGraphNode (Client &_client,
         _drawList->AddRectFilled (reservedRectMin, reservedRectMax, ExtractGroupColor (_group, 0.2f, 0.5f));
 
         const bool selected = _group == _client.GetTrackHolder ().GetSelectedGroup ();
-        constexpr uint32_t SELECTED_COLOR = IM_COL32 (220, 0, 0, 255);
-        constexpr uint32_t USUAL_COLOR = IM_COL32 (0, 0, 0, 255);
+        constexpr std::uint32_t SELECTED_COLOR = IM_COL32 (220, 0, 0, 255);
+        constexpr std::uint32_t USUAL_COLOR = IM_COL32 (0, 0, 0, 255);
 
         _drawList->AddRect (acquiredRectMin, reservedRectMax, selected ? SELECTED_COLOR : USUAL_COLOR,
                             selected ? 3.0f : 1.0f);
 
         const char *idString = *_group->GetId () ? *_group->GetId () : "Root";
-        const auto usagePercent = static_cast<uint32_t> (static_cast<float> (_group->GetAcquired ()) * 100.0f /
-                                                         static_cast<float> (_group->GetTotal ()));
+        const auto usagePercent = static_cast<std::uint32_t> (static_cast<float> (_group->GetAcquired ()) * 100.0f /
+                                                              static_cast<float> (_group->GetTotal ()));
 
         // We can not just use EMERGENCE_BUILD_STRING, because we are modifying stack before copying generated string.
         Container::StringBuilder builder = EMERGENCE_BEGIN_BUILDING_STRING (
@@ -442,10 +450,10 @@ void UI::RenderTimeline (Client &_client) noexcept
             std::lerp (timeBeginS, timeEndS, (ImGui::GetScrollX () + drawZoneVisibleSize.x) / drawZoneFullWidth);
         const float pixelsPerSecond = drawZoneFullWidth / timeDurationS;
 
-        constexpr uint32_t LINES_COLOR = IM_COL32 (150, 150, 150, 255);
-        constexpr uint32_t TEXT_COLOR = IM_COL32 (220, 220, 220, 255);
-        constexpr uint32_t MARKER_COLOR = IM_COL32 (255, 180, 0, 255);
-        constexpr uint32_t SELECTION_COLOR = IM_COL32 (200, 0, 0, 255);
+        constexpr std::uint32_t LINES_COLOR = IM_COL32 (150, 150, 150, 255);
+        constexpr std::uint32_t TEXT_COLOR = IM_COL32 (220, 220, 220, 255);
+        constexpr std::uint32_t MARKER_COLOR = IM_COL32 (255, 180, 0, 255);
+        constexpr std::uint32_t SELECTION_COLOR = IM_COL32 (200, 0, 0, 255);
 
         ImDrawList *drawList = ImGui::GetWindowDrawList ();
         drawList->AddLine (
@@ -459,11 +467,11 @@ void UI::RenderTimeline (Client &_client) noexcept
         };
 
         Container::StringBuilder builder;
-        const auto firstSecond = static_cast<uint64_t> (floor (timeFrameBeginS));
-        const auto lastSecond = static_cast<uint64_t> (ceil (timeFrameEndS));
+        const auto firstSecond = static_cast<std::uint64_t> (floorf (timeFrameBeginS));
+        const auto lastSecond = static_cast<std::uint64_t> (ceilf (timeFrameEndS));
 
         // TODO: Think about refactoring this cycle.
-        for (size_t second = firstSecond; second <= lastSecond; ++second)
+        for (std::size_t second = firstSecond; second <= lastSecond; ++second)
         {
             const bool isMinute = second % 60u == 0u;
 
@@ -489,7 +497,7 @@ void UI::RenderTimeline (Client &_client) noexcept
             // Draw 100ms guidelines.
             if (pixelsPerSecond >= 100.0f)
             {
-                for (size_t lineIndex = 1u; lineIndex < 10u; ++lineIndex)
+                for (std::size_t lineIndex = 1u; lineIndex < 10u; ++lineIndex)
                 {
                     const float markX = secondToX (static_cast<float> (second) + static_cast<float> (lineIndex) * 0.1f);
                     drawList->AddLine ({markX, drawZoneStart.y + drawZoneVisibleSize.y * 0.35f},
@@ -500,7 +508,7 @@ void UI::RenderTimeline (Client &_client) noexcept
             // Draw 10ms guidelines.
             if (pixelsPerSecond >= 1000.0f)
             {
-                for (size_t lineIndex = 1u; lineIndex < 100u; ++lineIndex)
+                for (std::size_t lineIndex = 1u; lineIndex < 100u; ++lineIndex)
                 {
                     const float markX =
                         secondToX (static_cast<float> (second) + static_cast<float> (lineIndex) * 0.01f);
@@ -516,7 +524,7 @@ void UI::RenderTimeline (Client &_client) noexcept
 
         for (auto iterator = firstMarker; iterator != lastMarker; ++iterator)
         {
-            const double frequencyS = _client.GetTrackHolder ().GetMarkerFrequency ((**iterator)->markerId);
+            const double frequencyS = _client.GetTrackHolder ().GetMarkerFrequency ((**iterator)->marker.markerId);
 
             // Cull out markers with too high frequency for current scale.
             if (pixelsPerSecond > 1000.0f || (pixelsPerSecond > 100.0f && frequencyS > 0.1) || frequencyS > 1.0)
@@ -536,7 +544,7 @@ void UI::RenderTimeline (Client &_client) noexcept
 
                 if (IsMouseInside (tooltipMin, tooltipMax))
                 {
-                    ImGui::SetTooltip ("%s", *(**iterator)->markerId);
+                    ImGui::SetTooltip ("%s", *(**iterator)->marker.markerId);
                 }
             }
         }

@@ -80,7 +80,7 @@ private:
     InsertLongTermQuery insertComponent;
     ModifyValueQuery modifyComponent;
 
-    uint32_t frameIndex = 0u;
+    std::uint32_t frameIndex = 0u;
     Container::Vector<EditionFrame> frames;
 };
 
@@ -136,7 +136,7 @@ public:
 
 private:
     FetchAscendingRangeQuery fetchComponents;
-    size_t frameIndex = 0u;
+    std::size_t frameIndex = 0u;
     Container::Vector<ComponentVerificationFrame> frames;
 };
 
@@ -158,7 +158,7 @@ void ComponentVerifier::Execute () noexcept
     const ComponentVerificationFrame &frame = frames[frameIndex];
     ++frameIndex;
 
-    size_t componentIndex = 0u;
+    std::size_t componentIndex = 0u;
     for (auto cursor = fetchComponents.Execute (nullptr, nullptr);
          const auto *component = static_cast<const TestComponent *> (*cursor); ++cursor, ++componentIndex)
     {
@@ -190,7 +190,7 @@ private:
     FetchSequenceQuery fetchChangedEvents;
     FetchSequenceQuery fetchRemovedEvents;
 
-    size_t frameIndex = 0u;
+    std::size_t frameIndex = 0u;
     Container::Vector<EventVerificationFrame> frames;
 };
 
@@ -225,8 +225,8 @@ void EventVerifier::Execute () noexcept
         CHECK_EQUAL (eventsFound.size (), frame.expected##Type##Events.size ());                                       \
         for (const TestComponent##Type##NormalEvent &event : eventsFound)                                              \
         {                                                                                                              \
-            const size_t found = std::count (eventsFound.begin (), eventsFound.end (), event);                         \
-            const size_t expected =                                                                                    \
+            const std::size_t found = std::count (eventsFound.begin (), eventsFound.end (), event);                    \
+            const std::size_t expected =                                                                               \
                 std::count (frame.expected##Type##Events.begin (), frame.expected##Type##Events.end (), event);        \
             CHECK_EQUAL (found, expected);                                                                             \
         }                                                                                                              \

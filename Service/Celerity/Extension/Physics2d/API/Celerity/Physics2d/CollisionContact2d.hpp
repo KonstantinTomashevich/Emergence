@@ -16,7 +16,7 @@ namespace Emergence::Celerity
 struct CollisionContact2d final
 {
     /// \brief Maximum world reported count of collision points between between shapes.
-    static constexpr size_t MAX_WORLD_POINTS = 2u;
+    static constexpr std::size_t MAX_WORLD_POINTS = 2u;
 
     /// \brief Unique id of this collision contact.
     UniqueId collisionContactId = INVALID_UNIQUE_ID;

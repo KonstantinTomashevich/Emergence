@@ -92,7 +92,7 @@ static bool IsAtInitializationEndMarker (const Recording::Track &_track)
     if (const Recording::Event *event = *_track.EventCurrent ())
     {
         return event->type == Recording::EventType::MARKER &&
-               event->markerId == Recording::Constants::CaptureInitializationFinishedMarker ();
+               event->marker.markerId == Recording::Constants::CaptureInitializationFinishedMarker ();
     }
 
     return false;
@@ -243,36 +243,36 @@ TEST_CASE (ObservationReporting)
             case Recording::EventType::ALLOCATE:
             {
                 CHECK_EQUAL (sourceEvent->type, Profiler::EventType::ALLOCATE);
-                CHECK_EQUAL (sourceEvent->bytes, resultEvent->bytes);
-                checkGroup (resultEvent->group);
+                CHECK_EQUAL (sourceEvent->bytes, resultEvent->memory.bytes);
+                checkGroup (resultEvent->memory.group);
                 break;
             }
             case Recording::EventType::ACQUIRE:
             {
                 CHECK_EQUAL (sourceEvent->type, Profiler::EventType::ACQUIRE);
-                CHECK_EQUAL (sourceEvent->bytes, resultEvent->bytes);
-                checkGroup (resultEvent->group);
+                CHECK_EQUAL (sourceEvent->bytes, resultEvent->memory.bytes);
+                checkGroup (resultEvent->memory.group);
                 break;
             }
             case Recording::EventType::RELEASE:
             {
                 CHECK_EQUAL (sourceEvent->type, Profiler::EventType::RELEASE);
-                CHECK_EQUAL (sourceEvent->bytes, resultEvent->bytes);
-                checkGroup (resultEvent->group);
+                CHECK_EQUAL (sourceEvent->bytes, resultEvent->memory.bytes);
+                checkGroup (resultEvent->memory.group);
                 break;
             }
             case Recording::EventType::FREE:
             {
                 CHECK_EQUAL (sourceEvent->type, Profiler::EventType::FREE);
-                CHECK_EQUAL (sourceEvent->bytes, resultEvent->bytes);
-                checkGroup (resultEvent->group);
+                CHECK_EQUAL (sourceEvent->bytes, resultEvent->memory.bytes);
+                checkGroup (resultEvent->memory.group);
                 break;
             }
             case Recording::EventType::MARKER:
             {
                 CHECK_EQUAL (sourceEvent->type, Profiler::EventType::MARKER);
-                CHECK_EQUAL (sourceEvent->markerId, resultEvent->markerId);
-                checkGroup (resultEvent->scope);
+                CHECK_EQUAL (sourceEvent->markerId, resultEvent->marker.markerId);
+                checkGroup (resultEvent->marker.scope);
                 break;
             }
             }
@@ -337,13 +337,13 @@ TEST_CASE (UncapturedGroupHierarchy)
         const Recording::Event *event = *iterator;
         if (event->type == Recording::EventType::DECLARE_GROUP)
         {
-            if (event->id == testGroupChild.GetId ())
+            if (event->declareGroup.id == testGroupChild.GetId ())
             {
-                testGroupChildUID = event->uid;
+                testGroupChildUID = event->declareGroup.uid;
             }
             else
             {
-                CHECK_EQUAL (event->id, testGroupParent.GetId ());
+                CHECK_EQUAL (event->declareGroup.id, testGroupParent.GetId ());
             }
         }
     }

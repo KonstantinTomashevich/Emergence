@@ -1,4 +1,5 @@
 #include <chrono>
+#include <limits>
 
 #include <Memory/Recording/Application/TrackHolder.hpp>
 
@@ -160,7 +161,7 @@ void TrackHolder::UpdateLoading () noexcept
         if ((*parsed)->type == EventType::MARKER)
         {
             markers.emplace_back (parsed);
-            MarkerFrequencyData &frequency = markerFrequency[(*parsed)->markerId];
+            MarkerFrequencyData &frequency = markerFrequency[(*parsed)->marker.markerId];
             double markerTimeS = static_cast<double> ((*parsed)->timeNs) * 1e-9;
 
             if (frequency.count > 0u)

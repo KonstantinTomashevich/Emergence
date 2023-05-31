@@ -1,4 +1,4 @@
-sober_library_begin (CelerityBox2d STATIC)
+sober_library_begin (CelerityBox2d OBJECT)
     file (GLOB_RECURSE HEADERS "*.hpp" )
     file (GLOB_RECURSE SOURCES "*.cpp")
     list (APPEND SOURCES ${HEADERS})

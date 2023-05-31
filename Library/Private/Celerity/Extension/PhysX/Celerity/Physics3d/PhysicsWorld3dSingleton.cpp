@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Assert/Assert.hpp>
 
 #include <Celerity/Physics3d/PhysXWorld.hpp>

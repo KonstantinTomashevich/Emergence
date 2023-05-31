@@ -30,23 +30,23 @@ static bgfx::UniformType::Enum ToBGFX (UniformType _type)
 
 Uniform::Uniform () noexcept
 {
-    block_cast<uint16_t> (data) = bgfx::kInvalidHandle;
+    block_cast<std::uint16_t> (data) = bgfx::kInvalidHandle;
 }
 
 Uniform::Uniform (Memory::UniqueString _name, UniformType _type) noexcept
 {
-    block_cast<uint16_t> (data) = bgfx::createUniform (*_name, ToBGFX (_type)).idx;
+    block_cast<std::uint16_t> (data) = bgfx::createUniform (*_name, ToBGFX (_type)).idx;
 }
 
 Uniform::Uniform (Uniform &&_other) noexcept
 {
     data = _other.data;
-    block_cast<uint16_t> (_other.data) = bgfx::kInvalidHandle;
+    block_cast<std::uint16_t> (_other.data) = bgfx::kInvalidHandle;
 }
 
 Uniform::~Uniform () noexcept
 {
-    if (uint16_t handle = block_cast<uint16_t> (data); handle != bgfx::kInvalidHandle)
+    if (std::uint16_t handle = block_cast<std::uint16_t> (data); handle != bgfx::kInvalidHandle)
     {
         bgfx::destroy (bgfx::UniformHandle {handle});
     }
@@ -54,12 +54,12 @@ Uniform::~Uniform () noexcept
 
 UniformId Uniform::GetId () const noexcept
 {
-    return block_cast<uint16_t> (data);
+    return block_cast<std::uint16_t> (data);
 }
 
 bool Uniform::IsValid () const noexcept
 {
-    return block_cast<uint16_t> (data) != bgfx::kInvalidHandle;
+    return block_cast<std::uint16_t> (data) != bgfx::kInvalidHandle;
 }
 
 Uniform &Uniform::operator= (Uniform &&_other) noexcept

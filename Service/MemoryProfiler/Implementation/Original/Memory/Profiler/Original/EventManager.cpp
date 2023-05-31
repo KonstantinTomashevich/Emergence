@@ -18,7 +18,7 @@ EventManager &EventManager::Get () noexcept
 }
 
 void EventManager::Allocate (const Profiler::AllocationGroup &_group,
-                             size_t _bytes,
+                             std::size_t _bytes,
                              const ProfilingLock & /*unused*/) noexcept
 {
     if (observers > 0u)
@@ -33,7 +33,7 @@ void EventManager::Allocate (const Profiler::AllocationGroup &_group,
 }
 
 void EventManager::Acquire (const Profiler::AllocationGroup &_group,
-                            size_t _bytes,
+                            std::size_t _bytes,
                             const ProfilingLock & /*unused*/) noexcept
 {
     if (observers > 0u)
@@ -48,7 +48,7 @@ void EventManager::Acquire (const Profiler::AllocationGroup &_group,
 }
 
 void EventManager::Release (const Profiler::AllocationGroup &_group,
-                            size_t _bytes,
+                            std::size_t _bytes,
                             const ProfilingLock & /*unused*/) noexcept
 {
     if (observers > 0u)
@@ -63,7 +63,7 @@ void EventManager::Release (const Profiler::AllocationGroup &_group,
 }
 
 void EventManager::Free (const Profiler::AllocationGroup &_group,
-                         size_t _bytes,
+                         std::size_t _bytes,
                          const ProfilingLock & /*unused*/) noexcept
 {
     if (observers > 0u)

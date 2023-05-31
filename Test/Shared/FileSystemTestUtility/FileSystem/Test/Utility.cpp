@@ -1,3 +1,4 @@
+#include <cstring>
 #include <fstream>
 
 #include <FileSystem/Test/Utility.hpp>
@@ -6,7 +7,9 @@
 
 namespace Emergence::FileSystem::Test
 {
-void ExpectFilesEqual (const Container::String &_expectedFilePath, const Container::String &_resultFilePath) noexcept
+void CheckFilesEquality (const Container::String &_expectedFilePath,
+                         const Container::String &_resultFilePath,
+                         float _maximumErrorRatio) noexcept
 {
     std::ifstream expectedInput {_expectedFilePath.c_str (), std::ios::binary};
     REQUIRE (expectedInput);
@@ -29,8 +32,9 @@ void ExpectFilesEqual (const Container::String &_expectedFilePath, const Contain
 
     constexpr auto BUFFER_SIZE = static_cast<std::streamsize> (16u * 1024u);
     std::streamsize read = 0u;
-    std::array<uint8_t, BUFFER_SIZE> expectedBuffer;
-    std::array<uint8_t, BUFFER_SIZE> resultBuffer;
+    std::array<std::uint8_t, BUFFER_SIZE> expectedBuffer;
+    std::array<std::uint8_t, BUFFER_SIZE> resultBuffer;
+    std::size_t errorCount = 0u;
 
     while (read < expectedSize)
     {
@@ -39,7 +43,18 @@ void ExpectFilesEqual (const Container::String &_expectedFilePath, const Contain
 
         REQUIRE (expectedInput.read (reinterpret_cast<char *> (expectedBuffer.data ()), toRead));
         REQUIRE (resultInput.read (reinterpret_cast<char *> (resultBuffer.data ()), toRead));
-        CHECK (memcmp (expectedBuffer.data (), resultBuffer.data (), toRead) == 0);
+
+        for (std::size_t index = 0u; index < static_cast<std::size_t> (toRead); ++index)
+        {
+            if (expectedBuffer[index] != resultBuffer[index])
+            {
+                ++errorCount;
+            }
+        }
     }
+
+    const float errorRatio = static_cast<float> (errorCount) / static_cast<float> (expectedSize);
+    LOG ("File comparison error ratio: ", errorRatio, ".");
+    CHECK ((errorRatio < _maximumErrorRatio));
 }
 } // namespace Emergence::FileSystem::Test

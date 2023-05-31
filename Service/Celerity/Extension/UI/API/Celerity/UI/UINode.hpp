@@ -26,7 +26,7 @@ struct UINode final
     /// \details For example, we need to position 3 buttons from left to right in horizontal container.
     ///          In this case leftmost node should have the smallest sort index and rightmost should
     ///          have the biggest one.
-    uint64_t sortIndex = 0u;
+    std::uint64_t sortIndex = 0u;
 
     struct Reflection final
     {

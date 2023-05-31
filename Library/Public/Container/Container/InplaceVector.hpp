@@ -139,7 +139,7 @@ private:
         std::array<Item, Capacity> values;
 
         // NOLINTNEXTLINE(bugprone-sizeof-expression): It might look suspicious for CLang when Item is a pointer.
-        std::array<uint8_t, sizeof (Item) * Capacity> byteRepresentation {};
+        std::array<std::uint8_t, sizeof (Item) * Capacity> byteRepresentation {};
     };
 
 public:
@@ -274,7 +274,7 @@ requires std::is_nothrow_move_assignable_v<Item>
         return EmplaceBack (std::forward<Args...> (_constructorArgs...));
     }
 
-    const auto last = --End ();
+    const auto last = End () - 1u;
     new (&*End ()) Item {std::move (*last)};
 
     for (auto iterator = last; iterator != _at; --iterator)
@@ -309,7 +309,7 @@ typename InplaceVector<Item, Capacity>::Iterator InplaceVector<Item, Capacity>::
 requires std::is_nothrow_move_assignable_v<Item>
 {
     EMERGENCE_ASSERT (_iterator < End ());
-    auto last = --End ();
+    auto last = End () - 1u;
 
     if (_iterator != last)
     {

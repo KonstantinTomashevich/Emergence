@@ -26,9 +26,9 @@ public:
         /// Prepared query constructs cursors.
         friend class FetchValueQuery;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 7u);
 
-        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit Cursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     EMERGENCE_READONLY_PREPARED_QUERY_OPERATIONS (FetchValueQuery, Cursor, ValueSequence _values);
@@ -41,8 +41,8 @@ private:
     /// Registry constructs prepared queries.
     friend class Registry;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 
-    explicit FetchValueQuery (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit FetchValueQuery (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse

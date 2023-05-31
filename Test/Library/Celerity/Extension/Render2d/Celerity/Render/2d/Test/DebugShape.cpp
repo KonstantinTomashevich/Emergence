@@ -19,7 +19,7 @@ TEST_CASE (DebugBox)
             CreateCamera {0u, 2.0f, ~0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
-            CreateDebugShape {1u, 0u, "DebugRed"_us, Vector2f::ZERO, 0.0f, DebugShape2d {0.5f, 0.5f}},
+            CreateDebugShape {1u, 0u, "MI_DebugRed"_us, Vector2f::ZERO, 0.0f, DebugShape2d {0.5f, 0.5f}},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"DebugBox"_us},
@@ -35,7 +35,7 @@ TEST_CASE (DebugCircle)
             CreateCamera {0u, 2.0f, ~0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
-            CreateDebugShape {1u, 0u, "DebugRed"_us, Vector2f::ZERO, 0.0f, DebugShape2d {0.5f}},
+            CreateDebugShape {1u, 0u, "MI_DebugRed"_us, Vector2f::ZERO, 0.0f, DebugShape2d {0.5f}},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"DebugCircle"_us},
@@ -51,7 +51,7 @@ TEST_CASE (DebugLine)
             CreateCamera {0u, 2.0f, ~0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
-            CreateDebugShape {1u, 0u, "DebugRed"_us, Vector2f::ZERO, 0.0f, DebugShape2d {Vector2f {0.5f, 0.5f}}},
+            CreateDebugShape {1u, 0u, "MI_DebugRed"_us, Vector2f::ZERO, 0.0f, DebugShape2d {Vector2f {0.5f, 0.5f}}},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"DebugLine"_us},
@@ -67,7 +67,7 @@ TEST_CASE (DebugBoxTransform)
             CreateCamera {0u, 2.0f, ~0u},
 
             CreateTransform {1u, INVALID_UNIQUE_ID, {{2.0f, 0.5f}, 0.0f, Vector2f::ONE}},
-            CreateDebugShape {1u, 0u, "DebugRed"_us, {-1.0f, -1.0f}, 1.0f, DebugShape2d {0.5f, 0.5f}},
+            CreateDebugShape {1u, 0u, "MI_DebugRed"_us, {-1.0f, -1.0f}, 1.0f, DebugShape2d {0.5f, 0.5f}},
         },
         AssetWaitPoint {},
         ScreenShotPoint {"DebugBoxTransform"_us},

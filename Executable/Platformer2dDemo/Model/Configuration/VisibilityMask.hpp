@@ -2,8 +2,8 @@
 
 #include <cstdint>
 
-enum class VisibilityMask : uint64_t
+enum class VisibilityMask : std::uint64_t
 {
-    GAME_SCENE = uint64_t {1u} << uint64_t {0u},
-    LOADING_ANIMATION = uint64_t {1u} << uint64_t {1u},
+    GAME_SCENE = std::uint64_t {1u} << std::uint64_t {0u},
+    LOADING_ANIMATION = std::uint64_t {1u} << std::uint64_t {1u},
 };

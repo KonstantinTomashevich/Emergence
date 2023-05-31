@@ -942,7 +942,7 @@ void BodyMassSynchronizer::Execute ()
         }
 
         densities.resize (shapes.size ());
-        uint32_t shapesFound = 0u;
+        std::uint32_t shapesFound = 0u;
 
         for (auto shapeCursor = fetchShapeByObjectId.Execute (&objectId);
              const auto *shape = static_cast<const CollisionShape3dComponent *> (*shapeCursor); ++shapeCursor)
@@ -1101,7 +1101,7 @@ void SimulationExecutor::onContact (const physx::PxContactPairHeader &_pairHeade
         return;
     }
 
-    for (uint32_t index = 0u; index < _nbPairs; ++index)
+    for (std::uint32_t index = 0u; index < _nbPairs; ++index)
     {
         const physx::PxContactPair &pair = _pairs[index];
         if (pair.flags & (physx::PxContactPairFlag::eREMOVED_SHAPE_0 | physx::PxContactPairFlag::eREMOVED_SHAPE_1))
@@ -1149,7 +1149,7 @@ void SimulationExecutor::onContact (const physx::PxContactPairHeader &_pairHeade
 
 void SimulationExecutor::onTrigger (physx::PxTriggerPair *_pairs, physx::PxU32 _count)
 {
-    for (uint32_t index = 0u; index < _count; ++index)
+    for (std::uint32_t index = 0u; index < _count; ++index)
     {
         const physx::PxTriggerPair &pair = _pairs[index];
         if (pair.flags &
@@ -1396,7 +1396,7 @@ static void UpdateShapeLocalPose (const CollisionShape3dComponent *_shape, const
 static void UpdateShapeFilter (const CollisionShape3dComponent *_shape) noexcept
 {
     auto *pxShape = static_cast<physx::PxShape *> (_shape->implementationHandle);
-    const physx::PxFilterData filterData {static_cast<uint32_t> (_shape->collisionGroup),
+    const physx::PxFilterData filterData {static_cast<std::uint32_t> (_shape->collisionGroup),
                                           _shape->sendContactEvents ? 1u : 0u, 0u, 0u};
     pxShape->setSimulationFilterData (filterData);
     pxShape->setQueryFilterData (filterData);
@@ -1458,7 +1458,7 @@ static physx::PxFilterFlags PhysicsFilterShader (physx::PxFilterObjectAttributes
                                                  const void *_constantBlock,
                                                  physx::PxU32 /*unused*/)
 {
-    const auto &collisionMasks = *static_cast<const std::array<uint32_t, 32u> *> (_constantBlock);
+    const auto &collisionMasks = *static_cast<const std::array<std::uint32_t, 32u> *> (_constantBlock);
     const bool collision0to1 = collisionMasks[_filterData0.word0] & (1u << _filterData1.word0);
     const bool collision1to0 = collisionMasks[_filterData1.word0] & (1u << _filterData0.word0);
 

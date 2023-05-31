@@ -6,12 +6,25 @@
 
 namespace Emergence::Resource::Object
 {
-const Declaration::Reflection &Declaration::Reflect () noexcept
+const ObjectComponent::Reflection &ObjectComponent::Reflect () noexcept
 {
-    static Reflection reflection = [] ()
+    static const Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Declaration);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (ObjectComponent);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (component);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const Object::Reflection &Object::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME (Object, "ResourceObject");
         EMERGENCE_MAPPING_REGISTER_REGULAR (parent);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (changelist);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
@@ -55,7 +68,7 @@ static bool DoPatchesReferenceSamePart (const TypeManifest &_typeManifest,
                 }
                 else
                 {
-                    static_assert (sizeof (UniqueId) == sizeof (uintptr_t));
+                    static_assert (sizeof (UniqueId) == sizeof (std::uintptr_t));
                     _output =
                         reinterpret_cast<UniqueId> (**static_cast<const Memory::UniqueString *> (changeInfo.newValue));
                 }
@@ -79,39 +92,38 @@ static bool DoPatchesReferenceSamePart (const TypeManifest &_typeManifest,
     return firstId == secondId;
 }
 
-Body ApplyInheritance (const TypeManifest &_typeManifest,
-                       const Body &_parent,
-                       const Container::Vector<StandardLayout::Patch> &_childChangelist) noexcept
+void ApplyInheritance (const TypeManifest &_typeManifest, const Object &_parent, Object &_child) noexcept
 {
     // Algorithm below is not very effective as it uses plain cycles.
     // However, this operation is only needed during loading and objects are not very big, so it is okay.
-    Body result;
+    Container::Vector<ObjectComponent> resultChangelist {
+        Memory::Profiler::AllocationGroup {GetRootAllocationGroup (), Memory::UniqueString {"Object"}}};
 
-    for (const StandardLayout::Patch &parentPatch : _parent.fullChangelist)
+    for (const ObjectComponent &parentComponent : _parent.changelist)
     {
         bool overrideFound = false;
-        for (const StandardLayout::Patch &childPatch : _childChangelist)
+        for (const ObjectComponent &childComponent : _child.changelist)
         {
-            if (DoPatchesReferenceSamePart (_typeManifest, parentPatch, childPatch))
+            if (DoPatchesReferenceSamePart (_typeManifest, parentComponent.component, childComponent.component))
             {
                 overrideFound = true;
-                result.fullChangelist.emplace_back (parentPatch + childPatch);
+                resultChangelist.emplace_back (ObjectComponent {parentComponent.component + childComponent.component});
                 break;
             }
         }
 
         if (!overrideFound)
         {
-            result.fullChangelist.emplace_back (parentPatch);
+            resultChangelist.emplace_back (parentComponent);
         }
     }
 
-    for (const StandardLayout::Patch &childPatch : _childChangelist)
+    for (const ObjectComponent &childComponent : _child.changelist)
     {
         bool alreadyUsedAsOverride = false;
-        for (const StandardLayout::Patch &parentPatch : _parent.fullChangelist)
+        for (const ObjectComponent &parentComponent : _parent.changelist)
         {
-            if (DoPatchesReferenceSamePart (_typeManifest, parentPatch, childPatch))
+            if (DoPatchesReferenceSamePart (_typeManifest, parentComponent.component, childComponent.component))
             {
                 alreadyUsedAsOverride = true;
                 break;
@@ -120,44 +132,44 @@ Body ApplyInheritance (const TypeManifest &_typeManifest,
 
         if (!alreadyUsedAsOverride)
         {
-            result.fullChangelist.emplace_back (childPatch);
+            resultChangelist.emplace_back (childComponent);
         }
     }
 
-    return result;
+    _child.changelist = resultChangelist;
 }
 
 void ExtractChildChangelist (const TypeManifest &_typeManifest,
-                             const Body &_parent,
-                             const Body &_child,
-                             Container::Vector<StandardLayout::Patch> &_output) noexcept
+                             const Object &_parent,
+                             const Object &_child,
+                             Container::Vector<ObjectComponent> &_output) noexcept
 {
     // Algorithm below is not very effective as it uses plain cycles.
     // However, this operation is only needed during saving and objects are not very big, so it is okay.
 
-    for (const StandardLayout::Patch &childPatch : _child.fullChangelist)
+    for (const ObjectComponent &childComponent : _child.changelist)
     {
         bool foundInParent = false;
-        for (const StandardLayout::Patch &parentPatch : _parent.fullChangelist)
+        for (const ObjectComponent &parentComponent : _parent.changelist)
         {
-            if (childPatch.IsHandleEqual (parentPatch))
+            if (childComponent.component.IsHandleEqual (parentComponent.component))
             {
                 foundInParent = true;
                 break;
             }
 
-            if (!DoPatchesReferenceSamePart (_typeManifest, childPatch, parentPatch))
+            if (!DoPatchesReferenceSamePart (_typeManifest, childComponent.component, parentComponent.component))
             {
                 continue;
             }
 
             foundInParent = true;
-            _output.emplace_back (childPatch - parentPatch);
+            _output.emplace_back (ObjectComponent {childComponent.component - parentComponent.component});
         }
 
         if (!foundInParent)
         {
-            _output.emplace_back (childPatch);
+            _output.emplace_back (childComponent);
         }
     }
 }

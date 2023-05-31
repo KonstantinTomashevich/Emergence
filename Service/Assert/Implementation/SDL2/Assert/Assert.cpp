@@ -7,9 +7,13 @@
 
 #include <Log/Log.hpp>
 
-#include <SDL.h>
+#if defined(__unix__)
+#    include <SDL2/SDL.h>
+#else
+#    include <SDL.h>
+#endif
 
-#ifndef EMERGENCE_FALLBACK_TO_CXX_20
+#if !defined(EMERGENCE_FALLBACK_TO_CXX_20)
 #    include <stacktrace>
 #endif
 
@@ -35,7 +39,7 @@ void SetIsAssertInteractive (bool _interactive) noexcept
     interactiveAssertEnabled = _interactive;
 }
 
-void ReportCriticalError (const char *_expression, const char *_file, size_t _line) noexcept
+void ReportCriticalError (const char *_expression, const char *_file, std::size_t _line) noexcept
 {
     EMERGENCE_LOG (CRITICAL_ERROR, "Expression: ", _expression, ". File: ", _file, ". Line: ", _line);
     if (interactiveAssertEnabled)
@@ -63,7 +67,7 @@ void ReportCriticalError (const char *_expression, const char *_file, size_t _li
         Container::String assertText = EMERGENCE_BUILD_STRING ("Expression: ", _expression, ".\nFile: ", _file,
                                                                ".\nLine: ", _line, ".\nStacktrace:\n");
 
-#ifndef EMERGENCE_FALLBACK_TO_CXX_20
+#if !defined(EMERGENCE_FALLBACK_TO_CXX_20)
         // We avoid using string builder here as stacktrace string is usually too big.
         assertText += std::to_string (std::stacktrace::current ());
 #endif

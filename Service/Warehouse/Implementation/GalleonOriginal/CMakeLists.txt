@@ -1,5 +1,5 @@
 sober_implementation_begin (GalleonOriginal)
-    sober_implementation_setup_target (STATIC "${SOBER_TEST_RUNNER_STUB_SOURCE}")
+    sober_implementation_setup_target (OBJECT "${SOBER_TEST_RUNNER_STUB_SOURCE}")
     sober_naming_variant_target (Galleon Original GALLEON_LIBRARY_TARGET)
     sober_implementation_link_library ("${GALLEON_LIBRARY_TARGET}")
 sober_implementation_end ()

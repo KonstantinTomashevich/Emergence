@@ -15,7 +15,7 @@ sober_naming_implementation_target (Testing Doctest TESTING_IMPLEMENTATION_TARGE
 sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
 sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_TARGET)
 
-target_link_libraries (
+sober_target_link_libraries (
         TestContainerOriginal PRIVATE
         ${ASSERT_IMPLEMENTATION_TARGET} ${LOG_IMPLEMENTATION_TARGET}
         ${MEMORY_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_IMPLEMENTATION_TARGET}

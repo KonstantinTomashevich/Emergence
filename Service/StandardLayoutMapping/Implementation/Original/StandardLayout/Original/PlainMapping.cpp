@@ -7,7 +7,11 @@
 
 #include <API/Common/Implementation/Iterator.hpp>
 
+#include <Container/String.hpp>
+#include <Container/Vector.hpp>
+
 #include <StandardLayout/Original/PlainMapping.hpp>
+#include <StandardLayout/Patch.hpp>
 
 namespace Emergence::StandardLayout
 {
@@ -28,12 +32,12 @@ bool FieldData::IsProjected () const noexcept
     return projected;
 }
 
-size_t FieldData::GetOffset () const noexcept
+std::size_t FieldData::GetOffset () const noexcept
 {
     return offset;
 }
 
-size_t FieldData::GetSize () const noexcept
+std::size_t FieldData::GetSize () const noexcept
 {
     return size;
 }
@@ -48,6 +52,12 @@ Handling::Handle<PlainMapping> FieldData::GetNestedObjectMapping () const noexce
 {
     EMERGENCE_ASSERT (archetype == FieldArchetype::NESTED_OBJECT);
     return nestedObjectMapping;
+}
+
+Handling::Handle<PlainMapping> FieldData::GetVectorItemMapping () const noexcept
+{
+    EMERGENCE_ASSERT (archetype == FieldArchetype::VECTOR);
+    return vectorItemMapping;
 }
 
 Memory::UniqueString FieldData::GetName () const noexcept
@@ -102,11 +112,44 @@ FieldData::FieldData (FieldData::NestedObjectSeed _seed) noexcept
     size = nestedObjectMapping->GetObjectSize ();
 }
 
+FieldData::FieldData (FieldData::Utf8StringSeed _seed) noexcept
+    : archetype (FieldArchetype::UTF8_STRING),
+      projected (_seed.projected),
+      offset (_seed.offset),
+      size (sizeof (Container::Utf8String)),
+      name (_seed.name)
+{
+}
+
+FieldData::FieldData (FieldData::VectorSeed _seed) noexcept
+    : archetype (FieldArchetype::VECTOR),
+      projected (_seed.projected),
+      offset (_seed.offset),
+      name (_seed.name),
+      vectorItemMapping (std::move (_seed.vectorItemMapping))
+{
+    EMERGENCE_ASSERT (vectorItemMapping);
+    size = sizeof (Container::Vector<std::uint8_t>);
+}
+
+FieldData::FieldData (FieldData::PatchSeed _seed) noexcept
+    : archetype (FieldArchetype::PATCH),
+      projected (_seed.projected),
+      offset (_seed.offset),
+      size (sizeof (StandardLayout::Patch)),
+      name (_seed.name)
+{
+}
+
 FieldData::~FieldData ()
 {
     if (archetype == FieldArchetype::NESTED_OBJECT)
     {
         nestedObjectMapping.~Handle ();
+    }
+    else if (archetype == FieldArchetype::VECTOR)
+    {
+        vectorItemMapping.~Handle ();
     }
 }
 
@@ -219,27 +262,27 @@ void PlainMapping::ConditionalFieldIterator::UpdateWhetherTopConditionSatisfied 
     if (topCondition)
     {
         const FieldData *sourceField = owner->GetField (topCondition->sourceField);
-        const auto *shifted = static_cast<const uint8_t *> (object) + sourceField->GetOffset ();
+        const auto *shifted = static_cast<const std::uint8_t *> (object) + sourceField->GetOffset ();
 
 #define DO_OPERATION(Operation)                                                                                        \
     switch (sourceField->GetSize ())                                                                                   \
     {                                                                                                                  \
     case 1u:                                                                                                           \
-        topConditionSatisfied = static_cast<uint64_t> (*shifted) Operation topCondition->argument;                     \
+        topConditionSatisfied = static_cast<std::uint64_t> (*shifted) Operation topCondition->argument;                \
         break;                                                                                                         \
                                                                                                                        \
     case 2u:                                                                                                           \
-        topConditionSatisfied =                                                                                        \
-            static_cast<uint64_t> (*reinterpret_cast<const uint16_t *> (shifted)) Operation topCondition->argument;    \
+        topConditionSatisfied = static_cast<std::uint64_t> (*reinterpret_cast<const std::uint16_t *> (shifted))        \
+                                    Operation topCondition->argument;                                                  \
         break;                                                                                                         \
                                                                                                                        \
     case 4u:                                                                                                           \
-        topConditionSatisfied =                                                                                        \
-            static_cast<uint64_t> (*reinterpret_cast<const uint32_t *> (shifted)) Operation topCondition->argument;    \
+        topConditionSatisfied = static_cast<std::uint64_t> (*reinterpret_cast<const std::uint32_t *> (shifted))        \
+                                    Operation topCondition->argument;                                                  \
         break;                                                                                                         \
                                                                                                                        \
     case 8u:                                                                                                           \
-        topConditionSatisfied = *reinterpret_cast<const uint64_t *> (shifted) Operation topCondition->argument;        \
+        topConditionSatisfied = *reinterpret_cast<const std::uint64_t *> (shifted) Operation topCondition->argument;   \
         break;                                                                                                         \
                                                                                                                        \
     default:                                                                                                           \
@@ -289,6 +332,19 @@ void PlainMapping::Construct (void *_address) const noexcept
     if (constructor)
     {
         constructor (_address);
+    }
+}
+
+void PlainMapping::MoveConstruct (void *_address, void *_sourceAddress) const noexcept
+{
+    if (moveConstructor)
+    {
+        moveConstructor (_address, _sourceAddress);
+    }
+    else
+    {
+        EMERGENCE_ASSERT (false);
+        Construct (_address);
     }
 }
 
@@ -442,6 +498,12 @@ void PlainMappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcep
 {
     EMERGENCE_ASSERT (underConstruction);
     underConstruction->constructor = _constructor;
+}
+
+void PlainMappingBuilder::SetMoveConstructor (void (*_constructor) (void *, void *)) noexcept
+{
+    EMERGENCE_ASSERT (underConstruction);
+    underConstruction->moveConstructor = _constructor;
 }
 
 void PlainMappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept

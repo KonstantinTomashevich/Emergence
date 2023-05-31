@@ -2,7 +2,7 @@ call_code_generation (${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory (Constants)
 
-sober_library_begin (Celerity STATIC)
+sober_library_begin (Celerity OBJECT)
     file (GLOB_RECURSE HEADERS "Public/*.hpp")
     file (GLOB_RECURSE SOURCES "Public/*.cpp")
     list (APPEND SOURCES ${HEADERS})

@@ -60,7 +60,7 @@ public:
 private:
     InsertShortTermQuery insertActionHolder;
 
-    uint64_t frameIndex = 0u;
+    std::uint64_t frameIndex = 0u;
     Container::Vector<Container::Vector<ExternalAction>> actionsPerFrame;
 };
 
@@ -100,7 +100,7 @@ private:
     InsertLongTermQuery insertSubscription;
     RemoveValueQuery removeSubscriptionByObjectIdAndGroupId;
 
-    uint64_t frameIndex = 0u;
+    std::uint64_t frameIndex = 0u;
     Container::Vector<Container::Vector<SubscriptionInfo>> subscriptionsToAdd;
     Container::Vector<Container::Vector<SubscriptionInfo>> subscriptionsToRemove;
 };
@@ -154,7 +154,7 @@ public:
 private:
     FetchValueQuery fetchInputActionByObjectId;
 
-    uint64_t frameIndex = 0u;
+    std::uint64_t frameIndex = 0u;
     Container::Vector<Container::Vector<ActionExpectation>> expectations;
 };
 

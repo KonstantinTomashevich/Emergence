@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Batching2d.hpp>
@@ -45,7 +47,7 @@ PreBatchingSynchronizer::PreBatchingSynchronizer (TaskConstructor &_constructor)
       modifyWaitingForAnimationToLoad (
           _constructor.ModifySignalPartial (Sprite2dUvAnimationComponent::Reflect ().mapping,
                                             Sprite2dUvAnimationComponent::Reflect ().waitingForAnimationToLoad,
-                                            array_cast<bool, sizeof (uint64_t)> (true),
+                                            array_cast<bool, sizeof (std::uint64_t)> (true),
                                             {
                                                 Sprite2dUvAnimationComponent::Reflect ().currentFrame,
                                                 Sprite2dUvAnimationComponent::Reflect ().waitingForAnimationToLoad,
@@ -199,7 +201,7 @@ void PostBatchingSynchronizer::Execute () noexcept
                 animation->lastSyncNormalTimeNs = time->realNormalTimeNs;
                 if (animation->tickTime)
                 {
-                    animation->currentTimeNs += static_cast<uint64_t> (time->normalDurationS * 1e9f);
+                    animation->currentTimeNs += static_cast<std::uint64_t> (time->normalDurationS * 1e9f);
                 }
 
                 auto animationAssetCursor = fetchAnimationAssetById.Execute (&animation->animationId);
@@ -211,7 +213,7 @@ void PostBatchingSynchronizer::Execute () noexcept
                 }
 
                 const Sprite2dUvAnimationFrame &lastFrame = animationAsset->frames.back ();
-                const uint64_t animationDuration = lastFrame.startTimeNs + lastFrame.durationNs;
+                const std::uint64_t animationDuration = lastFrame.startTimeNs + lastFrame.durationNs;
                 animation->finished = animation->currentTimeNs >= animationDuration;
 
                 if (animation->finished && animation->loop)
@@ -225,7 +227,7 @@ void PostBatchingSynchronizer::Execute () noexcept
 
                 auto nextFrameIterator = std::upper_bound (
                     animationAsset->frames.begin (), animationAsset->frames.end (), animation->currentTimeNs,
-                    [] (uint64_t _currentTimeNs, const Sprite2dUvAnimationFrame &_frame)
+                    [] (std::uint64_t _currentTimeNs, const Sprite2dUvAnimationFrame &_frame)
                     {
                         return _currentTimeNs < _frame.startTimeNs;
                     });
@@ -233,7 +235,7 @@ void PostBatchingSynchronizer::Execute () noexcept
                 auto currentFrameIterator =
                     nextFrameIterator == animationAsset->frames.begin () ? nextFrameIterator : nextFrameIterator - 1u;
                 const auto currentFrameIndex =
-                    static_cast<uint32_t> (currentFrameIterator - animationAsset->frames.begin ());
+                    static_cast<std::uint32_t> (currentFrameIterator - animationAsset->frames.begin ());
 
                 if (currentFrameIndex != animation->currentFrame)
                 {

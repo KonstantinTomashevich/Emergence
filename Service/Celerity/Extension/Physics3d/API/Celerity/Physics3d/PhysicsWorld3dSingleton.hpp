@@ -25,7 +25,7 @@ struct PhysicsWorld3dSingleton final
     /// \brief Maximum count of threads, that can be used to run physics simulation
     ///        (some implementations can not use pipeline threads).
     /// \invariant Can not be changed after first fixed update.
-    uint8_t simulationMaxThreads = static_cast<uint8_t> (std::thread::hardware_concurrency ());
+    std::uint8_t simulationMaxThreads = static_cast<std::uint8_t> (std::thread::hardware_concurrency ());
 
     /// \brief Whether Emergence MemoryProfiler should be enabled for physics allocations.
     /// \details Enabling MemoryProfiler can increase memory usage or decrease performance.
@@ -41,7 +41,7 @@ struct PhysicsWorld3dSingleton final
     ///       `(masks[A] & (1 << B)) | (masks[B] & (1 << A))`. Notice `|` operation in the center -- it means that
     ///       if A collides with B, you need to fill only one of the masks.
     /// \details Can be changed from fixed pipeline.
-    std::array<uint32_t, 32u> collisionMasks;
+    std::array<std::uint32_t, 32u> collisionMasks;
 
     /// \brief Whether physics world should try to connect to remote debugger.
     /// \details Can be changed at any time, even from other pipelines than fixed.
@@ -53,18 +53,18 @@ struct PhysicsWorld3dSingleton final
 
     /// \brief Remote debugger port.
     /// \warning Changes are applied only if reconnection happens.
-    uint32_t remoteDebuggerPort = 0u;
+    std::uint32_t remoteDebuggerPort = 0u;
 
     /// \brief Atomic counter for generating unique ids for collision shapes.
     /// \invariant Do not access directly, use ::GenerateShapeId.
-    std::atomic_unsigned_lock_free shapeIdCounter = 0u;
+    std::atomic_uintptr_t shapeIdCounter = 0u;
 
     /// \brief Block with implementation-specific data.
-    std::array<uint8_t, 88u> implementationBlock;
+    std::array<std::uint8_t, 88u> implementationBlock;
 
     /// \brief Generates new unique id for a collision shape.
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
-    uintptr_t GenerateShapeId () const noexcept;
+    std::uintptr_t GenerateShapeId () const noexcept;
 
     struct Reflection final
     {

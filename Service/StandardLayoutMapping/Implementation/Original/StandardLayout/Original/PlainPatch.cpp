@@ -17,7 +17,7 @@ void PlainPatch::Apply (void *_object) const noexcept
     {
         const ValueSetter &setter = valueSetters[index];
         Field field = mapping.GetField (setter.field);
-        uint8_t *address = static_cast<uint8_t *> (_object) + field.GetOffset ();
+        std::uint8_t *address = static_cast<std::uint8_t *> (_object) + field.GetOffset ();
 
         switch (field.GetArchetype ())
         {
@@ -57,19 +57,19 @@ void PlainPatch::Apply (void *_object) const noexcept
             switch (field.GetSize ())
             {
             case 1u:
-                *address = block_cast<uint8_t> (setter.value);
+                *address = block_cast<std::uint8_t> (setter.value);
                 break;
 
             case 2u:
-                *reinterpret_cast<uint16_t *> (address) = block_cast<uint16_t> (setter.value);
+                *reinterpret_cast<std::uint16_t *> (address) = block_cast<std::uint16_t> (setter.value);
                 break;
 
             case 4u:
-                *reinterpret_cast<uint32_t *> (address) = block_cast<uint32_t> (setter.value);
+                *reinterpret_cast<std::uint32_t *> (address) = block_cast<std::uint32_t> (setter.value);
                 break;
 
             case 8u:
-                *reinterpret_cast<uint64_t *> (address) = block_cast<uint64_t> (setter.value);
+                *reinterpret_cast<std::uint64_t *> (address) = block_cast<std::uint64_t> (setter.value);
                 break;
             }
             break;
@@ -94,6 +94,9 @@ void PlainPatch::Apply (void *_object) const noexcept
         case FieldArchetype::STRING:
         case FieldArchetype::BLOCK:
         case FieldArchetype::NESTED_OBJECT:
+        case FieldArchetype::UTF8_STRING:
+        case FieldArchetype::VECTOR:
+        case FieldArchetype::PATCH:
             // Unsupported!
             EMERGENCE_ASSERT (false);
             break;
@@ -145,7 +148,6 @@ void PlainPatch::operator delete (void *_pointer) noexcept
 PlainPatch *PlainPatch::ChangeCapacity (std::size_t _newValueCapacity) noexcept
 {
     EMERGENCE_ASSERT (_newValueCapacity >= valueCount);
-
     // We can safely use resize because we know how Mapping movement works in this implementation.
     auto *newInstance = static_cast<PlainPatch *> (GetHeap ().Resize (
         this, alignof (PlainPatch), CalculatePatchSize (valueCapacity), CalculatePatchSize (_newValueCapacity)));
@@ -172,7 +174,7 @@ void PlainPatchBuilder::Begin (Mapping _mapping) noexcept
     underConstruction->valueCapacity = INITIAL_VALUE_CAPACITY;
 }
 
-void PlainPatchBuilder::Set (FieldId _field, const std::array<uint8_t, VALUE_MAX_SIZE> &_value) noexcept
+void PlainPatchBuilder::Set (FieldId _field, const std::array<std::uint8_t, VALUE_MAX_SIZE> &_value) noexcept
 {
     EMERGENCE_ASSERT (underConstruction);
     if (underConstruction->valueCount == underConstruction->valueCapacity)

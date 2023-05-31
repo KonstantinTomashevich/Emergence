@@ -14,7 +14,7 @@ using ScanCode = std::int32_t;
 using QualifiersMask = std::uint32_t;
 
 /// \brief Represents state of the key: whether it is up or down.
-enum class KeyState : uint8_t
+enum class KeyState : std::uint8_t
 {
     DOWN = 0u,
     UP

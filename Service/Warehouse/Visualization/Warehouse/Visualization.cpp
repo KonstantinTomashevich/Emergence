@@ -270,7 +270,7 @@ Container::String GraphId (const FetchShapeIntersectionQuery &_query)
 
 Container::String GraphId (const FetchSignalQuery &_query)
 {
-    const std::array<uint8_t, sizeof (uint64_t)> &signaledValue = _query.GetSignaledValue ();
+    const std::array<std::uint8_t, sizeof (uint64_t)> &signaledValue = _query.GetSignaledValue ();
     return EMERGENCE_BUILD_STRING ("FetchSignalQuery {", _query.GetTypeMapping ().GetName (), ": ",
                                    _query.GetKeyField ().GetName (), " = ",
                                    Container::StringBuilder::FieldPointer {&signaledValue, _query.GetKeyField ()}, "}");
@@ -331,7 +331,7 @@ Container::String GraphId (const ModifyShapeIntersectionQuery &_query)
 
 Container::String GraphId (const ModifySignalQuery &_query)
 {
-    const std::array<uint8_t, sizeof (uint64_t)> &signaledValue = _query.GetSignaledValue ();
+    const std::array<std::uint8_t, sizeof (uint64_t)> &signaledValue = _query.GetSignaledValue ();
     return EMERGENCE_BUILD_STRING ("ModifySignalQuery {", _query.GetTypeMapping ().GetName (), ": ",
                                    _query.GetKeyField ().GetName (), " = ",
                                    Container::StringBuilder::FieldPointer {&signaledValue, _query.GetKeyField ()}, "}");

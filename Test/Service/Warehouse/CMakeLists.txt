@@ -1,6 +1,6 @@
 add_subdirectory (Visualization)
 
-sober_test_begin (Warehouse)
+sober_test_begin (Warehouse OBJECT)
     file (GLOB_RECURSE SOURCES "Shared/*.cpp")
     file (GLOB_RECURSE HEADERS "Shared/*.hpp")
     list (APPEND SOURCES ${HEADERS})

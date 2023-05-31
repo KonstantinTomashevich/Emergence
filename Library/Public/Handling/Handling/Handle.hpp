@@ -20,7 +20,7 @@ concept Handleable = requires (Type _object) {
                          /// \return Reference counter value.
                          {
                              _object.GetReferenceCount ()
-                             } noexcept -> std::convertible_to<uintptr_t>;
+                             } noexcept -> std::convertible_to<std::uintptr_t>;
                      };
 
 /// \brief When there is no references to object, callback will be called instead of object deletion.

@@ -38,7 +38,7 @@
                reinterpret_cast<const RegistryData *> (&_registry)->deck;                                              \
     }                                                                                                                  \
                                                                                                                        \
-    Query::Query (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                                                  \
+    Query::Query (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept                                             \
     {                                                                                                                  \
         new (&data) QueryImplementation (std::move (block_cast<QueryImplementation> (_data)));                         \
     }

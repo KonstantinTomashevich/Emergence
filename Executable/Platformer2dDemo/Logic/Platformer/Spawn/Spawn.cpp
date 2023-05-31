@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
@@ -97,10 +99,10 @@ void SpawnManager::ProcessSpawnedObjectsRemoval (const Emergence::Celerity::Time
         if (auto *spawn = static_cast<SpawnComponent *> (*spawnCursor))
         {
             EMERGENCE_ASSERT (spawn->currentSpawnedCount > 0u);
-            const uint8_t previousSpawnedCount = spawn->currentSpawnedCount--;
+            const std::uint8_t previousSpawnedCount = spawn->currentSpawnedCount--;
 
             if (spawn->respawn && spawn->maxSpawnedCount == previousSpawnedCount &&
-                spawn->nextSpawnTimeNs == std::numeric_limits<uint64_t>::max ())
+                spawn->nextSpawnTimeNs == std::numeric_limits<std::uint64_t>::max ())
             {
                 // Schedule next spawn if it is not already scheduled.
                 spawn->nextSpawnTimeNs = _time->fixedTimeNs + spawn->spawnDelayNs;
@@ -119,7 +121,7 @@ void SpawnManager::ProcessScheduledSpawns (const Emergence::Celerity::TimeSingle
     {
         if (spawn->currentSpawnedCount >= spawn->maxSpawnedCount)
         {
-            spawn->nextSpawnTimeNs = std::numeric_limits<uint64_t>::max ();
+            spawn->nextSpawnTimeNs = std::numeric_limits<std::uint64_t>::max ();
             continue;
         }
 
@@ -145,7 +147,7 @@ void SpawnManager::ProcessScheduledSpawns (const Emergence::Celerity::TimeSingle
         marker->objectId = transform->GetObjectId ();
         marker->spawnObjectId = spawn->objectId;
 
-        Emergence::Container::Optional<uint16_t> layer;
+        Emergence::Container::Optional<std::uint16_t> layer;
         if (auto layerSetupCursor = fetchLayerSetupByObjectId.Execute (&spawn->objectId);
             const auto *layerSetup = static_cast<const LayerSetupComponent *> (*layerSetupCursor))
         {
@@ -160,7 +162,7 @@ void SpawnManager::ProcessScheduledSpawns (const Emergence::Celerity::TimeSingle
             layerSetup->layer = layer.value ();
         }
 
-        Emergence::Container::Optional<uint8_t> team;
+        Emergence::Container::Optional<std::uint8_t> team;
         if (auto teamCursor = fetchTeamByObjectId.Execute (&spawn->objectId);
             const auto *spawnTeam = static_cast<const TeamComponent *> (*teamCursor))
         {
@@ -178,7 +180,7 @@ void SpawnManager::ProcessScheduledSpawns (const Emergence::Celerity::TimeSingle
         ++spawn->currentSpawnedCount;
         if (spawn->currentSpawnedCount == spawn->maxSpawnedCount)
         {
-            spawn->nextSpawnTimeNs = std::numeric_limits<uint64_t>::max ();
+            spawn->nextSpawnTimeNs = std::numeric_limits<std::uint64_t>::max ();
         }
         else
         {

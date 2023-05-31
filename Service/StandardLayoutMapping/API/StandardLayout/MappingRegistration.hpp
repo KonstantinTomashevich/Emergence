@@ -6,8 +6,10 @@
 
 #include <Container/Optional.hpp>
 #include <Container/StringBuilder.hpp>
+#include <Container/Vector.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
+#include <StandardLayout/Patch.hpp>
 
 /// \brief Version of EMERGENCE_MAPPING_REGISTRATION_BEGIN, that allows custom class name to be passed.
 #define EMERGENCE_MAPPING_REGISTRATION_BEGIN_WITH_CUSTOM_NAME(Class, ClassName)                                        \
@@ -18,6 +20,11 @@
     if constexpr (std::is_default_constructible_v<Class> && !std::is_trivially_default_constructible_v<Class>)         \
     {                                                                                                                  \
         builder.SetConstructor (&Emergence::StandardLayout::Registration::DefaultConstructor<Class>);                  \
+    }                                                                                                                  \
+                                                                                                                       \
+    if constexpr (std::is_move_constructible_v<Class>)                                                                 \
+    {                                                                                                                  \
+        builder.SetMoveConstructor (&Emergence::StandardLayout::Registration::DefaultMoveConstructor<Class>);          \
     }                                                                                                                  \
                                                                                                                        \
     if constexpr (!std::is_trivially_destructible_v<Class>)                                                            \
@@ -102,6 +109,13 @@ void DefaultConstructor (void *_address)
     new (_address) T {};
 }
 
+/// \brief Templated default move constructor for objects that need it. See MappingBuilder::SetConstructor.
+template <typename T>
+void DefaultMoveConstructor (void *_address, void *_sourceAddress)
+{
+    new (_address) T {std::move (*static_cast<T *> (_sourceAddress))};
+}
+
 /// \brief Templated default destructor for objects that need it. See MappingBuilder::SetDestructor.
 template <typename T>
 void DefaultDestructor (void *_address)
@@ -117,14 +131,27 @@ concept HasReflection = requires (T) {
                             };
                         };
 
+template <typename>
+struct IsVector
+{
+    static constexpr bool VALUE = false;
+};
+
+template <typename ValueType>
+struct IsVector<Container::Vector<ValueType>>
+{
+    static constexpr bool VALUE = true;
+};
+
 /// \brief Checks that type is supported by ::RegisterRegularField function logic.
 template <typename T>
 concept RegularFieldType =
     std::is_same_v<T, int8_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int32_t> ||
-    std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, uint8_t> ||
-    std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint64_t> ||
+    std::is_same_v<T, int64_t> || std::is_same_v<T, bool> || std::is_same_v<T, std::uint8_t> ||
+    std::is_same_v<T, std::uint16_t> || std::is_same_v<T, std::uint32_t> || std::is_same_v<T, std::uint64_t> ||
     std::is_same_v<T, float> || std::is_same_v<T, double> || std::is_same_v<T, Memory::UniqueString> ||
-    std::is_enum_v<T> || std::is_pointer_v<T> || HasReflection<T>;
+    std::is_enum_v<T> || std::is_pointer_v<T> || HasReflection<T> || std::is_same_v<T, Container::Utf8String> ||
+    IsVector<T>::VALUE || std::is_same_v<T, StandardLayout::Patch>;
 
 /// \brief Registers field which registration type can be easily deduced using constant expression.
 /// \details Arrays are not supported because their registration results in more than one field id.
@@ -147,19 +174,19 @@ inline FieldId RegisterRegularField (MappingBuilder &_builder, const char *_name
     {
         return _builder.RegisterInt64 (Memory::UniqueString {_name}, _offset);
     }
-    else if constexpr (std::is_same_v<Type, bool> || std::is_same_v<Type, uint8_t>)
+    else if constexpr (std::is_same_v<Type, bool> || std::is_same_v<Type, std::uint8_t>)
     {
         return _builder.RegisterUInt8 (Memory::UniqueString {_name}, _offset);
     }
-    else if constexpr (std::is_same_v<Type, uint16_t>)
+    else if constexpr (std::is_same_v<Type, std::uint16_t>)
     {
         return _builder.RegisterUInt16 (Memory::UniqueString {_name}, _offset);
     }
-    else if constexpr (std::is_same_v<Type, uint32_t>)
+    else if constexpr (std::is_same_v<Type, std::uint32_t>)
     {
         return _builder.RegisterUInt32 (Memory::UniqueString {_name}, _offset);
     }
-    else if constexpr (std::is_same_v<Type, uint64_t>)
+    else if constexpr (std::is_same_v<Type, std::uint64_t>)
     {
         return _builder.RegisterUInt64 (Memory::UniqueString {_name}, _offset);
     }
@@ -186,6 +213,18 @@ inline FieldId RegisterRegularField (MappingBuilder &_builder, const char *_name
     else if constexpr (HasReflection<Type>)
     {
         return _builder.RegisterNestedObject (Memory::UniqueString {_name}, _offset, Type::Reflect ().mapping);
+    }
+    else if constexpr (std::is_same_v<Type, Container::Utf8String>)
+    {
+        return _builder.RegisterUtf8String (Memory::UniqueString {_name}, _offset);
+    }
+    else if constexpr (IsVector<Type>::VALUE)
+    {
+        return _builder.RegisterVector (Memory::UniqueString {_name}, _offset, Type::value_type::Reflect ().mapping);
+    }
+    else if constexpr (std::is_same_v<Type, StandardLayout::Patch>)
+    {
+        return _builder.RegisterPatch (Memory::UniqueString {_name}, _offset);
     }
     else
     {

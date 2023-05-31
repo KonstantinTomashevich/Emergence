@@ -68,21 +68,21 @@ UniqueString CapturedAllocationGroup::GetId () const noexcept
     return group->GetId ();
 }
 
-size_t CapturedAllocationGroup::GetAcquired () const noexcept
+std::size_t CapturedAllocationGroup::GetAcquired () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
     EMERGENCE_ASSERT (group);
     return group->GetAcquired ();
 }
 
-size_t CapturedAllocationGroup::GetReserved () const noexcept
+std::size_t CapturedAllocationGroup::GetReserved () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
     EMERGENCE_ASSERT (group);
     return group->GetReserved ();
 }
 
-size_t CapturedAllocationGroup::GetTotal () const noexcept
+std::size_t CapturedAllocationGroup::GetTotal () const noexcept
 {
     const CapturedGroupHandle &group = *reinterpret_cast<const CapturedGroupHandle *> (&handle);
     EMERGENCE_ASSERT (group);
@@ -126,7 +126,7 @@ const Event *EventObserver::NextEvent () noexcept
     return block_cast<Original::EventObserver> (data).NextEvent (lock);
 }
 
-EventObserver::EventObserver (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+EventObserver::EventObserver (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Original::EventObserver (std::move (block_cast<Original::EventObserver> (_data)));
 }
@@ -135,7 +135,7 @@ std::pair<CapturedAllocationGroup, EventObserver> Capture::Start () noexcept
 {
     Original::ProfilingLock lock;
     // Capture is done in one transaction, therefore reported capture time is equal for all groups.
-    const uint64_t sharedCaptureTime = Time::NanosecondsSinceStartup ();
+    const std::uint64_t sharedCaptureTime = Time::NanosecondsSinceStartup ();
 
     auto *capturedRoot =
         new Original::CapturedAllocationGroup {*Original::AllocationGroup::Root (), lock, sharedCaptureTime};

@@ -2,13 +2,18 @@
 
 #include <filesystem>
 #include <fstream>
+#include <thread>
 
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
+#include <Celerity/Asset/Render/2d/Sprite2dUvAnimation.hpp>
 #include <Celerity/Asset/Render/2d/Sprite2dUvAnimationManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/Material.hpp>
+#include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/Texture.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/PipelineBuilder.hpp>
@@ -20,6 +25,7 @@
 #include <Celerity/Render/2d/Rendering2d.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/Sprite2dUvAnimationComponent.hpp>
+#include <Celerity/Render/2d/Test/ContextHolder.hpp>
 #include <Celerity/Render/2d/Test/Scenario.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
@@ -36,8 +42,7 @@
 
 #include <Render/Backend/Configuration.hpp>
 
-#include <SDL.h>
-#include <SDL_syswm.h>
+#include <Resource/Provider/ResourceProvider.hpp>
 
 #include <SyntaxSugar/Time.hpp>
 
@@ -45,81 +50,6 @@
 
 namespace Emergence::Celerity::Test
 {
-class ContextHolder final
-{
-public:
-    static void Frame () noexcept;
-
-    ContextHolder (const ContextHolder &_other) = delete;
-
-    ContextHolder (ContextHolder &&_other) = delete;
-
-    ContextHolder &operator= (const ContextHolder &_other) = delete;
-
-    ContextHolder &operator= (ContextHolder &&_other) = delete;
-
-private:
-    ContextHolder () noexcept;
-
-    ~ContextHolder () noexcept;
-
-    SDL_Window *window = nullptr;
-};
-
-void ContextHolder::Frame () noexcept
-{
-    static ContextHolder contextHolder;
-    SDL_Event event;
-
-    while (SDL_PollEvent (&event))
-    {
-        // Just poll all events...
-    }
-}
-
-ContextHolder::ContextHolder () noexcept
-{
-    uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
-    window = SDL_CreateWindow ("Celerity::Render tests", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               static_cast<int> (WIDTH), static_cast<int> (HEIGHT),
-                               static_cast<SDL_WindowFlags> (windowFlags));
-
-    SDL_SysWMinfo windowsManagerInfo;
-    SDL_VERSION (&windowsManagerInfo.version);
-    SDL_GetWindowWMInfo (window, &windowsManagerInfo);
-
-#if SDL_VIDEO_DRIVER_X11
-    void *nativeDisplayType = windowsManagerInfo.info.x11.display;
-    void *nativeWindowHandle = (void *) (uintptr_t) windowsManagerInfo.info.x11.window;
-#elif SDL_VIDEO_DRIVER_COCOA
-    void *nativeDisplayType = nullptr;
-    void *nativeWindowHandle = windowsManagerInfo.info.cocoa.window;
-#elif SDL_VIDEO_DRIVER_WINDOWS
-    void *nativeDisplayType = nullptr;
-    void *nativeWindowHandle = windowsManagerInfo.info.win.window;
-#elif SDL_VIDEO_DRIVER_VIVANTE
-    void *nativeDisplayType = windowsManagerInfo.info.vivante.display;
-    void *nativeWindowHandle = windowsManagerInfo.info.vivante.window;
-#endif
-
-    Render::Backend::Config config;
-    config.width = WIDTH;
-    config.height = HEIGHT;
-    config.vsync = true;
-    Render::Backend::Init (config, nativeWindowHandle, nativeDisplayType, false);
-}
-
-ContextHolder::~ContextHolder () noexcept
-{
-    if (window)
-    {
-        Emergence::Render::Backend::Shutdown ();
-        SDL_DestroyWindow (window);
-    }
-
-    SDL_Quit ();
-}
-
 class ScenarioExecutor final : public TaskExecutorBase<ScenarioExecutor>
 {
 public:
@@ -157,10 +87,14 @@ private:
 
     std::size_t currentPointIndex = 0u;
     Scenario scenario;
-    uint32_t framesWaiting = 0u;
+    std::uint32_t framesWaiting = 0u;
     bool *finishedOutput = nullptr;
     Memory::UniqueString pendingScreenShot;
-    uint64_t framesLeftToSkip = 0u;
+    std::uint64_t framesLeftToSkip = 0u;
+
+    // We need to wait one frame after checking if all assets were loaded, because
+    // new asset usages might be created as a result of current frame asset loading.
+    bool allAssetsWereLoadedDuringPreviousFrame = false;
 };
 
 ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _scenario, bool *_finishedOutput) noexcept
@@ -223,15 +157,21 @@ void ScenarioExecutor::Execute () noexcept
 
         if (assetManager->assetsLeftToLoad == 0u)
         {
-            LOG ("Finished loading all assets!");
-            ++currentPointIndex;
-            framesWaiting = 0u;
+            if (allAssetsWereLoadedDuringPreviousFrame)
+            {
+                LOG ("Finished loading all assets!");
+                ++currentPointIndex;
+                framesWaiting = 0u;
+            }
+
+            allAssetsWereLoadedDuringPreviousFrame = true;
         }
         else
         {
+            allAssetsWereLoadedDuringPreviousFrame = false;
             ++framesWaiting;
             // ~5 seconds target FPS loading time cap.
-            REQUIRE (framesWaiting < 300u);
+            REQUIRE ((framesWaiting < 300u));
         }
     }
     else if (auto *screenShotPoint = std::get_if<ScreenShotPoint> (&scenario[currentPointIndex]))
@@ -469,8 +409,36 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    FileSystem::Test::ExpectFilesEqual (EMERGENCE_BUILD_STRING ("Render2dTestResources/Expectation/", _id, ".png"),
-                                        EMERGENCE_BUILD_STRING (_id, ".png"));
+    FileSystem::Test::CheckFilesEquality (EMERGENCE_BUILD_STRING ("Expectation/", _id, ".png"),
+                                          EMERGENCE_BUILD_STRING (_id, ".png"), 0.02f);
+}
+
+static Container::MappingRegistry GetAssetTypes () noexcept
+{
+    Container::MappingRegistry registry;
+    registry.Register (MaterialAsset::Reflect ().mapping);
+    registry.Register (MaterialInstanceAsset::Reflect ().mapping);
+    registry.Register (Sprite2dUvAnimationAsset::Reflect ().mapping);
+    registry.Register (TextureAsset::Reflect ().mapping);
+    return registry;
+}
+
+struct ResourceProviderHolder
+{
+    ResourceProviderHolder () noexcept
+        : provider (GetAssetTypes (), {})
+    {
+        REQUIRE ((provider.AddSource (Emergence::Memory::UniqueString {"Resources"}) ==
+                  Resource::Provider::SourceOperationResponse::SUCCESSFUL));
+    }
+
+    Resource::Provider::ResourceProvider provider;
+};
+
+static Resource::Provider::ResourceProvider &GetSharedResourceProvider () noexcept
+{
+    static ResourceProviderHolder holder;
+    return holder.provider;
 }
 
 void ExecuteScenario (Scenario _scenario) noexcept
@@ -492,40 +460,30 @@ void ExecuteScenario (Scenario _scenario) noexcept
         RegisterRenderFoundationEvents (registrar);
     }
 
-    constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
-    static const Emergence::Memory::UniqueString testAnimationsPath {"Render2dTestResources/Animations"};
-    static const Emergence::Memory::UniqueString testMaterialInstancesPath {"Render2dTestResources/MaterialInstances"};
-    static const Emergence::Memory::UniqueString testMaterialsPath {"Render2dTestResources/Materials"};
-    static const Emergence::Memory::UniqueString engineMaterialsPath {"Render2dResources/Materials"};
-    static const Emergence::Memory::UniqueString testShadersPath {"Render2dTestResources/Shaders"};
-    static const Emergence::Memory::UniqueString engineShadersPath {"Render2dResources/Shaders"};
-    static const Emergence::Memory::UniqueString testTexturesPath {"Render2dTestResources/Textures"};
     static const Emergence::Math::AxisAlignedBox2d worldBox {{-1000.0f, -1000.0f}, {1000.0f, 1000.f}};
-
     PipelineBuilder pipelineBuilder {world.GetRootView ()};
     bool scenarioFinished = false;
 
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
-    MaterialInstanceManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialInstancesPath}, MAX_LOADING_TIME_NS,
+    MaterialInstanceManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
                                                    assetReferenceBindingEventMap);
-    MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
-                                           {testShadersPath, engineShadersPath}, MAX_LOADING_TIME_NS,
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
                                            assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Sprite2dUvAnimationManagement::AddToNormalUpdate (pipelineBuilder, {testAnimationsPath}, MAX_LOADING_TIME_NS,
+    Sprite2dUvAnimationManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
                                                       assetReferenceBindingEventMap);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
                                           assetReferenceBindingEventMap);
     TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("ScenarioExecutor"_us)
         .SetExecutor<ScenarioExecutor> (std::move (_scenario), &scenarioFinished);
     REQUIRE (pipelineBuilder.End ());
 
-    constexpr uint64_t SIMULATED_TIME_STEP_NS = 10000000u;
-    uint64_t timeOverride = 0u;
+    constexpr std::uint64_t SIMULATED_TIME_STEP_NS = 10000000u;
+    std::uint64_t timeOverride = 0u;
 
     while (!scenarioFinished)
     {

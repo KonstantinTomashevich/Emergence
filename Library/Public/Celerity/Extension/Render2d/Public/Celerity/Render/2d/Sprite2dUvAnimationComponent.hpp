@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -19,15 +21,15 @@ struct Sprite2dUvAnimationComponent final
     Memory::UniqueString animationId;
 
     /// \brief Animation local time, used to select appropriate ::currentFrame.
-    uint64_t currentTimeNs = 0u;
+    std::uint64_t currentTimeNs = 0u;
 
     /// \brief Index of animation frame that is applied to sprite right now.
-    uint64_t currentFrame = std::numeric_limits<uint32_t>::max ();
+    std::uint64_t currentFrame = std::numeric_limits<std::uint32_t>::max ();
 
     /// \brief Last moment of time during which animation sync was done.
     /// \details Needed for internal logic in order to avoid ticking several
     ///          times on animations that are visible in several viewports.
-    uint64_t lastSyncNormalTimeNs = 0u;
+    std::uint64_t lastSyncNormalTimeNs = 0u;
 
     /// \brief Whether animation ::currentTimeNs should be automatically incremented.
     /// \details ::currentTimeNs is automatically incremented only on visible animations!

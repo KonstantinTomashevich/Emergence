@@ -60,8 +60,8 @@ private:
                      float _z,
                      Emergence::Memory::UniqueString _descriptorId,
                      Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId,
-                     uint8_t _maxSpawnedObjects,
-                     uint8_t _spawnCoolDownS) noexcept;
+                     std::uint8_t _maxSpawnedObjects,
+                     std::uint8_t _spawnCoolDownS) noexcept;
 
     void PlacePrototype (
         float _x,
@@ -137,20 +137,20 @@ void LevelGenerator::Execute ()
         for (std::int32_t z = -20; z < 20; z += 6)
         {
             PlaceSpawn (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f,
-                        placeRed ? "Structure/ObstacleRed"_us : "Structure/ObstacleYellow"_us, std::nullopt, 1u, 15u);
+                        placeRed ? "RO_ObstacleRed"_us : "RO_ObstacleYellow"_us, std::nullopt, 1u, 15u);
             placeRed = !placeRed;
         }
     }
 
-    PlaceSpawn (-2.0f, 2.5f, 0.0f, "Unit/Fighter"_us, playerInfo->localPlayerUid, 1u, 2u);
+    PlaceSpawn (-2.0f, 2.5f, 0.0f, "RO_Fighter"_us, playerInfo->localPlayerUid, 1u, 2u);
     const Emergence::Celerity::UniqueId aiPlayerId = playerInfo->GeneratePlayerId ();
 
     for (std::int32_t x = -27; x < 30; x += 18)
     {
         for (std::int32_t z = -17; z < 20; z += 15)
         {
-            PlaceSpawn (static_cast<float> (x) + 0.5f, 2.5f, static_cast<float> (z) + 0.5f, "Unit/Fighter"_us,
-                        aiPlayerId, 2u, 5u);
+            PlaceSpawn (static_cast<float> (x) + 0.5f, 2.5f, static_cast<float> (z) + 0.5f, "RO_Fighter"_us, aiPlayerId,
+                        2u, 5u);
         }
     }
 
@@ -164,8 +164,7 @@ void LevelGenerator::PlaceFloor (std::int32_t _halfWidth, std::int32_t _halfHeig
     {
         for (std::int32_t z = -_halfHeight; z < _halfHeight; ++z)
         {
-            PlacePrototype (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f,
-                            "Structure/FloorTile"_us);
+            PlacePrototype (static_cast<float> (x) + 0.5f, 0.0f, static_cast<float> (z) + 0.5f, "RO_FloorTile"_us);
         }
     }
 }
@@ -196,7 +195,7 @@ void LevelGenerator::PlaceKillZ (float _halfWidth, float _halfHeight, float _z) 
     auto *shape = static_cast<Emergence::Celerity::CollisionShape3dComponent *> (++shapeCursor);
     shape->objectId = killZObjectId;
     shape->shapeId = physicsWorld->GenerateShapeId ();
-    shape->materialId = "Default"_us;
+    shape->materialId = "DM_Default"_us;
 
     shape->geometry = {.type = Emergence::Celerity::CollisionGeometry3dType::BOX,
                        .boxHalfExtents = {_halfWidth, physicsWorld->toleranceSpeed, _halfHeight}};
@@ -308,8 +307,8 @@ void LevelGenerator::PlaceSpawn (float _x,
                                  float _z,
                                  Emergence::Memory::UniqueString _descriptorId,
                                  Emergence::Container::Optional<Emergence::Celerity::UniqueId> _playerId,
-                                 uint8_t _maxSpawnedObjects,
-                                 uint8_t _spawnCoolDownS) noexcept
+                                 std::uint8_t _maxSpawnedObjects,
+                                 std::uint8_t _spawnCoolDownS) noexcept
 {
     auto worldCursor = fetchWorld.Execute ();
     const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
@@ -322,7 +321,7 @@ void LevelGenerator::PlaceSpawn (float _x,
     spawn->objectId = objectId;
     spawn->objectToSpawnId = _descriptorId;
     spawn->maxSpawnedObjects = _maxSpawnedObjects;
-    spawn->spawnCoolDownNs = static_cast<uint64_t> (_spawnCoolDownS) * 1000000000u;
+    spawn->spawnCoolDownNs = static_cast<std::uint64_t> (_spawnCoolDownS) * 1000000000u;
 }
 
 void AddToLoadingPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept

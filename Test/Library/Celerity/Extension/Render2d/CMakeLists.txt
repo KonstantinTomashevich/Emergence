@@ -11,14 +11,16 @@ add_test (NAME "TestCelerityRender2dOriginal" COMMAND TestCelerityRender2dOrigin
 add_dependencies (LibraryTests TestCelerityRender2dOriginal)
 target_include_directories (TestCelerityRender2dOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
+sober_naming_implementation_target (RenderBackend BGFX RENDER_BACKEND_BGFX_TARGET)
+sober_naming_implementation_target (ResourceProvider Original RESOURCE_PROVIDER_ORIGINAL_TARGET)
 sober_naming_variant_target (CelerityRender2d Original CELERITY_RENDER_2D_LIBRARY_TARGET)
 sober_naming_variant_target (FileSystemTestUtility Doctest FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET)
-sober_naming_implementation_target (RenderBackend BGFX RENDER_BACKEND_BGFX_TARGET)
 
-target_link_libraries (TestCelerityRender2dOriginal PUBLIC
+sober_target_link_libraries (TestCelerityRender2dOriginal PUBLIC
+        ${RENDER_BACKEND_BGFX_TARGET}
+        ${RESOURCE_PROVIDER_ORIGINAL_TARGET}
         ${CELERITY_RENDER_2D_LIBRARY_TARGET}
         ${FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET}
-        ${RENDER_BACKEND_BGFX_TARGET}
         SDL2
         SDL2main)
 link_celerity_with_dependencies (TestCelerityRender2dOriginal)
@@ -28,24 +30,13 @@ if (MSVC)
     target_compile_options (TestCelerityRender2dOriginal PRIVATE /EHa)
 endif ()
 
-set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Expectation" "${CMAKE_CURRENT_BINARY_DIR}/Expectation" SYMBOLIC)
+set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ResourcesWorkspace")
 file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
 
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Animations"
-        "${RESOURCES_COMPILED_DIRECTORY}/Animations" SYMBOLIC)
-
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Expectation"
-        "${RESOURCES_COMPILED_DIRECTORY}/Expectation" SYMBOLIC)
-
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Materials"
-        "${RESOURCES_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
-
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/MaterialInstances"
-        "${RESOURCES_COMPILED_DIRECTORY}/MaterialInstances" SYMBOLIC)
-
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Textures" "${RESOURCES_COMPILED_DIRECTORY}/Textures" SYMBOLIC)
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "${RESOURCES_COMPILED_DIRECTORY}/Content" SYMBOLIC)
 register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 register_resource_usage (TestCelerityRender2dOriginal "${RESOURCES_COMPILED_DIRECTORY}" "Render2dTestResources")
 copy_required_shared_libraries (TestCelerityRender2dOriginal)
-deploy_used_resources (TestCelerityRender2dOriginal)
+deploy_used_resources (TestCelerityRender2dOriginal "${CMAKE_CURRENT_BINARY_DIR}/Resources")

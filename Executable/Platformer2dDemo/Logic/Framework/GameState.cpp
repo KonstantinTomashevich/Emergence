@@ -28,9 +28,11 @@ ViewDropHandle::ViewDropHandle (GameState *_gameState) noexcept
 
 const Emergence::Memory::UniqueString GameState::TERMINATION_REDIRECT {"Termination"};
 
-GameState::GameState (const Emergence::Celerity::WorldConfiguration &_worldConfiguration,
+GameState::GameState (Emergence::Resource::Provider::ResourceProvider *_resourceProvider,
+                      const Emergence::Celerity::WorldConfiguration &_worldConfiguration,
                       const ModuleInitializer &_rootViewInitializer) noexcept
-    : world ("GameStateWorld"_us, _worldConfiguration)
+    : world ("GameStateWorld"_us, _worldConfiguration),
+      resourceProvider (_resourceProvider)
 {
     _rootViewInitializer (*this, world, *world.GetRootView ());
 }
@@ -54,6 +56,11 @@ ViewDropHandle GameState::ConstructViewDropHandle () noexcept
 Emergence::Celerity::FrameInputAccumulator *GameState::GetFrameInputAccumulator () noexcept
 {
     return &frameInputAccumulator;
+}
+
+Emergence::Resource::Provider::ResourceProvider *GameState::GetResourceProvider () const noexcept
+{
+    return resourceProvider;
 }
 
 void GameState::ExecuteFrame () noexcept

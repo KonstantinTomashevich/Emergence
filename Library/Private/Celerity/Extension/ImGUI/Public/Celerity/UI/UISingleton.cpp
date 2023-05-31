@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Celerity/UI/UISingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>

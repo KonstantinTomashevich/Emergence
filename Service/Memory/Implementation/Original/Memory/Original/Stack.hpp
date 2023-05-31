@@ -12,7 +12,7 @@ namespace Emergence::Memory::Original
 class Stack final
 {
 public:
-    explicit Stack (Profiler::AllocationGroup _group, size_t _capacity) noexcept;
+    explicit Stack (Profiler::AllocationGroup _group, std::size_t _capacity) noexcept;
 
     Stack (const Stack &_other) = delete;
 
@@ -20,7 +20,7 @@ public:
 
     ~Stack () noexcept;
 
-    [[nodiscard]] void *Acquire (size_t _chunkSize, uintptr_t _alignAs = sizeof (uintptr_t)) noexcept;
+    [[nodiscard]] void *Acquire (std::size_t _chunkSize, std::uintptr_t _alignAs = sizeof (std::uintptr_t)) noexcept;
 
     [[nodiscard]] const void *Head () const noexcept;
 
@@ -28,7 +28,7 @@ public:
 
     void Clear () noexcept;
 
-    [[nodiscard]] size_t GetFreeSize () const noexcept;
+    [[nodiscard]] std::size_t GetFreeSize () const noexcept;
 
     [[nodiscard]] const Profiler::AllocationGroup &GetAllocationGroup () const noexcept;
 

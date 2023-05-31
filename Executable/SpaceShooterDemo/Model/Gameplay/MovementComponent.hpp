@@ -16,8 +16,8 @@ struct MovementComponent final
     float maxAngularSpeed = 0.0f;
     Emergence::Math::Vector3f angularAcceleration = Emergence::Math::Vector3f::ZERO;
 
-    uint8_t linearVelocityMask = 0u;
-    uint8_t angularVelocityMask = 0u;
+    std::uint8_t linearVelocityMask = 0u;
+    std::uint8_t angularVelocityMask = 0u;
 
     struct Reflection final
     {

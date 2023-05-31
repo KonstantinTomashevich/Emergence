@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <Celerity/Physics2d/Test/Simulation.hpp>
 #include <Celerity/Physics2d/Test/Task.hpp>
 
@@ -28,7 +30,7 @@ TEST_CASE (KinematicFixedVelocityMovement)
                                  AddRigidBody {{0u, RigidBody2dType::KINEMATIC, {1.0f, 2.0f}}},
                                  AddCollisionShape {{0u, 0u, "Test"_us}},
                              }}},
-                           {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+                           {{static_cast<std::uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
                              {
                                  CheckObjectTransform {0u, {{2.0f, 4.0f}, 0.0f, Vector2f::ONE}},
                              }}});
@@ -44,7 +46,7 @@ TEST_CASE (DynamicFixedVelocityMovementNoGravity)
               AddRigidBody {{0u, RigidBody2dType::DYNAMIC, {1.0f, 2.0f}, 0.0f, 0.0f, 0.05f, false, false}},
               AddCollisionShape {{0u, 0u, "Test"_us}},
           }}},
-        {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+        {{static_cast<std::uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
           {
               CheckObjectTransform {0u, {{2.0f, 4.0f}, 0.0f, Vector2f::ONE}},
           }}});
@@ -60,7 +62,7 @@ TEST_CASE (DynamicFixedVelocityRotationNoGravity)
               AddRigidBody {{0u, RigidBody2dType::DYNAMIC, Vector2f::ZERO, PI * 0.75f, 0.0f, 0.05f, false, false}},
               AddCollisionShape {{0u, 0u, "Test"_us}},
           }}},
-        {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+        {{static_cast<std::uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
           {
               CheckObjectTransform {0u, {Vector2f::ZERO, 4.51815f, Vector2f::ONE}},
           }}});
@@ -84,7 +86,7 @@ TEST_CASE (DynamicImpulseNoGravity)
                                                 {-10.0f, 10.0f}}},
                                  AddCollisionShape {{0u, 0u, "Test"_us}},
                              }}},
-                           {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+                           {{static_cast<std::uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
                              {
                                  CheckObjectTransform {0u, {{-20.15f, 20.15f}, 0.0f, Vector2f::ONE}},
                              }}});
@@ -110,7 +112,7 @@ TEST_CASE (DynamicImpulseNoGravityWithRotationLocking)
                                                 true}},
                                  AddCollisionShape {{0u, 0u, "Test"_us}},
                              }}},
-                           {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+                           {{static_cast<std::uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
                              {
                                  CheckObjectTransform {0u, {{-20.15f, 20.15f}, 0.0f, Vector2f::ONE}},
                              }}});
@@ -125,7 +127,7 @@ TEST_CASE (Gravity)
                                  AddRigidBody {{0u, RigidBody2dType::DYNAMIC}},
                                  AddCollisionShape {{0u, 0u, "Test"_us}},
                              }}},
-                           {{static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
+                           {{static_cast<std::uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S)),
                              {
                                  CheckObjectTransform {0u, {{0.0f, -20.1f}, 0.0f, Vector2f::ONE}},
                              }}});
@@ -554,7 +556,7 @@ TEST_CASE (MaterialReplaced)
 
 TEST_CASE (OutsideManipulationEnabled)
 {
-    const auto segmentDuration = static_cast<uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S));
+    const auto segmentDuration = static_cast<std::uint64_t> (roundf (2.0f / Test::TEST_FIXED_FRAME_S));
     Test::ExecuteScenario (
         {
             {0u,

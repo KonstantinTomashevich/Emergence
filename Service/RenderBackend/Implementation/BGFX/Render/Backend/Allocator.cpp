@@ -9,15 +9,16 @@ Memory::Profiler::AllocationGroup GetAllocationGroup () noexcept
     return group;
 }
 
-void *Allocator::realloc (void *_pointer, size_t _size, size_t _alignment, const char * /*unused*/, uint32_t /*unused*/)
+void *Allocator::realloc (
+    void *_pointer, std::size_t _size, std::size_t _alignment, const char * /*unused*/, std::uint32_t /*unused*/)
 {
-    _alignment = std::max (_alignment, sizeof (uintptr_t));
+    _alignment = std::max (_alignment, sizeof (std::uintptr_t));
     if (_size == 0u)
     {
         if (_pointer)
         {
-            void *initialAddress = static_cast<uint8_t *> (_pointer) - _alignment;
-            allocator.Release (initialAddress, *static_cast<uintptr_t *> (initialAddress));
+            void *initialAddress = static_cast<std::uint8_t *> (_pointer) - _alignment;
+            allocator.Release (initialAddress, *static_cast<std::uintptr_t *> (initialAddress));
         }
 
         return nullptr;
@@ -26,15 +27,15 @@ void *Allocator::realloc (void *_pointer, size_t _size, size_t _alignment, const
     if (!_pointer)
     {
         void *allocated = allocator.Acquire (_size + _alignment, _alignment);
-        *static_cast<uintptr_t *> (allocated) = _size;
-        return static_cast<uint8_t *> (allocated) + _alignment;
+        *static_cast<std::uintptr_t *> (allocated) = _size;
+        return static_cast<std::uint8_t *> (allocated) + _alignment;
     }
 
-    void *initialAddress = static_cast<uint8_t *> (_pointer) - _alignment;
-    void *newAddress =
-        allocator.Resize (initialAddress, _alignment, *static_cast<uintptr_t *> (initialAddress), _size + _alignment);
-    *static_cast<uintptr_t *> (newAddress) = _size;
-    return static_cast<uint8_t *> (newAddress) + _alignment;
+    void *initialAddress = static_cast<std::uint8_t *> (_pointer) - _alignment;
+    void *newAddress = allocator.Resize (initialAddress, _alignment, *static_cast<std::uintptr_t *> (initialAddress),
+                                         _size + _alignment);
+    *static_cast<std::uintptr_t *> (newAddress) = _size;
+    return static_cast<std::uint8_t *> (newAddress) + _alignment;
 }
 
 static bx::AllocatorI *currentAllocator = nullptr;

@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <cstring>
+
 #include <bgfx/bgfx.h>
 
 #include <Log/Log.hpp>
@@ -57,20 +59,20 @@ const char *Program::GetShaderSuffix () noexcept
 
 Program::Program () noexcept
 {
-    block_cast<uint16_t> (data) = bgfx::kInvalidHandle;
+    block_cast<std::uint16_t> (data) = bgfx::kInvalidHandle;
 }
 
-Program::Program (const uint8_t *_vertexShaderData,
+Program::Program (const std::uint8_t *_vertexShaderData,
                   std::uint64_t _vertexShaderSize,
-                  const uint8_t *_fragmentShaderData,
+                  const std::uint8_t *_fragmentShaderData,
                   std::uint64_t _fragmentShaderSize) noexcept
 {
-    auto &resultHandle = block_cast<uint16_t> (data);
+    auto &resultHandle = block_cast<std::uint16_t> (data);
     resultHandle = bgfx::kInvalidHandle;
 
-    auto loadShader = [] (const uint8_t *_data, std::uint64_t _size)
+    auto loadShader = [] (const std::uint8_t *_data, std::uint64_t _size)
     {
-        const bgfx::Memory *shaderMemory = bgfx::alloc (static_cast<uint32_t> (_size + 1u));
+        const bgfx::Memory *shaderMemory = bgfx::alloc (static_cast<std::uint32_t> (_size + 1u));
         memcpy (shaderMemory->data, _data, _size);
         shaderMemory->data[shaderMemory->size - 1] = '\0';
         return bgfx::createShader (shaderMemory);
@@ -103,12 +105,12 @@ Program::Program (const uint8_t *_vertexShaderData,
 Program::Program (Program &&_other) noexcept
 {
     data = _other.data;
-    block_cast<uint16_t> (_other.data) = bgfx::kInvalidHandle;
+    block_cast<std::uint16_t> (_other.data) = bgfx::kInvalidHandle;
 }
 
 Program::~Program () noexcept
 {
-    if (auto handle = block_cast<uint16_t> (data); handle != bgfx::kInvalidHandle)
+    if (auto handle = block_cast<std::uint16_t> (data); handle != bgfx::kInvalidHandle)
     {
         bgfx::destroy (bgfx::ProgramHandle {handle});
     }
@@ -116,12 +118,12 @@ Program::~Program () noexcept
 
 bool Program::IsValid () const noexcept
 {
-    return block_cast<uint16_t> (data) != bgfx::kInvalidHandle;
+    return block_cast<std::uint16_t> (data) != bgfx::kInvalidHandle;
 }
 
 ProgramId Program::GetId () const noexcept
 {
-    return static_cast<uint64_t> (block_cast<uint16_t> (data));
+    return static_cast<std::uint64_t> (block_cast<std::uint16_t> (data));
 }
 
 Program &Program::operator= (Program &&_other) noexcept

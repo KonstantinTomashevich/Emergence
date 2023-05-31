@@ -164,12 +164,13 @@ StandardLayout::Field LongTermContainer::FetchSignalQuery::GetKeyField () const 
     return representation.GetKeyField ();
 }
 
-bool LongTermContainer::FetchSignalQuery::IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const
+bool LongTermContainer::FetchSignalQuery::IsSignaledValue (
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const
 {
     return representation.IsSignaledValue (_value);
 }
 
-std::array<uint8_t, sizeof (uint64_t)> LongTermContainer::FetchSignalQuery::GetSignaledValue () const noexcept
+std::array<std::uint8_t, sizeof (std::uint64_t)> LongTermContainer::FetchSignalQuery::GetSignaledValue () const noexcept
 {
     return representation.GetSignaledValue ();
 }
@@ -190,12 +191,14 @@ StandardLayout::Field LongTermContainer::ModifySignalQuery::GetKeyField () const
     return representation.GetKeyField ();
 }
 
-bool LongTermContainer::ModifySignalQuery::IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const
+bool LongTermContainer::ModifySignalQuery::IsSignaledValue (
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const
 {
     return representation.IsSignaledValue (_value);
 }
 
-std::array<uint8_t, sizeof (uint64_t)> LongTermContainer::ModifySignalQuery::GetSignaledValue () const noexcept
+std::array<std::uint8_t, sizeof (std::uint64_t)> LongTermContainer::ModifySignalQuery::GetSignaledValue ()
+    const noexcept
 {
     return representation.GetSignaledValue ();
 }
@@ -344,13 +347,13 @@ LongTermContainer::ModifyDescendingRangeQuery LongTermContainer::ModifyDescendin
 }
 
 LongTermContainer::FetchSignalQuery LongTermContainer::FetchSignal (
-    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+    StandardLayout::FieldId _keyField, const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     return {this, AcquireSignalRepresentation (_keyField, _signaledValue)};
 }
 
 LongTermContainer::ModifySignalQuery LongTermContainer::ModifySignal (
-    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+    StandardLayout::FieldId _keyField, const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     return {this, AcquireSignalRepresentation (_keyField, _signaledValue)};
 }
@@ -455,7 +458,7 @@ RecordCollection::PointRepresentation LongTermContainer::AcquirePointRepresentat
 }
 
 RecordCollection::SignalRepresentation LongTermContainer::AcquireSignalRepresentation (
-    StandardLayout::FieldId _keyField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+    StandardLayout::FieldId _keyField, const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     for (auto iterator = collection.SignalRepresentationBegin (); iterator != collection.SignalRepresentationEnd ();
          ++iterator)

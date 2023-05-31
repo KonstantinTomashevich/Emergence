@@ -47,7 +47,10 @@ public:
         AcquiredChunkConstIterator base;
     };
 
-    OrderedPool (Profiler::AllocationGroup _group, size_t _chunkSize, size_t _alignment, size_t _pageCapacity) noexcept;
+    OrderedPool (Profiler::AllocationGroup _group,
+                 std::size_t _chunkSize,
+                 std::size_t _alignment,
+                 std::size_t _pageCapacity) noexcept;
 
     OrderedPool (const OrderedPool &_other) = delete;
 
@@ -86,13 +89,13 @@ private:
 
             // It should be zero-length array, but we use 1-byte array because
             // not all compilers support nested zero-length arrays.
-            uint8_t bytes[1u];
+            std::uint8_t bytes[1u];
         };
     };
 
-    const size_t chunkSize;
-    const size_t alignment;
-    const size_t pageCapacity;
+    const std::size_t chunkSize;
+    const std::size_t alignment;
+    const std::size_t pageCapacity;
 
     AlignedPoolPage *topPage = nullptr;
     Chunk *topFreeChunk = nullptr;

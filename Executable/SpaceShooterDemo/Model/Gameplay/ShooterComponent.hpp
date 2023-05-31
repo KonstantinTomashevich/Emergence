@@ -12,9 +12,9 @@ struct ShooterComponent final
 
     Emergence::Memory::UniqueString bulletPrototype;
 
-    uint64_t coolDownNs = 0u;
+    std::uint64_t coolDownNs = 0u;
 
-    uint64_t coolingDownUntilNs = 0u;
+    std::uint64_t coolingDownUntilNs = 0u;
 
     struct Reflection final
     {

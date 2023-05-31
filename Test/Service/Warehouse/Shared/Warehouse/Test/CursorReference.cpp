@@ -49,7 +49,7 @@ static Emergence::Container::Vector<Emergence::Query::Test::Storage> GetEnvironm
          {
              Sources::Value {"Value", {GetPlayedIdField ()}},
              Sources::Range {"Range", GetPlayedIdField ()},
-             Sources::Signal {"Signal", GetPlayedIdField (), array_cast<uint32_t, sizeof (uint64_t)> (0u)},
+             Sources::Signal {"Signal", GetPlayedIdField (), array_cast<std::uint32_t, sizeof (std::uint64_t)> (0u)},
              Sources::Volumetric {"Volumetric", GetTestDimensions ()},
          }}};
 }

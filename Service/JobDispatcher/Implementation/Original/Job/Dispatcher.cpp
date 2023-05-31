@@ -20,30 +20,38 @@ public:
 
     ~DispatcherImplementation () noexcept;
 
-    void Dispatch (Dispatcher::Job _job) noexcept;
+    void Dispatch (Priority _jobPriority, Dispatcher::Job _job) noexcept;
 
     [[nodiscard]] std::size_t GetAvailableThreadsCount () const noexcept;
+
+    void SetMaximumThreadsForBackgroundExecution (std::size_t _maxBackgroundThreadCount) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (DispatcherImplementation);
 
 private:
-    Dispatcher::Job Pop () noexcept;
+    Dispatcher::Job Pop (bool &_wasBackground) noexcept;
 
     Container::Vector<std::jthread> threads {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
+    std::size_t maxBackgroundThreadCount;
 
-    Container::Vector<Dispatcher::Job> jobPool {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
+    Container::Vector<Dispatcher::Job> foregroundJobPool {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
+    Container::Vector<Dispatcher::Job> backgroundJobPool {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
 
     std::atomic_flag modifyingPool;
     std::atomic_flag hasJobs;
 
     std::atomic_flag terminating;
 
-    std::atomic_unsigned_lock_free availableThreadsCount = 0u;
+    std::atomic_uintptr_t availableThreadsCount = 0u;
+    std::atomic_uintptr_t backgroundThreadCount = 0u;
 };
 
 DispatcherImplementation::DispatcherImplementation (std::size_t _threadCount) noexcept
+    : maxBackgroundThreadCount (_threadCount / 2u)
 {
-    jobPool.reserve (32u);
+    foregroundJobPool.reserve (32u);
+    backgroundJobPool.reserve (32u);
+
     for (std::size_t threadIndex = 0u; threadIndex < _threadCount; ++threadIndex)
     {
         threads.emplace_back (
@@ -57,9 +65,15 @@ DispatcherImplementation::DispatcherImplementation (std::size_t _threadCount) no
                         return;
                     }
 
-                    Dispatcher::Job job = Pop ();
+                    bool wasBackground;
+                    Dispatcher::Job job = Pop (wasBackground);
                     --availableThreadsCount;
                     job ();
+
+                    if (wasBackground)
+                    {
+                        --backgroundThreadCount;
+                    }
                 }
             });
     }
@@ -77,10 +91,20 @@ DispatcherImplementation::~DispatcherImplementation () noexcept
     }
 }
 
-void DispatcherImplementation::Dispatch (Dispatcher::Job _job) noexcept
+void DispatcherImplementation::Dispatch (Priority _jobPriority, Dispatcher::Job _job) noexcept
 {
     AtomicFlagGuard guard {modifyingPool};
-    jobPool.emplace_back (std::move (_job));
+    switch (_jobPriority)
+    {
+    case Priority::FOREGROUND:
+        foregroundJobPool.emplace_back (std::move (_job));
+        break;
+
+    case Priority::BACKGROUND:
+        backgroundJobPool.emplace_back (std::move (_job));
+        break;
+    }
+
     hasJobs.test_and_set (std::memory_order_release);
     hasJobs.notify_one ();
 }
@@ -90,7 +114,12 @@ std::size_t DispatcherImplementation::GetAvailableThreadsCount () const noexcept
     return availableThreadsCount;
 }
 
-Dispatcher::Job DispatcherImplementation::Pop () noexcept
+void DispatcherImplementation::SetMaximumThreadsForBackgroundExecution (std::size_t _maxBackgroundThreadCount) noexcept
+{
+    maxBackgroundThreadCount = _maxBackgroundThreadCount;
+}
+
+Dispatcher::Job DispatcherImplementation::Pop (bool &_wasBackground) noexcept
 {
     while (true)
     {
@@ -100,20 +129,37 @@ Dispatcher::Job DispatcherImplementation::Pop () noexcept
         if (terminating.test (std::memory_order_acquire))
         {
             // Empty job to schedule termination.
+            _wasBackground = false;
             return [] ()
             {
             };
         }
 
-        if (jobPool.empty ())
+        const bool noForegroundJobs = foregroundJobPool.empty ();
+        const bool noBackgroundJobs = backgroundJobPool.empty ();
+        const bool underTheBackgroundJobLimit = backgroundThreadCount < maxBackgroundThreadCount;
+
+        if ((noBackgroundJobs || !underTheBackgroundJobLimit) && noForegroundJobs)
         {
             continue;
         }
 
-        Dispatcher::Job job {std::move (jobPool.back ())};
-        jobPool.pop_back ();
+        Dispatcher::Job job;
+        if (!noBackgroundJobs && underTheBackgroundJobLimit)
+        {
+            job = std::move (backgroundJobPool.back ());
+            backgroundJobPool.pop_back ();
+            ++backgroundThreadCount;
+            _wasBackground = true;
+        }
+        else
+        {
+            job = std::move (foregroundJobPool.back ());
+            foregroundJobPool.pop_back ();
+            _wasBackground = false;
+        }
 
-        if (jobPool.empty ())
+        if (foregroundJobPool.empty () && backgroundJobPool.empty ())
         {
             hasJobs.clear (std::memory_order_release);
         }
@@ -138,13 +184,18 @@ Dispatcher::~Dispatcher () noexcept
     block_cast<DispatcherImplementation> (data).~DispatcherImplementation ();
 }
 
-void Dispatcher::Dispatch (Dispatcher::Job _job) noexcept
+void Dispatcher::Dispatch (Priority _jobPriority, Dispatcher::Job _job) noexcept
 {
-    block_cast<DispatcherImplementation> (data).Dispatch (std::move (_job));
+    block_cast<DispatcherImplementation> (data).Dispatch (_jobPriority, std::move (_job));
 }
 
 std::size_t Dispatcher::GetAvailableThreadsCount () const noexcept
 {
     return block_cast<DispatcherImplementation> (data).GetAvailableThreadsCount ();
+}
+
+void Dispatcher::SetMaximumThreadsForBackgroundExecution (std::size_t _maxBackgroundThreadCount) noexcept
+{
+    block_cast<DispatcherImplementation> (data).SetMaximumThreadsForBackgroundExecution (_maxBackgroundThreadCount);
 }
 } // namespace Emergence::Job

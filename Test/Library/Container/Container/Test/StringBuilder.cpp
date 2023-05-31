@@ -17,10 +17,10 @@ struct IntsSubstructure final
     int32_t int32;
     int64_t int64;
 
-    uint8_t uint8;
-    uint16_t uint16;
-    uint32_t uint32;
-    uint64_t uint64;
+    std::uint8_t uint8;
+    std::uint16_t uint16;
+    std::uint32_t uint32;
+    std::uint64_t uint64;
 
     struct Reflection final
     {
@@ -92,16 +92,16 @@ const FloatsSubstructure::Reflection &FloatsSubstructure::Reflect () noexcept
 
 struct TestStructure final
 {
-    static constexpr size_t ALIVE_OFFSET = 0u;
-    static constexpr size_t POISONED_OFFSET = 1u;
-    static constexpr size_t BLESSED_OFFSET = 2u;
+    static constexpr std::size_t ALIVE_OFFSET = 0u;
+    static constexpr std::size_t POISONED_OFFSET = 1u;
+    static constexpr std::size_t BLESSED_OFFSET = 2u;
 
-    uint64_t flags;
+    std::uint64_t flags;
 
     IntsSubstructure ints;
     FloatsSubstructure floats;
 
-    uint8_t block[8u];
+    std::uint8_t block[8u];
     char string[24u];
     Memory::UniqueString uniqueString;
 
@@ -165,6 +165,34 @@ static const TestStructure TEST_STRUCTURE {(1u << TestStructure::ALIVE_OFFSET) |
                                            {12u, 55u, 13u, 17u, 11u, 18u, 111u, 243u},
                                            "Hello, inplace string!",
                                            Memory::UniqueString {"Hello, unique string!"}};
+
+struct VectorTestStructure final
+{
+    Container::Vector<FloatsSubstructure> firstVector;
+    Container::Vector<FloatsSubstructure> secondVector;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId firstVector;
+        StandardLayout::FieldId secondVector;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+const VectorTestStructure::Reflection &VectorTestStructure::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (VectorTestStructure);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (firstVector);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (secondVector);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
 } // namespace Emergence::Container::Test
 
 using namespace Emergence::Container;
@@ -251,6 +279,24 @@ TEST_CASE (MappingReflection)
                  "-320000, int64 = -64000000, uint8 = 8, uint16 = 16, uint32 = 32, uint64 = 64 }, floats = { floating "
                  "= 42.123455, doubleFloating = 42.987654 }, block = 12 55 13 17 11 18 111 243, string = Hello, "
                  "inplace string!, uniqueString = Hello, unique string! }");
+}
+
+TEST_CASE (MappingReflectionWithVector)
+{
+    VectorTestStructure vectorTestStructure;
+    vectorTestStructure.firstVector.emplace_back () = {12.5f, 11.0};
+    vectorTestStructure.firstVector.emplace_back () = {12.345f, 7.1};
+
+    vectorTestStructure.secondVector.emplace_back () = {39.5f, 119.0};
+    vectorTestStructure.secondVector.emplace_back () = {25.595f, 22.1};
+    vectorTestStructure.secondVector.emplace_back () = {3.115f, 1.112};
+
+    CHECK_EQUAL (
+        BUILD_TEST_STRING (
+            StringBuilder::ObjectPointer {&vectorTestStructure, VectorTestStructure::Reflect ().mapping}),
+        "{ firstVector = { { floating = 12.500000, doubleFloating = 11.000000 }, { floating = 12.345000, "
+        "doubleFloating = 7.100000 } }, secondVector = { { floating = 39.500000, doubleFloating = 119.000000 }, { "
+        "floating = 25.594999, doubleFloating = 22.100000 }, { floating = 3.115000, doubleFloating = 1.112000 } } }");
 }
 
 END_SUITE

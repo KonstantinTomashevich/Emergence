@@ -6,8 +6,8 @@ struct SDL_Window;
 
 namespace Emergence::Celerity::Test
 {
-constexpr uint32_t WIDTH = 400u;
-constexpr uint32_t HEIGHT = 300u;
+constexpr std::uint32_t WIDTH = 400u;
+constexpr std::uint32_t HEIGHT = 300u;
 
 class ContextHolder final
 {

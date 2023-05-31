@@ -5,7 +5,7 @@
 
 namespace Emergence::Memory
 {
-Stack::Stack (Profiler::AllocationGroup _group, size_t _capacity) noexcept
+Stack::Stack (Profiler::AllocationGroup _group, std::size_t _capacity) noexcept
 {
     new (&data) Original::Stack (std::move (_group), _capacity);
 }
@@ -20,7 +20,7 @@ Stack::~Stack () noexcept
     block_cast<Original::Stack> (data).~Stack ();
 }
 
-void *Stack::Acquire (size_t _chunkSize, uintptr_t _alignAs) noexcept
+void *Stack::Acquire (std::size_t _chunkSize, std::uintptr_t _alignAs) noexcept
 {
     return block_cast<Original::Stack> (data).Acquire (_chunkSize, _alignAs);
 }
@@ -40,7 +40,7 @@ void Stack::Clear () noexcept
     block_cast<Original::Stack> (data).Clear ();
 }
 
-size_t Stack::GetFreeSize () const noexcept
+std::size_t Stack::GetFreeSize () const noexcept
 {
     return block_cast<Original::Stack> (data).GetFreeSize ();
 }

@@ -13,7 +13,7 @@
 #include <Celerity/UI/Events.hpp>
 #include <Celerity/UI/Test/ControlManagement.hpp>
 #include <Celerity/UI/Test/Functional.hpp>
-#include <Celerity/UI/Test/ImplementationStrings.hpp>
+#include <Celerity/UI/Test/ResourceProviderHolder.hpp>
 #include <Celerity/UI/Test/SDLContextHolder.hpp>
 #include <Celerity/UI/Test/UpdateResultCheck.hpp>
 #include <Celerity/UI/UI.hpp>
@@ -72,21 +72,15 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
         RegisterUIEvents (registrar);
     }
 
-    constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
-    static const Emergence::Memory::UniqueString testMaterialsPath {"UITestResources/Materials"};
-    static const Emergence::Memory::UniqueString engineMaterialsPath {GetUIBackendMaterialPath ()};
-    static const Emergence::Memory::UniqueString engineShadersPath {GetUIBackendShaderPath ()};
-    static const Emergence::Memory::UniqueString testTexturesPath {"UITestResources/Textures"};
     PipelineBuilder pipelineBuilder {world.GetRootView ()};
-
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (controlManagementFrames));
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
-    MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
-                                           {engineShadersPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+                                           assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
                                           assetReferenceBindingEventMap);
     UI::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, GetKeyCodeMapping ());
     UpdateResultCheck::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, std::move (resultCheckFrames));
@@ -210,7 +204,7 @@ static CreateWindow NotResizable (CreateWindow _task)
     return _task;
 }
 
-static CreateWindow WithCustomSize (CreateWindow _task, uint32_t _width, uint32_t _height)
+static CreateWindow WithCustomSize (CreateWindow _task, std::uint32_t _width, std::uint32_t _height)
 {
     _task.width = _width;
     _task.height = _height;
@@ -1333,7 +1327,7 @@ TEST_CASE (HierarchyRemoval)
                 CreateCheckbox {5u, 3u, ""_us, ""_us, "Check me too!", false, DEFAULT_CHECKBOX_CHANGED_ACTION,
                                 InputActionDispatchType::NORMAL},
                 CreateLabel {6u, 3u, ""_us, ""_us, "Hello, world!"},
-                CreateImage {7u, 3u, ""_us, 100u, 100u, "Texture.png"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}},
+                CreateImage {7u, 3u, ""_us, 100u, 100u, "T_Texture"_us, {{0.0f, 0.0f}, {1.0f, 1.0f}}},
             },
             {
                 {},

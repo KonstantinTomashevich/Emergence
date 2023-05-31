@@ -39,6 +39,8 @@ enum class UIStyleColorPropertyName
 /// \brief Attaches property of color type to a style.
 struct UIStyleColorProperty final
 {
+    UIStyleColorProperty () noexcept;
+
     /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
 
@@ -49,14 +51,21 @@ struct UIStyleColorProperty final
     {
         struct
         {
+            // NOLINTNEXTLINE(modernize-use-default-member-init): Using default initializer here breaks some compilers.
             float red;
+
+            // NOLINTNEXTLINE(modernize-use-default-member-init): Using default initializer here breaks some compilers.
             float green;
+
+            // NOLINTNEXTLINE(modernize-use-default-member-init): Using default initializer here breaks some compilers.
             float blue;
+
+            // NOLINTNEXTLINE(modernize-use-default-member-init): Using default initializer here breaks some compilers.
             float alpha;
         };
 
         /// \brief Value that is assigned to property in RGBA format.
-        float rgba[4u] {0.0f, 0.0f, 0.0f, 0.0f};
+        float rgba[4u];
     };
 
     struct Reflection final

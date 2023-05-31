@@ -4,7 +4,7 @@
 
 struct TeamConfigurationSingleton final
 {
-    uint8_t playerTeamId = 0u;
+    std::uint8_t playerTeamId = 0u;
 
     struct Reflection final
     {

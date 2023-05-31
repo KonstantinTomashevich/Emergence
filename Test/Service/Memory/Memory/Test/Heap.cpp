@@ -28,8 +28,8 @@ TEST_CASE (AcquireNoOverlap)
     static const char *secondString = "Hello, world again!";
 
     Emergence::Memory::Heap heap {GetUniqueAllocationGroup ()};
-    void *first = heap.Acquire (strlen (firstString) + 1u, sizeof (uintptr_t));
-    void *second = heap.Acquire (strlen (secondString) + 1u, sizeof (uintptr_t));
+    void *first = heap.Acquire (strlen (firstString) + 1u, sizeof (std::uintptr_t));
+    void *second = heap.Acquire (strlen (secondString) + 1u, sizeof (std::uintptr_t));
 
     strcpy (reinterpret_cast<char *> (first), firstString);
     strcpy (reinterpret_cast<char *> (second), secondString);
@@ -45,9 +45,9 @@ TEST_CASE (AcquireAlignment)
 {
     constexpr std::size_t SIZE = 128u;
     Emergence::Memory::Heap heap {GetUniqueAllocationGroup ()};
-    void *record = heap.Acquire (SIZE, sizeof (uintptr_t));
+    void *record = heap.Acquire (SIZE, sizeof (std::uintptr_t));
 
-    CHECK_EQUAL (reinterpret_cast<uintptr_t> (record) % sizeof (uintptr_t), 0u);
+    CHECK_EQUAL (reinterpret_cast<std::uintptr_t> (record) % sizeof (std::uintptr_t), 0u);
     heap.Release (record, SIZE);
 }
 
@@ -58,28 +58,28 @@ TEST_CASE (Resize)
     constexpr std::size_t NEW_SIZE = 1024u;
 
     Emergence::Memory::Heap heap {GetUniqueAllocationGroup ()};
-    void *record = heap.Acquire (size, sizeof (uintptr_t));
+    void *record = heap.Acquire (size, sizeof (std::uintptr_t));
 
     strcpy (reinterpret_cast<char *> (record), string);
     CHECK (strcmp (reinterpret_cast<char *> (record), string) == 0);
 
-    record = heap.Resize (record, sizeof (uintptr_t), size, NEW_SIZE);
+    record = heap.Resize (record, sizeof (std::uintptr_t), size, NEW_SIZE);
     CHECK (strcmp (reinterpret_cast<char *> (record), string) == 0);
     heap.Release (record, NEW_SIZE);
 }
 
 TEST_CASE (HeapSTD)
 {
-    std::vector<uintptr_t, Emergence::Memory::HeapSTD<uintptr_t>> vector {
-        Emergence::Memory::HeapSTD<uintptr_t> {GetUniqueAllocationGroup ()}};
+    std::vector<std::uintptr_t, Emergence::Memory::HeapSTD<std::uintptr_t>> vector {
+        Emergence::Memory::HeapSTD<std::uintptr_t> {GetUniqueAllocationGroup ()}};
 
     vector.reserve (8u);
-    for (size_t index = 0u; index < 1024u; ++index)
+    for (std::size_t index = 0u; index < 1024u; ++index)
     {
         vector.emplace_back (index);
     }
 
-    for (size_t index = 0u; index < 1024u; ++index)
+    for (std::size_t index = 0u; index < 1024u; ++index)
     {
         CHECK_EQUAL (vector[index], index);
     }
@@ -96,12 +96,12 @@ TEST_CASE (Profiling)
     constexpr std::size_t FIRST_OBJECT_SIZE = 32u;
     constexpr std::size_t SECOND_OBJECT_SIZE = 128u;
 
-    void *first = heap.Acquire (FIRST_OBJECT_SIZE, sizeof (uintptr_t));
+    void *first = heap.Acquire (FIRST_OBJECT_SIZE, sizeof (std::uintptr_t));
     CHECK_EQUAL (group.GetTotal (), FIRST_OBJECT_SIZE);
     CHECK_EQUAL (group.GetReserved (), 0u);
     CHECK_EQUAL (group.GetAcquired (), FIRST_OBJECT_SIZE);
 
-    void *second = heap.Acquire (SECOND_OBJECT_SIZE, sizeof (uintptr_t));
+    void *second = heap.Acquire (SECOND_OBJECT_SIZE, sizeof (std::uintptr_t));
     CHECK_EQUAL (group.GetTotal (), FIRST_OBJECT_SIZE + SECOND_OBJECT_SIZE);
     CHECK_EQUAL (group.GetReserved (), 0u);
     CHECK_EQUAL (group.GetAcquired (), FIRST_OBJECT_SIZE + SECOND_OBJECT_SIZE);

@@ -16,7 +16,9 @@ const ContainerControl::Reflection &ContainerControl::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (height);
         EMERGENCE_MAPPING_REGISTER_REGULAR (border);
         EMERGENCE_MAPPING_REGISTER_REGULAR (labelKey);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (label);
         EMERGENCE_MAPPING_REGISTER_REGULAR (previewKey);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (preview);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

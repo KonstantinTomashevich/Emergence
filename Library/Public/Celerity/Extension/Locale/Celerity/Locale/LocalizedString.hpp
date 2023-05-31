@@ -18,6 +18,7 @@ struct LocalizedString final
     struct Reflection final
     {
         StandardLayout::FieldId key;
+        StandardLayout::FieldId value;
         StandardLayout::Mapping mapping;
     };
 

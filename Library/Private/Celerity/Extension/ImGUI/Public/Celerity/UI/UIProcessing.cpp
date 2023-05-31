@@ -3,7 +3,6 @@
 #include <algorithm>
 
 #include <Celerity/Asset/Asset.hpp>
-#include <Celerity/Asset/UI/Font.hpp>
 #include <Celerity/Asset/UI/FontUtility.hpp>
 #include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/Input/Input.hpp>
@@ -19,6 +18,7 @@
 #include <Celerity/UI/ButtonControl.hpp>
 #include <Celerity/UI/CheckboxControl.hpp>
 #include <Celerity/UI/ContainerControl.hpp>
+#include <Celerity/UI/Font.hpp>
 #include <Celerity/UI/ImageControl.hpp>
 #include <Celerity/UI/InputControl.hpp>
 #include <Celerity/UI/LabelControl.hpp>
@@ -49,11 +49,11 @@ static Memory::Heap &GetImGUIHeap ()
     return heap;
 }
 
-static void *ImGuiProfiledAllocate (size_t _amount, void * /*unused*/)
+static void *ImGuiProfiledAllocate (std::size_t _amount, void * /*unused*/)
 {
-    auto *memory =
-        static_cast<uintptr_t *> (GetImGUIHeap ().Acquire (_amount + sizeof (uintptr_t), alignof (uintptr_t)));
-    *memory = static_cast<uintptr_t> (_amount);
+    auto *memory = static_cast<std::uintptr_t *> (
+        GetImGUIHeap ().Acquire (_amount + sizeof (std::uintptr_t), alignof (std::uintptr_t)));
+    *memory = static_cast<std::uintptr_t> (_amount);
     return memory + 1u;
 }
 
@@ -61,7 +61,7 @@ static void ImGUiProfiledFree (void *_pointer, void * /*unused*/)
 {
     if (_pointer)
     {
-        auto *memory = static_cast<uintptr_t *> (_pointer) - 1u;
+        auto *memory = static_cast<std::uintptr_t *> (_pointer) - 1u;
         GetImGUIHeap ().Release (memory, *memory);
     }
 }
@@ -69,7 +69,7 @@ static void ImGUiProfiledFree (void *_pointer, void * /*unused*/)
 struct NodeInfo final
 {
     UniqueId nodeId = INVALID_UNIQUE_ID;
-    uint64_t sortIndex = 0u;
+    std::uint64_t sortIndex = 0u;
 };
 
 static_assert (std::is_trivially_destructible_v<NodeInfo>);
@@ -88,7 +88,7 @@ public:
 
         ~Sequence () noexcept;
 
-        void Add (UniqueId _nodeId, uint64_t _sortIndex) noexcept;
+        void Add (UniqueId _nodeId, std::uint64_t _sortIndex) noexcept;
 
         void Sort () noexcept;
 
@@ -107,7 +107,7 @@ public:
 private:
     friend class Sequence;
 
-    static constexpr size_t STACK_SIZE = sizeof (NodeInfo) * 1024u;
+    static constexpr std::size_t STACK_SIZE = sizeof (NodeInfo) * 1024u;
 
     Memory::Stack stack {Memory::Profiler::AllocationGroup {"NodeOrderingStack"_us}, STACK_SIZE};
 };
@@ -128,7 +128,7 @@ NodeOrderingStack::Sequence::~Sequence () noexcept
     }
 }
 
-void NodeOrderingStack::Sequence::Add (UniqueId _nodeId, uint64_t _sortIndex) noexcept
+void NodeOrderingStack::Sequence::Add (UniqueId _nodeId, std::uint64_t _sortIndex) noexcept
 {
     EMERGENCE_ASSERT (stack->stack.Head () == sequenceEnd);
     new (stack->stack.Acquire (sizeof (NodeInfo), alignof (NodeInfo))) NodeInfo {_nodeId, _sortIndex};
@@ -182,9 +182,9 @@ public:
         EMERGENCE_DELETE_ASSIGNMENT (Context);
 
     private:
-        uint8_t colorCount = 0u;
-        uint8_t varCount = 0u;
-        uint8_t fontCount = 0u;
+        std::uint8_t colorCount = 0u;
+        std::uint8_t varCount = 0u;
+        std::uint8_t fontCount = 0u;
     };
 
     StyleApplier (TaskConstructor &_constructor) noexcept;
@@ -444,7 +444,7 @@ StyleApplier::Context::~Context () noexcept
         ImGui::PopStyleVar (static_cast<int> (varCount));
     }
 
-    for (uint32_t index = 0u; index < fontCount; ++index)
+    for (std::uint32_t index = 0u; index < fontCount; ++index)
     {
         ImGui::PopFont ();
     }
@@ -1188,8 +1188,10 @@ void UIProcessor::ProcessControl (const ImageControl *_control) noexcept
     EMERGENCE_ASSERT (texture);
 
     const Render::Backend::TextureId textureId = texture->texture.GetId ();
+    BEGIN_MUTING_STRING_ALIASING_WARNINGS
     // NOLINTNEXTLINE(misc-misplaced-const): This const is only needed for style.
     const ImTextureID imGUITextureId = *reinterpret_cast<const ImTextureID *> (&textureId);
+    END_MUTING_WARNINGS
 
     ImGui::Image (imGUITextureId, {static_cast<float> (_control->width), static_cast<float> (_control->height)},
                   {_control->uv.min.x, _control->uv.min.y}, {_control->uv.max.x, _control->uv.max.y});
@@ -1348,8 +1350,8 @@ void UIProcessor::ProcessControl (WindowControl *_control) noexcept
     // be able to restore original size when windows appear again.
     if (!ImGui::IsWindowCollapsed ())
     {
-        _control->width = static_cast<uint32_t> (ImGui::GetWindowWidth ());
-        _control->height = static_cast<uint32_t> (ImGui::GetWindowHeight ());
+        _control->width = static_cast<std::uint32_t> (ImGui::GetWindowWidth ());
+        _control->height = static_cast<std::uint32_t> (ImGui::GetWindowHeight ());
     }
 
     ImGui::End ();

@@ -1,0 +1,35 @@
+# ResourceObject
+parent: ""
+changelist:
+  - component:
+      type: RigidBody3dComponent
+      content:
+        objectId: 0
+        type: 0 # Static
+
+  - component:
+      type: CollisionShape3dComponent
+      content:
+        objectId: 0
+        shapeId: 0
+        materialId: DM_Default
+        geometry:
+          type: 0 # Box
+          boxHalfExtents:
+            x: 0.5
+            y: 0.05
+            z: 0.5
+        translation:
+          y: -0.05
+        collisionGroup: 1 # Obstacle
+
+  - component:
+      type: StaticModelComponent
+      content:
+        objectId: 0
+        modelId: 0
+        modelName: Models/FloorTile.mdl
+        materialNames:
+          count: 2
+          values[0]: Materials/FloorTileBorder.xml
+          values[1]: Materials/FloorTileCenter.xml

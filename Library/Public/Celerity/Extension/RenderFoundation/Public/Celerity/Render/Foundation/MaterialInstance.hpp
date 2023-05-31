@@ -14,7 +14,9 @@
 
 namespace Emergence::Celerity
 {
-// TODO: Implement runtime material instance creation.
+/// \brief Used to separate material instance name from material instance runtime id.
+/// \details See MaterialInstance::assetId.
+constexpr char MATERIAL_INSTANCE_RUNTIME_ID_SEPARATOR = '#';
 
 /// \brief Contains parameters for rendering with associated Material.
 /// \details Material instances support inheritance on asset level, but it is flattened
@@ -22,6 +24,9 @@ namespace Emergence::Celerity
 struct MaterialInstance final
 {
     /// \brief Id used to bind to Asset instance.
+    /// \details If ::assetId contains MATERIAL_INSTANCE_RUNTIME_ID_SEPARATOR, material instance is considered to
+    ///          be runtime instance: it means that it inherits specified material instance and can be freely modified
+    ///          by runtime logic after being fully loaded.
     Memory::UniqueString assetId;
 
     /// \brief Id of the material, parameters to which this instance contains.

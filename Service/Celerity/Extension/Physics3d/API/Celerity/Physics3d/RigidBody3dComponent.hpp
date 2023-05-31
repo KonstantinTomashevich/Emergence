@@ -28,27 +28,27 @@ struct RigidBody3dComponent final
 {
     /// \brief Forbids body to change its translation on X axis.
     /// \see ::lockFlags
-    static constexpr uint8_t LOCK_LINEAR_X = 1u << 0u;
+    static constexpr std::uint8_t LOCK_LINEAR_X = 1u << 0u;
 
     /// \brief Forbids body to change its translation on Y axis.
     /// \see ::lockFlags
-    static constexpr uint8_t LOCK_LINEAR_Y = 1u << 1u;
+    static constexpr std::uint8_t LOCK_LINEAR_Y = 1u << 1u;
 
     /// \brief Forbids body to change its translation on Z axis.
     /// \see ::lockFlags
-    static constexpr uint8_t LOCK_LINEAR_Z = 1u << 2u;
+    static constexpr std::uint8_t LOCK_LINEAR_Z = 1u << 2u;
 
     /// \brief Forbids body to change its rotation over X axis.
     /// \see ::lockFlags
-    static constexpr uint8_t LOCK_ANGULAR_X = 1u << 3u;
+    static constexpr std::uint8_t LOCK_ANGULAR_X = 1u << 3u;
 
     /// \brief Forbids body to change its rotation over Y axis.
     /// \see ::lockFlags
-    static constexpr uint8_t LOCK_ANGULAR_Y = 1u << 4u;
+    static constexpr std::uint8_t LOCK_ANGULAR_Y = 1u << 4u;
 
     /// \brief Forbids body to change its rotation over Z axis.
     /// \see ::lockFlags
-    static constexpr uint8_t LOCK_ANGULAR_Z = 1u << 5u;
+    static constexpr std::uint8_t LOCK_ANGULAR_Z = 1u << 5u;
 
     EMERGENCE_STATIONARY_DATA_TYPE (RigidBody3dComponent);
 
@@ -80,7 +80,7 @@ struct RigidBody3dComponent final
     bool manipulatedOutsideOfSimulation = false;
 
     /// \brief Contains combination of transform-locking flags.
-    uint8_t lockFlags = 0u;
+    std::uint8_t lockFlags = 0u;
 
     /// \brief Body linear velocity in world coordinates.
     Math::Vector3f linearVelocity = Math::Vector3f::ZERO;

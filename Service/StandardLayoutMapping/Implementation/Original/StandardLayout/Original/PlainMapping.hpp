@@ -54,7 +54,7 @@ public:
 
         std::size_t offset = 0u;
 
-        uint_fast8_t bitOffset = 0u;
+        std::uint_fast8_t bitOffset = 0u;
 
         bool projected = false;
     };
@@ -81,6 +81,38 @@ public:
         bool projected = false;
     };
 
+    /// \brief Used to register fields with FieldArchetype::UTF8_STRING.
+    struct Utf8StringSeed
+    {
+        Memory::UniqueString name;
+
+        std::size_t offset = 0u;
+
+        bool projected = false;
+    };
+
+    /// \brief Used to register fields with FieldArchetype::VECTOR.
+    struct VectorSeed
+    {
+        Memory::UniqueString name;
+
+        std::size_t offset = 0u;
+
+        Handling::Handle<PlainMapping> vectorItemMapping;
+
+        bool projected = false;
+    };
+
+    /// \brief Used to register fields with FieldArchetype::PATCH.
+    struct PatchSeed
+    {
+        Memory::UniqueString name;
+
+        std::size_t offset = 0u;
+
+        bool projected = false;
+    };
+
     /// FieldData could only be moved through reallocation of PlainMapping.
     FieldData (const FieldData &_other) = delete;
 
@@ -90,13 +122,15 @@ public:
 
     [[nodiscard]] bool IsProjected () const noexcept;
 
-    [[nodiscard]] size_t GetOffset () const noexcept;
+    [[nodiscard]] std::size_t GetOffset () const noexcept;
 
-    [[nodiscard]] size_t GetSize () const noexcept;
+    [[nodiscard]] std::size_t GetSize () const noexcept;
 
-    [[nodiscard]] uint_fast8_t GetBitOffset () const noexcept;
+    [[nodiscard]] std::uint_fast8_t GetBitOffset () const noexcept;
 
     [[nodiscard]] Handling::Handle<PlainMapping> GetNestedObjectMapping () const noexcept;
+
+    [[nodiscard]] Handling::Handle<PlainMapping> GetVectorItemMapping () const noexcept;
 
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
@@ -120,6 +154,12 @@ private:
 
     explicit FieldData (NestedObjectSeed _seed) noexcept;
 
+    explicit FieldData (Utf8StringSeed _seed) noexcept;
+
+    explicit FieldData (VectorSeed _seed) noexcept;
+
+    explicit FieldData (PatchSeed _seed) noexcept;
+
     ~FieldData ();
 
     FieldArchetype archetype {FieldArchetype::INT};
@@ -134,6 +174,8 @@ private:
         std::uint_fast8_t bitOffset;
 
         Handling::Handle<PlainMapping> nestedObjectMapping;
+
+        Handling::Handle<PlainMapping> vectorItemMapping;
     };
 };
 
@@ -192,6 +234,8 @@ public:
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
 
     void Construct (void *_address) const noexcept;
+
+    void MoveConstruct (void *_address, void *_sourceAddress) const noexcept;
 
     void Destruct (void *_address) const noexcept;
 
@@ -252,6 +296,7 @@ private:
     Memory::UniqueString name;
 
     void (*constructor) (void *) = nullptr;
+    void (*moveConstructor) (void *, void *) = nullptr;
     void (*destructor) (void *) = nullptr;
 
     ConditionData *firstCondition = nullptr;
@@ -279,6 +324,8 @@ public:
     Handling::Handle<PlainMapping> End () noexcept;
 
     void SetConstructor (void (*_constructor) (void *)) noexcept;
+
+    void SetMoveConstructor (void (*_constructor) (void *, void *)) noexcept;
 
     void SetDestructor (void (*_destructor) (void *)) noexcept;
 

@@ -42,7 +42,7 @@ namespace Emergence
 /// \brief Visitor for union, declared using EMERGENCE_UNION2.
 /// \param _switch Index of currently used type (0 or 1).
 template <typename ReturnType, typename Union, typename Functor>
-ReturnType VisitUnion2 (Functor _functor, Union &_union, size_t _switch)
+ReturnType VisitUnion2 (Functor _functor, Union &_union, std::size_t _switch)
 {
 #define BODY(SwitchId)                                                                                                 \
     if constexpr (std::is_same_v<void, ReturnType>)                                                                    \

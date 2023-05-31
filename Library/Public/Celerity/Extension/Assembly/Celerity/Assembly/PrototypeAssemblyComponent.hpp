@@ -10,7 +10,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Enumerates possible state of assembly process in associated pipeline (normal or fixed).
-enum class AssemblyState : uint8_t
+enum class AssemblyState : std::uint8_t
 {
     /// \brief Blocked, because assembly in other pipeline is not finished yet.
     /// \details In order to start normal assembly, we need to finish fixed assembly first.
@@ -42,10 +42,10 @@ struct PrototypeAssemblyComponent final
     AssemblyState normalAssemblyState = AssemblyState::BLOCKED;
 
     /// \brief Index of component from which next instancing batch in fixed pipeline will start.
-    size_t fixedCurrentComponentIndex = 0u;
+    std::size_t fixedCurrentComponentIndex = 0u;
 
     /// \brief Index of component from which next instancing batch in normal pipeline will start.
-    size_t normalCurrentComponentIndex = 0u;
+    std::size_t normalCurrentComponentIndex = 0u;
 
     // TODO: Use flat hash map.
 

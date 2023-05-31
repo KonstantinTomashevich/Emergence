@@ -14,7 +14,7 @@ class UnorderedPool final
 public:
     /// \param _chunkSize Fixed chunk size.
     /// \param _alignment Address alignment, required for each chunk.
-    /// \invariant _chunkSize must be greater or equal to `sizeof (uintptr_t)`.
+    /// \invariant _chunkSize must be greater or equal to `sizeof (std::uintptr_t)`.
     UnorderedPool (Profiler::AllocationGroup _group, std::size_t _chunkSize, std::size_t _alignment) noexcept;
 
     /// \param _preferredPageCapacity Allocator will create pages with given capacity, if possible.
@@ -59,6 +59,6 @@ public:
     UnorderedPool &operator= (UnorderedPool &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 7u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 7u);
 };
 } // namespace Emergence::Memory

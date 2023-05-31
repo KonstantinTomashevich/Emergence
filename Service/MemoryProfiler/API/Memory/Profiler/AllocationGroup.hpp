@@ -49,9 +49,9 @@ public:
         /// AllocationGroup constructs iterators.
         friend class AllocationGroup;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
-        explicit Iterator (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit Iterator (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \return Root group of the AllocationGroup tree. Always exists.
@@ -101,22 +101,22 @@ public:
     /// \brief Record allocation of given amount of bytes.
     /// \details Allocated bytes are reserved for this group, but not yet used by any object.
     ///          Thread safe.
-    void Allocate (size_t _bytesCount) noexcept;
+    void Allocate (std::size_t _bytesCount) noexcept;
 
     /// \brief Record acquisition of given amount of bytes for usage.
     /// \invariant ::GetReserved >= _bytesCount
     /// \details Thread safe.
-    void Acquire (size_t _bytesCount) noexcept;
+    void Acquire (std::size_t _bytesCount) noexcept;
 
     /// \brief Record that given amount of bytes is no longer used by any object.
     /// \invariant ::GetAcquired >= _bytesCount
     /// \details Thread safe.
-    void Release (size_t _bytesCount) noexcept;
+    void Release (std::size_t _bytesCount) noexcept;
 
     /// \brief Record that given amount of bytes is no longer owned by this group.
     /// \invariant ::GetReserved >= _bytesCount
     /// \details Thread safe.
-    void Free (size_t _bytesCount) noexcept;
+    void Free (std::size_t _bytesCount) noexcept;
 
     /// \return Allocation group, that contains this group as subgroup.
     /// \details Parent of ::Root is empty placeholder group, which in turn is the parent of itself.
@@ -130,16 +130,16 @@ public:
     [[nodiscard]] UniqueString GetId () const noexcept;
 
     /// \return Amount of bytes, that are used by any object.
-    [[nodiscard]] size_t GetAcquired () const noexcept;
+    [[nodiscard]] std::size_t GetAcquired () const noexcept;
 
     /// \return Amount of bytes, that are not used by any object, but reserved for usage in future.
-    [[nodiscard]] size_t GetReserved () const noexcept;
+    [[nodiscard]] std::size_t GetReserved () const noexcept;
 
     /// \return Total amount of bytes, that are owned by allocation group.
-    [[nodiscard]] size_t GetTotal () const noexcept;
+    [[nodiscard]] std::size_t GetTotal () const noexcept;
 
     /// \details Guaranteed to be unique, but does not persist through program executions.
-    [[nodiscard]] uintptr_t Hash () const noexcept;
+    [[nodiscard]] std::uintptr_t Hash () const noexcept;
 
     AllocationGroup &operator= (const AllocationGroup &_other) noexcept;
 

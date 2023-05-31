@@ -12,7 +12,7 @@ function (link_celerity_with_dependencies TARGET_NAME)
     sober_naming_variant_target (Celerity Original CELERITY_LIBRARY_TARGET)
     sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_TARGET)
 
-    target_link_libraries ("${TARGET_NAME}" PRIVATE
+    sober_target_link_libraries ("${TARGET_NAME}" PRIVATE
             ${ASSERT_IMPLEMENTATION_TARGET} ${JOB_DISPATCHER_IMPLEMENTATION_TARGET}
             ${LOG_IMPLEMENTATION_TARGET} ${MEMORY_IMPLEMENTATION_TARGET}
             ${MEMORY_PROFILER_IMPLEMENTATION_TARGET} ${RECORD_COLLECTION_IMPLEMENTATION_TARGET}

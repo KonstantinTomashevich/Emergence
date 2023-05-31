@@ -16,7 +16,7 @@ public:
 
     const char *operator* () const noexcept;
 
-    [[nodiscard]] uintptr_t Hash () const noexcept;
+    [[nodiscard]] std::uintptr_t Hash () const noexcept;
 
     bool operator== (const UniqueString &_other) const;
 

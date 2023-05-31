@@ -22,10 +22,10 @@ struct ButtonControl final
     Container::Utf8String label;
 
     /// \brief Width of button control.
-    uint32_t width = 0u;
+    std::uint32_t width = 0u;
 
     /// \brief Height of button control.
-    uint32_t height = 0u;
+    std::uint32_t height = 0u;
 
     /// \brief Input action that will be sent in InputActionHolder on button click.
     InputAction onClickAction;
@@ -37,6 +37,7 @@ struct ButtonControl final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId labelKey;
+        StandardLayout::FieldId label;
         StandardLayout::FieldId width;
         StandardLayout::FieldId height;
 

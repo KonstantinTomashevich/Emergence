@@ -1,0 +1,43 @@
+# ResourceObject
+parent: ""
+changelist:
+  - component:
+      type: Sprite2dComponent
+      content:
+        objectId: 0
+        spriteId: 0
+        materialInstanceId: MI_ForestTiles
+        uv:
+          min:
+            x: 0.601
+            y: 0.501
+          max:
+            x: 0.799
+            y: 0.749
+        halfSize:
+            x: 0.5
+            y: 0.5
+        layer: 0
+        visibilityMask: 1
+  - component:
+      type: RigidBody2dComponent
+      content:
+        objectId: 0
+        type: 0
+  - component:
+      type: CollisionShape2dComponent
+      content:
+        objectId: 0
+        shapeId: 1
+        translation:
+          x: 0
+          y: 0
+        rotation: 0
+        geometry:
+          type: 0
+          boxHalfExtents:
+            x: 0.5
+            y: 0.5
+        materialId: DM_Default
+        trigger: 0
+        collisionGroup: 0

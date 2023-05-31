@@ -15,7 +15,7 @@ sober_naming_implementation_target (StandardLayoutMapping Original STANDARD_LAYO
 sober_naming_implementation_target (Testing Doctest TESTING_IMPLEMENTATION_TARGET)
 sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_TARGET)
 
-target_link_libraries (TestSerializationOriginal PRIVATE
+sober_target_link_libraries (TestSerializationOriginal PRIVATE
         ${ASSERT_IMPLEMENTATION_TARGET} ${SERIALIZATION_LIBRARY_TARGET} ${LOG_IMPLEMENTATION_TARGET}
         ${MEMORY_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_IMPLEMENTATION_TARGET}
         ${STANDARD_LAYOUT_MAPPING_IMPLEMENTATION_TARGET}

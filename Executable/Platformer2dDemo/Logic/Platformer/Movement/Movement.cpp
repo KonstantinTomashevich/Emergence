@@ -382,7 +382,7 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Conte
             }
             else if (_context.movement->state == MovementState::ROLL &&
                      _context.movement->stateStartTimeNs +
-                             static_cast<uint64_t> (_context.configuration->rollDurationS * 1e9f) <=
+                             static_cast<std::uint64_t> (_context.configuration->rollDurationS * 1e9f) <=
                          _context.time->fixedTimeNs)
             {
                 transit (MovementState::IDLE);
@@ -397,7 +397,7 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Conte
             }
             else if (_context.movement->state == MovementState::SLIDE &&
                      _context.movement->stateStartTimeNs +
-                             static_cast<uint64_t> (_context.configuration->slideDurationS * 1e9f) <=
+                             static_cast<std::uint64_t> (_context.configuration->slideDurationS * 1e9f) <=
                          _context.time->fixedTimeNs)
             {
                 transit (MovementState::IDLE);
@@ -417,7 +417,7 @@ MovementState MovementProcessor::RunStateMachine (const MovementProcessor::Conte
 
 void MovementProcessor::UpdateShapesWithMovementContext (const MovementComponent *_movement) noexcept
 {
-    const uint8_t currentStateFlag = uint8_t {1u} << static_cast<uint8_t> (_movement->state);
+    const std::uint8_t currentStateFlag = std::uint8_t {1u} << static_cast<std::uint8_t> (_movement->state);
     for (auto contextCursor = removeCollisionShapeMovementContextByObjectId.Execute (&_movement->objectId);
          const auto *context =
              static_cast<const CollisionShapeMovementContextComponent *> (contextCursor.ReadConst ());)
@@ -425,7 +425,7 @@ void MovementProcessor::UpdateShapesWithMovementContext (const MovementComponent
         if (auto shapeCursor = editCollisionShapeByShapeId.Execute (&context->shapeId);
             auto *shape = static_cast<Emergence::Celerity::CollisionShape2dComponent *> (*shapeCursor))
         {
-            shape->enabled = static_cast<uint8_t> (context->supportedStates) & currentStateFlag;
+            shape->enabled = static_cast<std::uint8_t> (context->supportedStates) & currentStateFlag;
             // Update shape offset using movement direction.
             shape->translation.x = _movement->lastMovementDirection == MovementDirection::RIGHT ?
                                        -Emergence::Math::Abs (shape->translation.x) :

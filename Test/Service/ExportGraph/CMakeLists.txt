@@ -1,6 +1,6 @@
 add_subdirectory (Expectation)
 
-sober_test_begin (ExportGraph)
+sober_test_begin (ExportGraph OBJECT)
     file (GLOB_RECURSE SOURCES "Shared/*.cpp")
     file (GLOB_RECURSE HEADERS "Shared/*.hpp")
     list (APPEND SOURCES ${HEADERS})

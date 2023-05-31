@@ -50,7 +50,7 @@ void Initializer (GameState &_gameState,
                   Emergence::Celerity::World &_world,
                   Emergence::Celerity::WorldView &_view) noexcept
 {
-    constexpr uint64_t MAX_ASSEMBLY_TIME_NS = 10000000u;
+    constexpr std::uint64_t MAX_ASSEMBLY_TIME_NS = 10000000u;
 
     Emergence::Celerity::PipelineBuilder mainPipelineBuilder {&_view};
     mainPipelineBuilder.Begin ("FixedUpdate"_us, Emergence::Celerity::PipelineType::FIXED);

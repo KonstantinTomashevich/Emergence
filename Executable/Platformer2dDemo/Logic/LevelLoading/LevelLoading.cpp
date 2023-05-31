@@ -6,8 +6,6 @@
 #include <Celerity/Resource/Object/Messages.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
-#include <Configuration/Paths.hpp>
-
 #include <LevelLoading/LevelLoading.hpp>
 #include <LevelLoading/LevelLoadingSingleton.hpp>
 
@@ -114,8 +112,7 @@ void LevelLoader::RequestDescriptor (const LevelLoadingSingleton *_levelLoading)
 {
     auto cursor = insertResourceObjectRequest.Execute ();
     auto *request = static_cast<Emergence::Celerity::ResourceObjectRequest *> (++cursor);
-    request->folder = EMERGENCE_BUILD_STRING (GetLevelsPath (), "/", _levelLoading->levelName);
-    request->object = _levelLoading->levelName;
+    request->objectId = _levelLoading->levelName;
 }
 
 bool LevelLoader::CheckDescriptorLoadingResponse (const LevelLoadingSingleton *_levelLoading) noexcept
@@ -124,7 +121,7 @@ bool LevelLoader::CheckDescriptorLoadingResponse (const LevelLoadingSingleton *_
          const auto *response = static_cast<const Emergence::Celerity::ResourceObjectLoadedResponse *> (*cursor);
          ++cursor)
     {
-        if (response->object == _levelLoading->levelName)
+        if (response->objectId == _levelLoading->levelName)
         {
             return true;
         }

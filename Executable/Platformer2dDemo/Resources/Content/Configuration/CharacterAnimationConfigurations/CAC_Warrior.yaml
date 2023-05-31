@@ -1,0 +1,8 @@
+# CharacterAnimationConfiguration
+crouchAnimationId: A_WarriorCrouch
+fallAnimationId: A_WarriorFall
+idleAnimationId: A_WarriorIdle
+jumpAnimationId: A_WarriorJump
+rollAnimationId: A_WarriorRoll
+runAnimationId: A_WarriorRun
+slideAnimationId: A_WarriorSlide

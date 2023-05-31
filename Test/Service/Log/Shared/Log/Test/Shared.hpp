@@ -33,7 +33,7 @@ constexpr const char *WARNING_MESSAGE = "Warning message";
 constexpr const char *ERROR_MESSAGE = "Error message";
 constexpr const char *CRITICAL_ERROR_MESSAGE = "Critical error message";
 
-Container::StringBuilder ConstructMessage (std::size_t _index, const char *_message);
+void ConstructMessage (Container::StringBuilder &_builder, std::size_t _index, const char *_message);
 
 Container::Optional<std::size_t> ExtractThreadIndexFromMessage (const Container::String &_message);
 } // namespace Emergence::Log::Test

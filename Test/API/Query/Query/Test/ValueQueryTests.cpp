@@ -7,19 +7,19 @@ namespace Emergence::Query::Test::ValueQuery
 {
 using namespace Tasks;
 
-constexpr uint8_t FLAG_PLAYER_ID_SOURCE = 1u;
+constexpr std::uint8_t FLAG_PLAYER_ID_SOURCE = 1u;
 
-constexpr uint8_t FLAG_PLAYER_NAME_SOURCE = 1u << 1u;
+constexpr std::uint8_t FLAG_PLAYER_NAME_SOURCE = 1u << 1u;
 
-constexpr uint8_t FLAG_PLAYER_CLASS_ID_SOURCE = 1u << 2u;
+constexpr std::uint8_t FLAG_PLAYER_CLASS_ID_SOURCE = 1u << 2u;
 
-constexpr uint8_t FLAG_PLAYER_NAME_AND_ID_SOURCE = 1u << 3u;
+constexpr std::uint8_t FLAG_PLAYER_NAME_AND_ID_SOURCE = 1u << 3u;
 
-constexpr uint8_t FLAG_PLAYER_ALIVE_SOURCE = 1u << 4u;
+constexpr std::uint8_t FLAG_PLAYER_ALIVE_SOURCE = 1u << 4u;
 
-constexpr uint8_t FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE = 1u << 5u;
+constexpr std::uint8_t FLAG_PLAYER_ALIVE_AND_STUNNED_SOURCE = 1u << 5u;
 
-static Storage RequestStorage (const Container::Vector<const void *> &_objects, uint8_t _sources)
+static Storage RequestStorage (const Container::Vector<const void *> &_objects, std::uint8_t _sources)
 {
     Storage storage {Player::Reflect ().mapping, _objects, {}};
 

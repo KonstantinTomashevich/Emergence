@@ -1,9 +1,12 @@
 # Adds custom command that copies shared libraries, requested by given target.
+# Currently, only Windows platform is supported as there is no TARGET_RUNTIME_DLLS on other platforms.
 function (copy_required_shared_libraries TARGET)
-    add_custom_command (
-            TARGET "${TARGET}" POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${TARGET}> $<TARGET_FILE_DIR:${TARGET}>
-            COMMAND_EXPAND_LISTS)
+    if (WIN32)
+        add_custom_command (
+                TARGET "${TARGET}" POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${TARGET}> $<TARGET_FILE_DIR:${TARGET}>
+                COMMAND_EXPAND_LISTS)
+    endif ()
 endfunction ()
 
 # Writes given content to given file, unless it already has equal content.
@@ -32,40 +35,4 @@ function (call_code_generation ROOT_DIRECTORY)
         include (${GENERATOR})
         write_if_not_equal ("${TARGET_FILE}" "${CONTENT}")
     endforeach ()
-endfunction ()
-
-# Recursively finds all targets that are linked to given target.
-# Must be called after all linked targets are guarantied to be declared.
-function (find_linked_targets_recursively TARGET OUTPUT)
-    set (ALL_LINKED_TARGETS)
-    set (SCAN_QUEUE)
-    list (APPEND SCAN_QUEUE ${TARGET})
-    list (LENGTH SCAN_QUEUE SCAN_QUEUE_LENGTH)
-
-    while (SCAN_QUEUE_LENGTH GREATER 0)
-        list (POP_BACK SCAN_QUEUE ITEM)
-        if (TARGET ${ITEM})
-            get_target_property (LINKED_TARGETS ${ITEM} INTERFACE_LINK_LIBRARIES)
-            foreach (LINKED_TARGET ${LINKED_TARGETS})
-                # Cleanup link-only generator specifications.
-                if (LINKED_TARGET MATCHES "^\\$<LINK_ONLY:")
-                    string (LENGTH "${LINKED_TARGET}" LINKED_TARGET_LENGTH)
-                    math (EXPR NEW_LENGTH "${LINKED_TARGET_LENGTH} - 13")
-                    string (SUBSTRING "${LINKED_TARGET}" 12 ${NEW_LENGTH} LINKED_TARGET)
-                endif ()
-
-                if (TARGET ${LINKED_TARGET})
-                    list (FIND ALL_LINKED_TARGETS "${LINKED_TARGET}" LINKED_TARGET_INDEX)
-                    if (LINKED_TARGET_INDEX EQUAL -1)
-                        list (APPEND ALL_LINKED_TARGETS ${LINKED_TARGET})
-                        list (APPEND SCAN_QUEUE ${LINKED_TARGET})
-                    endif ()
-                endif ()
-            endforeach ()
-        endif ()
-
-        list (LENGTH SCAN_QUEUE SCAN_QUEUE_LENGTH)
-    endwhile ()
-
-    set ("${OUTPUT}" "${ALL_LINKED_TARGETS}" PARENT_SCOPE)
 endfunction ()

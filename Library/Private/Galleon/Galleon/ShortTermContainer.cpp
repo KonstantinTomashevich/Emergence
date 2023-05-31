@@ -230,10 +230,10 @@ const void *ShortTermContainer::GetNodeContent (const void *_node) noexcept
 ShortTermContainer::ShortTermContainer (CargoDeck *_deck, StandardLayout::Mapping _typeMapping) noexcept
     : ContainerBase (_deck, std::move (_typeMapping)),
       pool (Memory::Profiler::AllocationGroup {Memory::UniqueString {typeMapping.GetName ()}},
-            typeMapping.GetObjectSize () + sizeof (uintptr_t),
+            typeMapping.GetObjectSize () + sizeof (std::uintptr_t),
             typeMapping.GetObjectAlignment ())
 {
-    EMERGENCE_ASSERT (typeMapping.GetObjectSize () % sizeof (uintptr_t) == 0u);
+    EMERGENCE_ASSERT (typeMapping.GetObjectSize () % sizeof (std::uintptr_t) == 0u);
 }
 
 ShortTermContainer::~ShortTermContainer () noexcept
@@ -248,7 +248,7 @@ ShortTermContainer::~ShortTermContainer () noexcept
 
 const void *ShortTermContainer::GetNextNode (const void *_node) noexcept
 {
-    return *reinterpret_cast<void *const *> (static_cast<const uint8_t *> (_node) + typeMapping.GetObjectSize ());
+    return *reinterpret_cast<void *const *> (static_cast<const std::uint8_t *> (_node) + typeMapping.GetObjectSize ());
 }
 
 void *ShortTermContainer::GetNextNode (void *_node) noexcept
@@ -258,6 +258,6 @@ void *ShortTermContainer::GetNextNode (void *_node) noexcept
 
 void ShortTermContainer::SetNextNode (void *_node, void *_next) noexcept
 {
-    *reinterpret_cast<void **> (static_cast<uint8_t *> (_node) + typeMapping.GetObjectSize ()) = _next;
+    *reinterpret_cast<void **> (static_cast<std::uint8_t *> (_node) + typeMapping.GetObjectSize ()) = _next;
 }
 } // namespace Emergence::Galleon

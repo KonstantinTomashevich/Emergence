@@ -1,4 +1,4 @@
-#include <numeric>
+#include <limits>
 
 #include <Assert/Assert.hpp>
 

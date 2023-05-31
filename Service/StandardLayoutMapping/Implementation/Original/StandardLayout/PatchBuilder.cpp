@@ -18,14 +18,14 @@ Patch PatchBuilder::FromDifference (const Mapping &_typeMapping, const void *_ch
          iterator != end; ++iterator)
     {
         Field field = *iterator;
-        const uint8_t *changedAddress = static_cast<const uint8_t *> (_changed) + field.GetOffset ();
-        const uint8_t *initialAddress = static_cast<const uint8_t *> (_initial) + field.GetOffset ();
+        const std::uint8_t *changedAddress = static_cast<const std::uint8_t *> (_changed) + field.GetOffset ();
+        const std::uint8_t *initialAddress = static_cast<const std::uint8_t *> (_initial) + field.GetOffset ();
 
         switch (field.GetArchetype ())
         {
         case FieldArchetype::BIT:
         {
-            const uint8_t mask = 1u << field.GetBitOffset ();
+            const std::uint8_t mask = 1u << field.GetBitOffset ();
             if ((*changedAddress & mask) != (*initialAddress & mask))
             {
                 builder.Set (_typeMapping.GetFieldId (field),
@@ -67,19 +67,19 @@ Patch PatchBuilder::FromDifference (const Mapping &_typeMapping, const void *_ch
             switch (field.GetSize ())
             {
             case 1u:
-                DO_CHECK (uint8_t)
+                DO_CHECK (std::uint8_t)
                 break;
 
             case 2u:
-                DO_CHECK (uint16_t)
+                DO_CHECK (std::uint16_t)
                 break;
 
             case 4u:
-                DO_CHECK (uint32_t)
+                DO_CHECK (std::uint32_t)
                 break;
 
             case 8u:
-                DO_CHECK (uint64_t)
+                DO_CHECK (std::uint64_t)
                 break;
             }
             break;
@@ -107,6 +107,9 @@ Patch PatchBuilder::FromDifference (const Mapping &_typeMapping, const void *_ch
         case FieldArchetype::STRING:
         case FieldArchetype::BLOCK:
         case FieldArchetype::NESTED_OBJECT:
+        case FieldArchetype::UTF8_STRING:
+        case FieldArchetype::VECTOR:
+        case FieldArchetype::PATCH:
             // Do nothing: unsupported archetypes. Nested field is actually supported
             // due to projection, but its whole-field registration is ignored like that.
             break;
@@ -168,24 +171,24 @@ void PatchBuilder::SetInt64 (FieldId _field, int64_t _value) noexcept
     block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<int64_t, VALUE_MAX_SIZE> (_value));
 }
 
-void PatchBuilder::SetUInt8 (FieldId _field, uint8_t _value) noexcept
+void PatchBuilder::SetUInt8 (FieldId _field, std::uint8_t _value) noexcept
 {
-    block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<uint8_t, VALUE_MAX_SIZE> (_value));
+    block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<std::uint8_t, VALUE_MAX_SIZE> (_value));
 }
 
-void PatchBuilder::SetUInt16 (FieldId _field, uint16_t _value) noexcept
+void PatchBuilder::SetUInt16 (FieldId _field, std::uint16_t _value) noexcept
 {
-    block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<uint16_t, VALUE_MAX_SIZE> (_value));
+    block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<std::uint16_t, VALUE_MAX_SIZE> (_value));
 }
 
-void PatchBuilder::SetUInt32 (FieldId _field, uint32_t _value) noexcept
+void PatchBuilder::SetUInt32 (FieldId _field, std::uint32_t _value) noexcept
 {
-    block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<uint32_t, VALUE_MAX_SIZE> (_value));
+    block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<std::uint32_t, VALUE_MAX_SIZE> (_value));
 }
 
-void PatchBuilder::SetUInt64 (FieldId _field, uint64_t _value) noexcept
+void PatchBuilder::SetUInt64 (FieldId _field, std::uint64_t _value) noexcept
 {
-    block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<uint64_t, VALUE_MAX_SIZE> (_value));
+    block_cast<PlainPatchBuilder> (data).Set (_field, array_cast<std::uint64_t, VALUE_MAX_SIZE> (_value));
 }
 
 void PatchBuilder::SetFloat (FieldId _field, float _value) noexcept

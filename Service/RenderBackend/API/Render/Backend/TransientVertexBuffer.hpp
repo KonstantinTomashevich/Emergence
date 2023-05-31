@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -14,10 +16,10 @@ class TransientVertexBuffer
 {
 public:
     /// \brief If there is not enough space to allocate buffer for required count, returns maximum possible count.
-    static uint32_t TruncateSizeToAvailability (uint32_t _vertexCount, const VertexLayout &_layout);
+    static std::uint32_t TruncateSizeToAvailability (std::uint32_t _vertexCount, const VertexLayout &_layout);
 
     /// \brief Constructs temporary buffer for given count of vertices using given vertex layout.
-    TransientVertexBuffer (uint32_t _vertexCount, const VertexLayout &_layout) noexcept;
+    TransientVertexBuffer (std::uint32_t _vertexCount, const VertexLayout &_layout) noexcept;
 
     TransientVertexBuffer (const TransientVertexBuffer &_other) = delete;
 
@@ -36,6 +38,6 @@ public:
 private:
     friend class SubmissionAgent;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
 };
 } // namespace Emergence::Render::Backend

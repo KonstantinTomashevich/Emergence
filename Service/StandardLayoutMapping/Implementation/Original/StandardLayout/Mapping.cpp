@@ -75,6 +75,13 @@ void Mapping::Construct (void *_address) const noexcept
     handle->Construct (_address);
 }
 
+void Mapping::MoveConstruct (void *_address, void *_sourceAddress) const noexcept
+{
+    const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
+    EMERGENCE_ASSERT (handle);
+    handle->MoveConstruct (_address, _sourceAddress);
+}
+
 void Mapping::Destruct (void *_address) const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
@@ -169,15 +176,25 @@ FieldId Mapping::GetFieldId (const Field &_field) const noexcept
 uintptr_t Mapping::Hash () const noexcept
 {
     const auto &handle = block_cast<Handling::Handle<PlainMapping>> (data);
-    return reinterpret_cast<uintptr_t> (handle.Get ());
+    return reinterpret_cast<std::uintptr_t> (handle.Get ());
 }
 
-Mapping::Mapping (const std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+bool Mapping::IsHandleValid () const noexcept
+{
+    return block_cast<Handling::Handle<PlainMapping>> (data).Get ();
+}
+
+Mapping::operator bool () const noexcept
+{
+    return IsHandleValid ();
+}
+
+Mapping::Mapping (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Handling::Handle<PlainMapping> (block_cast<Handling::Handle<PlainMapping>> (_data));
 }
 
-Mapping::Mapping (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept
+Mapping::Mapping (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
 {
     new (&data) Handling::Handle<PlainMapping> (std::move (block_cast<Handling::Handle<PlainMapping>> (_data)));
 }

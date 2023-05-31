@@ -5,3 +5,4 @@ and [RenderFoundation extension](../RenderFoundation/README.md):
 
 - Sprite rendering with batching.
 - Camera with attachment support.
+- UV-based animations for 2d sprites.

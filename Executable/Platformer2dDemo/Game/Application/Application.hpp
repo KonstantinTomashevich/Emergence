@@ -9,6 +9,8 @@
 
 #include <Memory/Recording/StreamSerializer.hpp>
 
+#include <Resource/Provider/ResourceProvider.hpp>
+
 class GameState;
 struct SDL_Window;
 
@@ -38,9 +40,10 @@ private:
 
     void EventLoop () noexcept;
 
-    [[nodiscard]] uint64_t SDLTicksToTime (uint64_t _ticks) const noexcept;
+    [[nodiscard]] std::uint64_t SDLTicksToTime (std::uint64_t _ticks) const noexcept;
 
     Settings settings;
+
     GameState *gameState = nullptr;
     Emergence::Memory::Heap gameStateHeap {Emergence::Memory::Profiler::AllocationGroup {
         Emergence::Memory::Profiler::AllocationGroup::Root (), Emergence::Memory::UniqueString {"GameState"}}};
@@ -50,6 +53,7 @@ private:
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
-    uint64_t sdlInitTimeNs = 0u;
-    uint64_t sdlTicksAfterInit = 0u;
+    Emergence::Resource::Provider::ResourceProvider resourceProvider;
+    std::uint64_t sdlInitTimeNs = 0u;
+    std::uint64_t sdlTicksAfterInit = 0u;
 };

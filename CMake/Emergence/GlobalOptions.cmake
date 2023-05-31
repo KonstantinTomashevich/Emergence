@@ -54,14 +54,26 @@ function (add_common_compile_options)
                         # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
                         -Wno-zero-length-array
                         # In some cases zero-arguments variadics are intentional and allows better customizations.
-                        -Wno-gnu-zero-variadic-macro-arguments)
+                        -Wno-gnu-zero-variadic-macro-arguments
+                        # In most cases, using offsetof on non-POD types is safe nowadays, therefore we disable this warning.
+                        -Wno-invalid-offsetof
+                        # Sometimes CLang 14 incorrectly parses directory names for some reason and false positives this warning.
+                        -Wno-nonportable-include-path)
             else ()
                 # Exceptions in GCC format.
                 add_compile_options (
-                        # Used by XXHash.
-                        -Wno-error=array-bounds)
+                        # Used by XXHash and in some other places, that rely on block_cast.
+                        -Wno-array-bounds
+                        # In most cases, using offsetof on non-POD types is safe nowadays, therefore we disable this warning.
+                        -Wno-invalid-offsetof)
             endif ()
         endif ()
+    endif ()
+
+    if (NOT MSVC)
+        # On GCC we need to link STL and math everywhere.
+        # It seems easier to do it globally here instead of adding this code to every target.
+        link_libraries (m stdc++)
     endif ()
 endfunction ()
 

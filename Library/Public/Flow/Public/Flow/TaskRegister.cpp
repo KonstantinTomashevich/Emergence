@@ -1,7 +1,9 @@
 #include <bitset>
+#include <limits>
 
 #include <Assert/Assert.hpp>
 
+#include <Container/Algorithm.hpp>
 #include <Container/HashMap.hpp>
 #include <Container/Optional.hpp>
 
@@ -62,7 +64,7 @@ private:
 
     void AddEdgeToCollection (Emergence::Task::Collection &_collection,
                               const Node &_sourceNode,
-                              size_t _targetIndex) const noexcept;
+                              std::size_t _targetIndex) const noexcept;
 
     const TaskRegister *source = nullptr;
     Container::Vector<Node> nodes {GetDefaultAllocationGroup ()};
@@ -435,7 +437,7 @@ bool TaskGraph::Verify () const noexcept
 
 void TaskGraph::AddEdgeToCollection (Emergence::Task::Collection &_collection,
                                      const Node &_sourceNode,
-                                     size_t _targetIndex) const noexcept
+                                     std::size_t _targetIndex) const noexcept
 {
     const Node &targetNode = nodes[_targetIndex];
 
@@ -635,12 +637,12 @@ void TaskRegister::Clear () noexcept
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 void TaskRegister::AssertNodeNameUniqueness ([[maybe_unused]] Memory::UniqueString _name) const noexcept
 {
-#ifndef NDEBUG
-    auto taskIterator = std::find_if (tasks.begin (), tasks.end (),
-                                      [_name] (const Task &_task)
-                                      {
-                                          return _task.name == _name;
-                                      });
+#if defined(EMERGENCE_ASSERT_ENABLED)
+    auto taskIterator = Container::FindIf (tasks.begin (), tasks.end (),
+                                           [_name] (const Task &_task)
+                                           {
+                                               return _task.name == _name;
+                                           });
 
     if (taskIterator != tasks.end ())
     {
@@ -648,11 +650,11 @@ void TaskRegister::AssertNodeNameUniqueness ([[maybe_unused]] Memory::UniqueStri
         EMERGENCE_ASSERT (false);
     }
 
-    auto checkpointIterator = std::find_if (checkpoints.begin (), checkpoints.end (),
-                                            [_name] (const Checkpoint &_checkpoint)
-                                            {
-                                                return _checkpoint.name == _name;
-                                            });
+    auto checkpointIterator = Container::FindIf (checkpoints.begin (), checkpoints.end (),
+                                                 [_name] (const Checkpoint &_checkpoint)
+                                                 {
+                                                     return _checkpoint.name == _name;
+                                                 });
 
     if (checkpointIterator != checkpoints.end ())
     {

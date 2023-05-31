@@ -1,3 +1,5 @@
+#include <limits>
+
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
@@ -11,7 +13,6 @@
 #include <Celerity/Resource/Object/Messages.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 
-#include <Configuration/Paths.hpp>
 #include <Configuration/VisibilityMask.hpp>
 
 #include <LoadingAnimation/LoadingAnimation.hpp>
@@ -29,7 +30,7 @@ const Emergence::Memory::UniqueString Checkpoint::STARTED {"LoadingAnimation::St
 const Emergence::Memory::UniqueString Checkpoint::FINISHED {"LoadingAnimation::Finished"};
 
 static const Emergence::Memory::UniqueString LOADING_VIEWPORT_NAME {"LoadingAnimationViewport"};
-static const Emergence::Memory::UniqueString LOADING_PROTOTYPE_NAME {"LoadingAnimation"};
+static const Emergence::Memory::UniqueString LOADING_PROTOTYPE_NAME {"RO_LoadingAnimation"};
 
 class Manager final : public Emergence::Celerity::TaskExecutorBase<Manager>
 {
@@ -116,7 +117,7 @@ void Manager::Execute () noexcept
 
     struct
     {
-        Emergence::Memory::UniqueString assetId = "CrateLoading"_us;
+        Emergence::Memory::UniqueString assetId = "MI_CrateLoading"_us;
         Emergence::Memory::UniqueString uniformName = "angle"_us;
     } query;
 
@@ -134,8 +135,7 @@ void Manager::RequestDescriptorLoading () noexcept
     {
         auto cursor = insertResourceObjectRequest.Execute ();
         auto *request = static_cast<Emergence::Celerity::ResourceObjectRequest *> (++cursor);
-        request->folder = EMERGENCE_BUILD_STRING (GetObjectsPath (), "/", LOADING_PROTOTYPE_NAME);
-        request->object = LOADING_PROTOTYPE_NAME;
+        request->objectId = LOADING_PROTOTYPE_NAME;
     }
 }
 
@@ -161,7 +161,7 @@ void Manager::Instantiate (LoadingAnimationSingleton *_loadingAnimation) noexcep
     auto *camera = static_cast<Emergence::Celerity::Camera2dComponent *> (++cameraCursor);
     camera->objectId = cameraTransform->GetObjectId ();
     camera->halfOrthographicSize = 5.0f;
-    camera->visibilityMask = static_cast<uint64_t> (VisibilityMask::LOADING_ANIMATION);
+    camera->visibilityMask = static_cast<std::uint64_t> (VisibilityMask::LOADING_ANIMATION);
 
     auto viewportCursor = insertViewport.Execute ();
     auto *worldViewport = static_cast<Emergence::Celerity::Viewport *> (++viewportCursor);

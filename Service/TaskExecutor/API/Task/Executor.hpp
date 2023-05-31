@@ -30,6 +30,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (Executor);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 };
 } // namespace Emergence::Task

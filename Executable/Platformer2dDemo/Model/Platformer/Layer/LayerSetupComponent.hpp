@@ -8,7 +8,7 @@ struct LayerSetupComponent final
 {
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    uint16_t layer = 0u;
+    std::uint16_t layer = 0u;
 
     struct Reflection final
     {

@@ -1,4 +1,4 @@
-sober_library_begin (MemoryRecordingClient STATIC)
+sober_library_begin (MemoryRecordingClient OBJECT)
     file (GLOB_RECURSE HEADERS *.hpp)
     file (GLOB_RECURSE SOURCES *.cpp)
     list (APPEND SOURCES ${HEADERS})
@@ -27,7 +27,7 @@ sober_library_end ()
 
 add_executable (MemoryRecordingClientLauncher "${SOBER_TEST_RUNNER_STUB_SOURCE}")
 sober_naming_variant_target (MemoryRecordingClient Original CLIENT_TARGET)
-target_link_libraries (MemoryRecordingClientLauncher PUBLIC "${CLIENT_TARGET}")
+sober_target_link_libraries (MemoryRecordingClientLauncher PUBLIC "${CLIENT_TARGET}")
 
 set_target_properties (MemoryRecordingClientLauncher PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Tools/MemoryRecordingClient")

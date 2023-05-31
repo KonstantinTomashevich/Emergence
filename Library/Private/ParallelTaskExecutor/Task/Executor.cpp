@@ -59,7 +59,7 @@ private:
     std::atomic_flag tasksExecuting;
 
     /// \brief Indicates how much unfinished tasks left during this execution.
-    std::atomic_unsigned_lock_free tasksLeftToExecute = 0u;
+    std::atomic_uintptr_t tasksLeftToExecute = 0u;
 };
 
 using namespace Memory::Literals;
@@ -112,11 +112,11 @@ void ExecutorImplementation::Execute () noexcept
 
     for (std::size_t taskIndex : entryTaskIndices)
     {
-        Job::Dispatcher::Global ().Dispatch (
-            [this, taskIndex] ()
-            {
-                TaskFunction (taskIndex);
-            });
+        Job::Dispatcher::Global ().Dispatch (Job::Priority::FOREGROUND,
+                                             [this, taskIndex] ()
+                                             {
+                                                 TaskFunction (taskIndex);
+                                             });
     }
 
     tasksExecuting.wait (true, std::memory_order_acquire);
@@ -135,11 +135,11 @@ void ExecutorImplementation::TaskFunction (std::size_t _taskIndex) noexcept
         if (--tasks[dependantIndex].dependenciesLeftThisRun == 0u)
         {
             UnlockAtomicFlag (modifyingTasks);
-            Job::Dispatcher::Global ().Dispatch (
-                [this, dependantIndex] ()
-                {
-                    TaskFunction (dependantIndex);
-                });
+            Job::Dispatcher::Global ().Dispatch (Job::Priority::FOREGROUND,
+                                                 [this, dependantIndex] ()
+                                                 {
+                                                     TaskFunction (dependantIndex);
+                                                 });
 
             LockAtomicFlag (modifyingTasks);
         }

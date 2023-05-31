@@ -8,7 +8,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-enum class CharacterAnimationState : uint8_t
+enum class CharacterAnimationState : std::uint8_t
 {
     NONE = 0u,
     CROUCH,

@@ -38,7 +38,7 @@ bool AllocationGroup::Iterator::operator!= (const AllocationGroup::Iterator & /*
     return false;
 }
 
-AllocationGroup::Iterator::Iterator (const std::array<uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
+AllocationGroup::Iterator::Iterator (const std::array<std::uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
 {
     // Suppress unused class field warning.
     [[maybe_unused]] auto *stub = &data;
@@ -87,19 +87,19 @@ AllocationGroup::PlacedOnStack AllocationGroup::PlaceOnTop () const noexcept
     return PlacedOnStack {nullptr};
 }
 
-void AllocationGroup::Allocate (size_t /*unused*/) noexcept
+void AllocationGroup::Allocate (std::size_t /*unused*/) noexcept
 {
 }
 
-void AllocationGroup::Acquire (size_t /*unused*/) noexcept
+void AllocationGroup::Acquire (std::size_t /*unused*/) noexcept
 {
 }
 
-void AllocationGroup::Release (size_t /*unused*/) noexcept
+void AllocationGroup::Release (std::size_t /*unused*/) noexcept
 {
 }
 
-void AllocationGroup::Free (size_t /*unused*/) noexcept
+void AllocationGroup::Free (std::size_t /*unused*/) noexcept
 {
 }
 
@@ -128,19 +128,19 @@ UniqueString AllocationGroup::GetId () const noexcept
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
-size_t AllocationGroup::GetAcquired () const noexcept
+std::size_t AllocationGroup::GetAcquired () const noexcept
 {
     return 0u;
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
-size_t AllocationGroup::GetReserved () const noexcept
+std::size_t AllocationGroup::GetReserved () const noexcept
 {
     return 0u;
 }
 
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is special empty implementation.
-size_t AllocationGroup::GetTotal () const noexcept
+std::size_t AllocationGroup::GetTotal () const noexcept
 {
     return 0u;
 }

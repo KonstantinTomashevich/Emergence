@@ -2,6 +2,8 @@
 
 #include <Serialization/Test/Types.hpp>
 
+#include <StandardLayout/PatchBuilder.hpp>
+
 #define OBJECT_SERIALIZATION_TESTS(Executor)                                                                           \
     TEST_CASE (Trivial)                                                                                                \
     {                                                                                                                  \
@@ -46,135 +48,107 @@
         second.m = 172947923u;                                                                                         \
         second.n = 123838471u;                                                                                         \
         Executor (vector);                                                                                             \
-    }
-
-#define PATCH_SERIALIZATION_TESTS(Executor)                                                                            \
-    TEST_CASE (Trivial)                                                                                                \
-    {                                                                                                                  \
-        /* NOLINTNEXTLINE(bugprone-macro-parentheses): It's impossible to use parenthesis here. */                     \
-        Executor<TrivialStruct> (/*                                                                                    \
-                                    Because array data is registered as block which is not                             \
-                                    supported by patches, we are filling it with zeros.                                \
-                                  */                                                                                   \
-                                 {-19,                                                                                 \
-                                  163,                                                                                 \
-                                  -2937,                                                                               \
-                                  1123,                                                                                \
-                                  21u,                                                                                 \
-                                  784u,                                                                                \
-                                  17274u,                                                                              \
-                                  18274u,                                                                              \
-                                  1.20338f,                                                                            \
-                                  5647.385639,                                                                         \
-                                  {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u}},                                                   \
-                                 {-20,                                                                                 \
-                                  164,                                                                                 \
-                                  -2936,                                                                               \
-                                  4512,                                                                                \
-                                  17u,                                                                                 \
-                                  783u,                                                                                \
-                                  26172u,                                                                              \
-                                  18271u,                                                                              \
-                                  1.20339f,                                                                            \
-                                  5648.385639,                                                                         \
-                                  {0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u}});                                                  \
     }                                                                                                                  \
                                                                                                                        \
-    TEST_CASE (NonTrivial)                                                                                             \
+    TEST_CASE (SimpleTestStruct)                                                                                       \
     {                                                                                                                  \
-        /* NOLINTNEXTLINE(bugprone-macro-parentheses): It's impossible to use parenthesis here. */                     \
-        Executor<NonTrivialStruct> (                                                                                   \
-            {                                                                                                          \
-                (1u << NonTrivialStruct::ALIVE_OFFSET) | (1u << NonTrivialStruct::STUNNED_OFFSET),                     \
-                                                                                                                       \
-                /* Strings are zeroed because they are not supported by patches. */                                    \
-                {"\0"},                                                                                                \
-                Emergence::Memory::UniqueString {"For glory and gold!"},                                               \
-            },                                                                                                         \
-            {                                                                                                          \
-                (1u << NonTrivialStruct::ALIVE_OFFSET),                                                                \
-                {"\0"},                                                                                                \
-                Emergence::Memory::UniqueString {"Hello, world!"},                                                     \
-            });                                                                                                        \
+        SimpleTestStruct value {13u, 197u};                                                                            \
+        Executor (value);                                                                                              \
     }                                                                                                                  \
                                                                                                                        \
-    TEST_CASE (UnionPatch)                                                                                             \
+    TEST_CASE (OneLevelNestingStruct)                                                                                  \
     {                                                                                                                  \
-        UnionStruct first;                                                                                             \
-        first.type = 0u;                                                                                               \
-        first.x = 1.647f;                                                                                              \
-        first.y = 173.129337f;                                                                                         \
-                                                                                                                       \
-        UnionStruct second;                                                                                            \
-        second.type = 1u;                                                                                              \
-        second.m = 172947923u;                                                                                         \
-        second.n = 123838471u;                                                                                         \
-        Executor (first, second);                                                                                      \
+        OneLevelNestingStruct value {{13u, 197u}, {1738u, 219874132u}};                                                \
+        Executor (value);                                                                                              \
     }                                                                                                                  \
                                                                                                                        \
-    TEST_CASE (InplaceVector)                                                                                          \
+    TEST_CASE (TwoLevelNestingStruct)                                                                                  \
     {                                                                                                                  \
-        Emergence::Container::InplaceVector<UnionStruct, 4u> vector;                                                   \
-        UnionStruct &first = vector.EmplaceBack ();                                                                    \
-        first.type = 0u;                                                                                               \
-        first.x = 1.647f;                                                                                              \
-        first.y = 173.129337f;                                                                                         \
+        TwoLevelNestingStruct value {{13456u, 23786234u}, {{13u, 197u}, {1738u, 219874132u}}};                         \
+        Executor (value);                                                                                              \
+    }                                                                                                                  \
                                                                                                                        \
-        UnionStruct &second = vector.EmplaceBack ();                                                                   \
-        second.type = 1u;                                                                                              \
-        second.m = 172947923u;                                                                                         \
-        second.n = 123838471u;                                                                                         \
-        Executor (Emergence::Container::InplaceVector<UnionStruct, 4u> {}, vector);                                    \
-    }
-
-#define PATCH_BUNDLE_SERIALIZATION_TESTS(SerializeAndDeserialize)                                                      \
-    TEST_CASE (DifferentTypes)                                                                                         \
+    TEST_CASE (VectorStruct)                                                                                           \
     {                                                                                                                  \
-        const TrivialStruct trivialStructInitial;                                                                      \
-        const NonTrivialStruct nonTrivialStructInitial;                                                                \
-        const UnionStruct unionStructInitial {};                                                                       \
+        VectorStruct value {{13456u, 23786234u}, {}};                                                                  \
+        value.vector.emplace_back () = {13u, 19u};                                                                     \
+        value.vector.emplace_back () = {18376u, 1726u};                                                                \
+        value.vector.emplace_back () = {99u, 276u};                                                                    \
+        value.vector.emplace_back () = {1726489u, 1725648u};                                                           \
+        Executor (value);                                                                                              \
+    }                                                                                                                  \
                                                                                                                        \
-        TrivialStruct trivialStructChanged;                                                                            \
-        trivialStructChanged.int8 = -32;                                                                               \
-        trivialStructChanged.uint32 = 1537;                                                                            \
+    TEST_CASE (NestedVectorStruct)                                                                                     \
+    {                                                                                                                  \
+        NestedVectorStruct value;                                                                                      \
                                                                                                                        \
-        NonTrivialStruct nonTrivialStructChanged;                                                                      \
-        nonTrivialStructChanged.flags = 1u << NonTrivialStruct::ALIVE_OFFSET;                                          \
-        nonTrivialStructChanged.uniqueString = Emergence::Memory::UniqueString {"For honor!"};                         \
+        VectorStruct firstVector {{13456u, 23786234u}, {}};                                                            \
+        firstVector.vector.emplace_back () = {13u, 19u};                                                               \
+        firstVector.vector.emplace_back () = {18376u, 1726u};                                                          \
+        value.vector.emplace_back (std::move (firstVector));                                                           \
                                                                                                                        \
-        UnionStruct unionStructChanged;                                                                                \
-        unionStructChanged.type = 1u;                                                                                  \
-        unionStructChanged.m = 4u;                                                                                     \
-        unionStructChanged.n = 17u;                                                                                    \
+        VectorStruct secondVector {{16u, 234u}, {}};                                                                   \
+        secondVector.vector.emplace_back () = {1323u, 191313u};                                                        \
+        secondVector.vector.emplace_back () = {186u, 176u};                                                            \
+        value.vector.emplace_back (std::move (secondVector));                                                          \
                                                                                                                        \
-        Emergence::Container::Vector<Emergence::StandardLayout::Patch> patches;                                        \
-        SerializeAndDeserialize (                                                                                      \
-            {                                                                                                          \
-                Emergence::StandardLayout::PatchBuilder::FromDifference (                                              \
-                    NonTrivialStruct::Reflect ().mapping, &nonTrivialStructChanged, &nonTrivialStructInitial),         \
-                Emergence::StandardLayout::PatchBuilder::FromDifference (                                              \
-                    TrivialStruct::Reflect ().mapping, &trivialStructChanged, &trivialStructInitial),                  \
-                Emergence::StandardLayout::PatchBuilder::FromDifference (UnionStruct::Reflect ().mapping,              \
-                                                                         &unionStructChanged, &unionStructInitial),    \
-            },                                                                                                         \
-            patches);                                                                                                  \
+        Executor (value);                                                                                              \
+    }                                                                                                                  \
                                                                                                                        \
-        REQUIRE_EQUAL (patches.size (), 3u);                                                                           \
-        CHECK_EQUAL (patches[0u].GetTypeMapping (), NonTrivialStruct::Reflect ().mapping);                             \
-        NonTrivialStruct nonTrivialStructLoaded;                                                                       \
-        CHECK_NOT_EQUAL (nonTrivialStructLoaded, nonTrivialStructChanged);                                             \
-        patches[0u].Apply (&nonTrivialStructLoaded);                                                                   \
-        CHECK_EQUAL (nonTrivialStructLoaded, nonTrivialStructChanged);                                                 \
+    TEST_CASE (SimpleTestStructPatch)                                                                                  \
+    {                                                                                                                  \
+        const SimpleTestStruct first {13u, 179u};                                                                      \
+        const SimpleTestStruct second {13u, 189u};                                                                     \
+        PatchStruct value {Emergence::StandardLayout::PatchBuilder::FromDifference (                                   \
+            SimpleTestStruct::Reflect ().mapping, &first, &second)};                                                   \
                                                                                                                        \
-        CHECK_EQUAL (patches[1u].GetTypeMapping (), TrivialStruct::Reflect ().mapping);                                \
-        TrivialStruct trivialStructLoaded;                                                                             \
-        CHECK_NOT_EQUAL (trivialStructLoaded, trivialStructChanged);                                                   \
-        patches[1u].Apply (&trivialStructLoaded);                                                                      \
-        CHECK_EQUAL (trivialStructLoaded, trivialStructChanged);                                                       \
+        Executor (value);                                                                                              \
+    }                                                                                                                  \
                                                                                                                        \
-        CHECK_EQUAL (patches[2u].GetTypeMapping (), UnionStruct::Reflect ().mapping);                                  \
-        UnionStruct unionStructLoaded;                                                                                 \
-        CHECK_NOT_EQUAL (unionStructLoaded, unionStructChanged);                                                       \
-        patches[2u].Apply (&unionStructLoaded);                                                                        \
-        CHECK_EQUAL (unionStructLoaded, unionStructChanged);                                                           \
+    TEST_CASE (OneLevelNestingStructPatch)                                                                             \
+    {                                                                                                                  \
+        const OneLevelNestingStruct first {{13u, 197u}, {1738u, 219874132u}};                                          \
+        const OneLevelNestingStruct second {{14u, 197u}, {1739u, 219874232u}};                                         \
+        PatchStruct value {Emergence::StandardLayout::PatchBuilder::FromDifference (                                   \
+            OneLevelNestingStruct::Reflect ().mapping, &first, &second)};                                              \
+                                                                                                                       \
+        Executor (value);                                                                                              \
+    }                                                                                                                  \
+                                                                                                                       \
+    TEST_CASE (TwoLevelNestingStructPatch)                                                                             \
+    {                                                                                                                  \
+        const TwoLevelNestingStruct first {{13456u, 23786234u}, {{13u, 197u}, {1738u, 219874132u}}};                   \
+        const TwoLevelNestingStruct second {{13456u, 23786234u}, {{13u, 196u}, {1731u, 219874139u}}};                  \
+        PatchStruct value {Emergence::StandardLayout::PatchBuilder::FromDifference (                                   \
+            TwoLevelNestingStruct::Reflect ().mapping, &first, &second)};                                              \
+                                                                                                                       \
+        Executor (value);                                                                                              \
+    }                                                                                                                  \
+                                                                                                                       \
+    TEST_CASE (VectorOfPatchesStruct)                                                                                  \
+    {                                                                                                                  \
+        VectorOfPatchesStruct value;                                                                                   \
+                                                                                                                       \
+        {                                                                                                              \
+            const SimpleTestStruct first {13u, 179u};                                                                  \
+            const SimpleTestStruct second {13u, 189u};                                                                 \
+            value.patches.emplace_back () = PatchStruct {Emergence::StandardLayout::PatchBuilder::FromDifference (     \
+                SimpleTestStruct::Reflect ().mapping, &first, &second)};                                               \
+        }                                                                                                              \
+                                                                                                                       \
+        {                                                                                                              \
+            const OneLevelNestingStruct first {{13u, 197u}, {1738u, 219874132u}};                                      \
+            const OneLevelNestingStruct second {{14u, 197u}, {1739u, 219874232u}};                                     \
+            value.patches.emplace_back () = PatchStruct {Emergence::StandardLayout::PatchBuilder::FromDifference (     \
+                OneLevelNestingStruct::Reflect ().mapping, &first, &second)};                                          \
+        }                                                                                                              \
+                                                                                                                       \
+        {                                                                                                              \
+            const TwoLevelNestingStruct first {{13456u, 23786234u}, {{13u, 197u}, {1738u, 219874132u}}};               \
+            const TwoLevelNestingStruct second {{13456u, 23786234u}, {{13u, 196u}, {1731u, 219874139u}}};              \
+            value.patches.emplace_back () = PatchStruct {Emergence::StandardLayout::PatchBuilder::FromDifference (     \
+                TwoLevelNestingStruct::Reflect ().mapping, &first, &second)};                                          \
+        }                                                                                                              \
+                                                                                                                       \
+        Executor (value);                                                                                              \
     }

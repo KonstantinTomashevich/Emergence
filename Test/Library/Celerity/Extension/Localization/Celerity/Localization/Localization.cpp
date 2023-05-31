@@ -8,6 +8,8 @@
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
+#include <Resource/Provider/ResourceProvider.hpp>
+
 #include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
 
@@ -23,7 +25,7 @@ static const char *const LOCALES_ROOT = "Environment/Locale";
 struct LocalizationTestStage
 {
     Memory::UniqueString targetLocale;
-    Container::Vector<LocalizedString> expectedStrings;
+    LocaleConfiguration expectedConfiguration;
 };
 
 class LocalizationTester final : public TaskExecutorBase<LocalizationTester>
@@ -40,7 +42,7 @@ private:
     FetchAscendingRangeQuery fetchLocalizedStringByAscendingKey;
 
     Container::Vector<LocalizationTestStage> stages;
-    size_t stageIndex = 0u;
+    std::size_t stageIndex = 0u;
     bool *finishedOutput = nullptr;
 };
 
@@ -67,22 +69,26 @@ void LocalizationTester::Execute () noexcept
     auto localeCursor = modifyLocale.Execute ();
     auto *locale = static_cast<LocaleSingleton *> (*localeCursor);
     locale->targetLocale = stages[stageIndex].targetLocale;
+    LOG ("Locale state. Loaded: ", (*locale->loadedLocale ? *locale->loadedLocale : "null"),
+         ". Target: ", (*locale->targetLocale ? *locale->targetLocale : "null"),
+         ". Loading: ", (*locale->loadingLocale ? *locale->loadingLocale : "null"), ".");
 
     if (locale->loadedLocale == locale->targetLocale)
     {
-        size_t stringIndex = 0u;
+        std::size_t stringIndex = 0u;
         for (auto cursor = fetchLocalizedStringByAscendingKey.Execute (nullptr, nullptr);
              const auto *string = static_cast<const LocalizedString *> (*cursor); ++stringIndex, ++cursor)
         {
             // We expect that test strings are sorted by their id.
-            if (stringIndex < stages[stageIndex].expectedStrings.size ())
+            if (stringIndex < stages[stageIndex].expectedConfiguration.strings.size ())
             {
-                CHECK_EQUAL (stages[stageIndex].expectedStrings[stringIndex].key, string->key);
-                CHECK_EQUAL (stages[stageIndex].expectedStrings[stringIndex].value, string->value);
+                CHECK_EQUAL (stages[stageIndex].expectedConfiguration.strings[stringIndex].key, string->key);
+                CHECK_EQUAL (stages[stageIndex].expectedConfiguration.strings[stringIndex].value, string->value);
             }
         }
 
-        CHECK_EQUAL (stringIndex, stages[stageIndex].expectedStrings.size ());
+        CHECK_EQUAL (stringIndex, stages[stageIndex].expectedConfiguration.strings.size ());
+        LOG ("Finished stage ", stageIndex, ".");
         ++stageIndex;
     }
 }
@@ -91,7 +97,7 @@ struct EnvironmentLocale
 {
     Memory::UniqueString locale;
     bool binary = false;
-    Container::Vector<LocalizedString> strings;
+    LocaleConfiguration configuration;
 };
 
 using Environment = Container::Vector<EnvironmentLocale>;
@@ -104,35 +110,24 @@ void PrepareEnvironment (const Environment &_environment)
         std::filesystem::remove_all (rootPath);
     }
 
+    std::filesystem::create_directories (LOCALES_ROOT);
     for (const EnvironmentLocale &locale : _environment)
     {
-        const std::filesystem::path localePath {EMERGENCE_BUILD_STRING (LOCALES_ROOT, "/", locale.locale, "/")};
-        std::filesystem::create_directories (localePath);
-
         if (locale.binary)
         {
-            const std::filesystem::path stringsPath {EMERGENCE_BUILD_STRING (Localization::Files::STRINGS, ".bin")};
-            std::ofstream output {localePath / stringsPath, std::ios::binary};
-
-            for (const LocalizedString &string : locale.strings)
-            {
-                Serialization::Binary::SerializeString (output, *string.key);
-                Serialization::Binary::SerializeString (output, string.value.c_str ());
-            }
+            const std::filesystem::path stringsPath {EMERGENCE_BUILD_STRING (*locale.locale, ".bin")};
+            std::ofstream output {LOCALES_ROOT / stringsPath, std::ios::binary};
+            Serialization::Binary::SerializeTypeName (output, LocaleConfiguration::Reflect ().mapping.GetName ());
+            Serialization::Binary::SerializeObject (output, &locale.configuration,
+                                                    LocaleConfiguration::Reflect ().mapping);
         }
         else
         {
-            const std::filesystem::path stringsPath {EMERGENCE_BUILD_STRING (Localization::Files::STRINGS, ".yaml")};
-            std::ofstream output {localePath / stringsPath};
-            Serialization::Yaml::StringMappingSerializer serializer;
-            serializer.Begin ();
-
-            for (const LocalizedString &string : locale.strings)
-            {
-                serializer.Next (string.key, string.value);
-            }
-
-            serializer.End (output);
+            const std::filesystem::path stringsPath {EMERGENCE_BUILD_STRING (*locale.locale, ".yaml")};
+            std::ofstream output {LOCALES_ROOT / stringsPath, std::ios::binary};
+            Serialization::Yaml::SerializeTypeName (output, LocaleConfiguration::Reflect ().mapping.GetName ());
+            Serialization::Yaml::SerializeObject (output, &locale.configuration,
+                                                  LocaleConfiguration::Reflect ().mapping);
         }
     }
 }
@@ -146,8 +141,14 @@ void ExecuteTest (const Environment &_environment, Container::Vector<Localizatio
     World world {"TestWorld"_us, WorldConfiguration {}};
     PipelineBuilder builder {world.GetRootView ()};
 
+    Container::MappingRegistry resourceTypeRegistry;
+    resourceTypeRegistry.Register (LocaleConfiguration::Reflect ().mapping);
+    Resource::Provider::ResourceProvider resourceProvider {resourceTypeRegistry, {}};
+    REQUIRE ((resourceProvider.AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+              Resource::Provider::SourceOperationResponse::SUCCESSFUL));
+
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
-    Localization::AddToNormalUpdate (builder, Memory::UniqueString {LOCALES_ROOT}, 1000000u);
+    Localization::AddToNormalUpdate (builder, &resourceProvider);
     builder.AddTask ("LocalizationTester"_us).SetExecutor<LocalizationTester> (std::move (_stages), &testFinished);
     REQUIRE (builder.End ());
 
@@ -155,27 +156,27 @@ void ExecuteTest (const Environment &_environment, Container::Vector<Localizatio
     {
         world.Update ();
         ++frameIndex;
-        REQUIRE (frameIndex < 1000u);
+        REQUIRE ((frameIndex < 1000u));
     }
 }
 
 static const EnvironmentLocale ENGLISH_NORMAL {"EnglishNormal"_us,
                                                false,
-                                               {
+                                               {{
                                                    {"Quit"_us, "Quit"},
                                                    {"Settings"_us, "Settings"},
                                                    {"StartCampaign"_us, "Start campaign"},
                                                    {"StartTutorial"_us, "Start tutorial"},
-                                               }};
+                                               }}};
 
 static const EnvironmentLocale ENGLISH_STRANGE {"EnglishStrange"_us,
                                                 true,
-                                                {
+                                                {{
                                                     {"Quit"_us, "Quott"},
                                                     {"Settings"_us, "Sotongus"},
                                                     {"StartCampaign"_us, "Stord compgn"},
                                                     {"StartTutorial"_us, "Stord ttrl"},
-                                                }};
+                                                }}};
 } // namespace Emergence::Celerity::Test
 
 using namespace Emergence::Celerity::Test;
@@ -184,18 +185,18 @@ BEGIN_SUITE (Localization)
 
 TEST_CASE (Yaml)
 {
-    ExecuteTest ({ENGLISH_NORMAL}, {{ENGLISH_NORMAL.locale, ENGLISH_NORMAL.strings}});
+    ExecuteTest ({ENGLISH_NORMAL}, {{ENGLISH_NORMAL.locale, ENGLISH_NORMAL.configuration}});
 }
 
 TEST_CASE (Binary)
 {
-    ExecuteTest ({ENGLISH_STRANGE}, {{ENGLISH_STRANGE.locale, ENGLISH_STRANGE.strings}});
+    ExecuteTest ({ENGLISH_STRANGE}, {{ENGLISH_STRANGE.locale, ENGLISH_STRANGE.configuration}});
 }
 
 TEST_CASE (Reload)
 {
-    ExecuteTest ({ENGLISH_NORMAL, ENGLISH_STRANGE},
-                 {{ENGLISH_NORMAL.locale, ENGLISH_NORMAL.strings}, {ENGLISH_STRANGE.locale, ENGLISH_STRANGE.strings}});
+    ExecuteTest ({ENGLISH_NORMAL, ENGLISH_STRANGE}, {{ENGLISH_NORMAL.locale, ENGLISH_NORMAL.configuration},
+                                                     {ENGLISH_STRANGE.locale, ENGLISH_STRANGE.configuration}});
 }
 
 END_SUITE

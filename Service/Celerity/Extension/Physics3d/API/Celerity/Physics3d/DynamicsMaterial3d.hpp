@@ -13,7 +13,16 @@ namespace Emergence::Celerity
 ///          because shapes can not exist without material.
 struct DynamicsMaterial3d final
 {
-    EMERGENCE_STATIONARY_DATA_TYPE (DynamicsMaterial3d);
+    DynamicsMaterial3d () noexcept;
+
+    DynamicsMaterial3d (const DynamicsMaterial3d &_other) = delete;
+
+    DynamicsMaterial3d (DynamicsMaterial3d &&_other) noexcept;
+
+    // NOLINTNEXTLINE(performance-trivially-destructible): It's up to implementation to decide whether it is trivial.
+    ~DynamicsMaterial3d () noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (DynamicsMaterial3d);
 
     /// \brief Readable material id. Should be unique.
     Memory::UniqueString id;

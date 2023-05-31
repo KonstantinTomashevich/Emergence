@@ -1,10 +1,15 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <cstring>
+
 #include <Assert/Assert.hpp>
 
 #include <Log/Log.hpp>
 
 #include <Serialization/Yaml.hpp>
+
+#include <StandardLayout/Patch.hpp>
+#include <StandardLayout/PatchBuilder.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
 
@@ -15,6 +20,36 @@
 
 namespace Emergence::Serialization::Yaml
 {
+void SerializeTypeName (std::ostream &_output, Memory::UniqueString _typeName) noexcept
+{
+    _output << "# " << *_typeName << std::endl;
+}
+
+Memory::UniqueString DeserializeTypeName (std::istream &_input) noexcept
+{
+    Container::StringBuilder typeName;
+    while (_input)
+    {
+        int next = _input.get ();
+        if (next == '\n' || next == '\r')
+        {
+            break;
+        }
+
+        typeName.Append (static_cast<char> (next));
+    }
+
+    if (!_input || typeName.GetCount () < 3u || typeName.Get ()[0u] != '#' || typeName.Get ()[1u] != ' ' ||
+        typeName.Get ()[2u] == '\n' || typeName.Get ()[2u] == '\r')
+    {
+        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Failed to parse type name. Parsed sequence: \"", typeName.Get (),
+                       "\".");
+        return {};
+    }
+
+    return Memory::UniqueString {typeName.Get () + 2u};
+}
+
 static YAML::Node SerializeLeafValueToYaml (const void *_address, const StandardLayout::Field &_field)
 {
     YAML::Node result {YAML::NodeType::Scalar};
@@ -23,7 +58,7 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
     case StandardLayout::FieldArchetype::BIT:
 
         // We are casting to bool to signal that this value must be serialized as boolean.
-        result = static_cast<bool> (*static_cast<const uint8_t *> (_address) & (1u << _field.GetBitOffset ()));
+        result = static_cast<bool> (*static_cast<const std::uint8_t *> (_address) & (1u << _field.GetBitOffset ()));
         break;
 
     case StandardLayout::FieldArchetype::INT:
@@ -53,19 +88,19 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
         {
         case 1u:
             // We are converting to 16-bit int to avoid char conversion.
-            result = static_cast<uint16_t> (*static_cast<const uint8_t *> (_address));
+            result = static_cast<std::uint16_t> (*static_cast<const std::uint8_t *> (_address));
             break;
 
         case 2u:
-            result = *static_cast<const uint16_t *> (_address);
+            result = *static_cast<const std::uint16_t *> (_address);
             break;
 
         case 4u:
-            result = *static_cast<const uint32_t *> (_address);
+            result = *static_cast<const std::uint32_t *> (_address);
             break;
 
         case 8u:
-            result = *static_cast<const uint64_t *> (_address);
+            result = *static_cast<const std::uint64_t *> (_address);
             break;
         }
         break;
@@ -106,7 +141,24 @@ static YAML::Node SerializeLeafValueToYaml (const void *_address, const Standard
         break;
     }
 
+    case StandardLayout::FieldArchetype::UTF8_STRING:
+    {
+        const char *stringValue = static_cast<const Container::Utf8String *> (_address)->c_str ();
+        if (stringValue)
+        {
+            result = stringValue;
+        }
+        else
+        {
+            result = "";
+        }
+
+        break;
+    }
+
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
+    case StandardLayout::FieldArchetype::VECTOR:
+    case StandardLayout::FieldArchetype::PATCH:
         // Only leaf values are supported.
         EMERGENCE_ASSERT (false);
         break;
@@ -151,6 +203,40 @@ static void SerializeObjectToYaml (YAML::Node &_output, const void *_object, con
             SerializeObjectToYaml (node, field.GetValue (_object), field.GetNestedObjectMapping ());
             _output[*field.GetName ()] = node;
         }
+        else if (field.GetArchetype () == StandardLayout::FieldArchetype::VECTOR)
+        {
+            YAML::Node node {YAML::NodeType::Sequence};
+            const void *vectorAddress = field.GetValue (_object);
+
+            for (const std::uint8_t *pointer = Container::UntypedVectorUtility::Begin (vectorAddress);
+                 pointer != Container::UntypedVectorUtility::End (vectorAddress);
+                 pointer += field.GetVectorItemMapping ().GetObjectSize ())
+            {
+                YAML::Node itemNode {YAML::NodeType::Map};
+                SerializeObjectToYaml (itemNode, pointer, field.GetVectorItemMapping ());
+                node.push_back (itemNode);
+            }
+
+            _output[*field.GetName ()] = node;
+        }
+        else if (field.GetArchetype () == StandardLayout::FieldArchetype::PATCH)
+        {
+            const void *patchAddress = field.GetValue (_object);
+            const StandardLayout::Patch &patch = *static_cast<const StandardLayout::Patch *> (patchAddress);
+
+            YAML::Node node {YAML::NodeType::Map};
+            node["type"] = *patch.GetTypeMapping ().GetName ();
+            YAML::Node content {YAML::NodeType::Map};
+
+            for (const StandardLayout::Patch::ChangeInfo &change : patch)
+            {
+                StandardLayout::Field patchField = patch.GetTypeMapping ().GetField (change.field);
+                SerializePatchValue (patchField, change.newValue, content, *patchField.GetName ());
+            }
+
+            node["content"] = content;
+            _output[*field.GetName ()] = node;
+        }
         else
         {
             _output[*field.GetName ()] = SerializeLeafValueToYaml (field.GetValue (_object), field);
@@ -167,11 +253,11 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
         case StandardLayout::FieldArchetype::BIT:
             if (_input.as<bool> ())
             {
-                *static_cast<uint8_t *> (_address) |= 1u << _field.GetBitOffset ();
+                *static_cast<std::uint8_t *> (_address) |= 1u << _field.GetBitOffset ();
             }
             else
             {
-                *static_cast<uint8_t *> (_address) &= ~(1u << _field.GetBitOffset ());
+                *static_cast<std::uint8_t *> (_address) &= ~(1u << _field.GetBitOffset ());
             }
             break;
 
@@ -197,16 +283,16 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
             switch (_field.GetSize ())
             {
             case 1u:
-                *static_cast<uint8_t *> (_address) = _input.as<uint8_t> ();
+                *static_cast<std::uint8_t *> (_address) = _input.as<std::uint8_t> ();
                 break;
             case 2u:
-                *static_cast<uint16_t *> (_address) = _input.as<uint16_t> ();
+                *static_cast<std::uint16_t *> (_address) = _input.as<std::uint16_t> ();
                 break;
             case 4u:
-                *static_cast<uint32_t *> (_address) = _input.as<uint32_t> ();
+                *static_cast<std::uint32_t *> (_address) = _input.as<std::uint32_t> ();
                 break;
             case 8u:
-                *static_cast<uint64_t *> (_address) = _input.as<uint64_t> ();
+                *static_cast<std::uint64_t *> (_address) = _input.as<std::uint64_t> ();
                 break;
             }
             break;
@@ -240,7 +326,13 @@ static bool DeserializeLeafValueFromYaml (const YAML::Node &_input, void *_addre
             *static_cast<Memory::UniqueString *> (_address) = Memory::UniqueString {_input.Scalar ().c_str ()};
             break;
 
+        case StandardLayout::FieldArchetype::UTF8_STRING:
+            *static_cast<Container::Utf8String *> (_address) = _input.Scalar ();
+            break;
+
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::VECTOR:
+        case StandardLayout::FieldArchetype::PATCH:
             // Only leaf values are supported.
             EMERGENCE_ASSERT (false);
             break;
@@ -290,16 +382,16 @@ static bool DeserializePatchLeafValueFromYaml (const YAML::Node &_input,
             switch (_field.GetSize ())
             {
             case 1u:
-                _builder.SetUInt8 (fieldId, _input.as<uint8_t> ());
+                _builder.SetUInt8 (fieldId, _input.as<std::uint8_t> ());
                 break;
             case 2u:
-                _builder.SetUInt16 (fieldId, _input.as<uint16_t> ());
+                _builder.SetUInt16 (fieldId, _input.as<std::uint16_t> ());
                 break;
             case 4u:
-                _builder.SetUInt32 (fieldId, _input.as<uint32_t> ());
+                _builder.SetUInt32 (fieldId, _input.as<std::uint32_t> ());
                 break;
             case 8u:
-                _builder.SetUInt64 (fieldId, _input.as<uint64_t> ());
+                _builder.SetUInt64 (fieldId, _input.as<std::uint64_t> ());
                 break;
             }
             break;
@@ -323,6 +415,9 @@ static bool DeserializePatchLeafValueFromYaml (const YAML::Node &_input,
         case StandardLayout::FieldArchetype::STRING:
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::UTF8_STRING:
+        case StandardLayout::FieldArchetype::VECTOR:
+        case StandardLayout::FieldArchetype::PATCH:
             // Unsupported for patches.
             EMERGENCE_ASSERT (false);
             break;
@@ -336,11 +431,23 @@ static bool DeserializePatchLeafValueFromYaml (const YAML::Node &_input,
     return true;
 }
 
-template <typename LeafDeserializer>
-static bool DeserializeFromYaml (const YAML::Node &_input,
-                                 LeafDeserializer &_deserializer,
-                                 const Container::String &_prefix,
-                                 FieldNameLookupCache &_cache)
+static StandardLayout::Field FindFieldByName (const StandardLayout::Mapping &_mapping, Memory::UniqueString _fieldName)
+{
+    for (StandardLayout::Field field : _mapping)
+    {
+        if (field.GetName () == _fieldName)
+        {
+            return field;
+        }
+    }
+
+    return {};
+}
+
+static bool DeserializePatchBodyFromYaml (const YAML::Node &_input,
+                                          const StandardLayout::Mapping &_mapping,
+                                          StandardLayout::PatchBuilder &_builder,
+                                          const Container::String &_prefix)
 {
     for (auto iterator = _input.begin (); iterator != _input.end (); ++iterator)
     {
@@ -364,19 +471,19 @@ static bool DeserializeFromYaml (const YAML::Node &_input,
         {
             // NOLINTNEXTLINE(readability-redundant-string-cstr): It's not, because allocators are different.
             const Memory::UniqueString fieldName {_prefix + iterator->first.Scalar ().c_str ()};
-            StandardLayout::Field field = _cache.Lookup (fieldName);
+            StandardLayout::Field field = FindFieldByName (_mapping, fieldName);
 
             if (!field)
             {
-                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _cache.GetTypeMapping ().GetName (),
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _mapping.GetName (),
                                "\" does not contain field \"", *fieldName, "\"!");
                 return false;
             }
 
-            if (!_deserializer (iterator->second, field))
+            if (!DeserializePatchLeafValueFromYaml (iterator->second, _builder, _mapping, field))
             {
                 EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to deserialize value of field \"", *fieldName,
-                               "\" from mapping \"", _cache.GetTypeMapping ().GetName (), "\"!");
+                               "\" from mapping \"", _mapping.GetName (), "\"!");
                 return false;
             }
 
@@ -389,10 +496,10 @@ static bool DeserializeFromYaml (const YAML::Node &_input,
 
         case YAML::NodeType::Map:
         {
-            if (!DeserializeFromYaml (
-                    iterator->second, _deserializer,
+            if (!DeserializePatchBodyFromYaml (
+                    iterator->second, _mapping, _builder,
                     // NOLINTNEXTLINE(readability-redundant-string-cstr): It's not, because allocators are different.
-                    _prefix + iterator->first.Scalar ().c_str () + StandardLayout::PROJECTION_NAME_SEPARATOR, _cache))
+                    _prefix + iterator->first.Scalar ().c_str () + StandardLayout::PROJECTION_NAME_SEPARATOR))
             {
                 return false;
             }
@@ -405,17 +512,177 @@ static bool DeserializeFromYaml (const YAML::Node &_input,
     return true;
 }
 
-bool DeserializePatchFromYaml (const YAML::Node &_node,
-                               StandardLayout::PatchBuilder &_builder,
-                               FieldNameLookupCache &_cache)
+static bool DeserializeObjectFromYaml (const YAML::Node &_input,
+                                       void *_objectAddress,
+                                       const StandardLayout::Mapping &_mapping,
+                                       const Container::MappingRegistry &_patchableTypesRegistry)
 {
-    _builder.Begin (_cache.GetTypeMapping ());
-    auto leafDeserializer = [&_builder, &_cache] (const YAML::Node &_input, const StandardLayout::Field &_field)
+    for (auto iterator = _input.begin (); iterator != _input.end (); ++iterator)
     {
-        return DeserializePatchLeafValueFromYaml (_input, _builder, _cache.GetTypeMapping (), _field);
-    };
+        if (!iterator->first.IsScalar ())
+        {
+            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered map pair with non-scalar key!");
+            return false;
+        }
 
-    return DeserializeFromYaml (_node, leafDeserializer, "", _cache);
+        switch (iterator->second.Type ())
+        {
+        case YAML::NodeType::Undefined:
+            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered undefined node during iteration!");
+            return false;
+
+        case YAML::NodeType::Null:
+            EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered null node during iteration!");
+            return false;
+
+        case YAML::NodeType::Scalar:
+        {
+            const StandardLayout::Field field =
+                FindFieldByName (_mapping, Memory::UniqueString {iterator->first.Scalar ().c_str ()});
+
+            if (!field)
+            {
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _mapping.GetName (),
+                               "\" does not contain field \"", iterator->first.Scalar ().c_str (), "\"!");
+                return false;
+            }
+
+            if (!DeserializeLeafValueFromYaml (iterator->second, field.GetValue (_objectAddress), field))
+            {
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to deserialize value of field \"", *field.GetName (),
+                               "\" from mapping \"", _mapping.GetName (), "\"!");
+                return false;
+            }
+
+            break;
+        }
+
+        case YAML::NodeType::Sequence:
+        {
+            const StandardLayout::Field field =
+                FindFieldByName (_mapping, Memory::UniqueString {iterator->first.Scalar ().c_str ()});
+
+            if (!field)
+            {
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _mapping.GetName (),
+                               "\" does not contain field \"", *iterator->first.Scalar ().c_str (), "\"!");
+                return false;
+            }
+
+            if (field.GetArchetype () != StandardLayout::FieldArchetype::VECTOR)
+            {
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered sequence value for non-vector field \"",
+                               *field.GetName (), "\" of mapping \"", *_mapping.GetName (), "\"!");
+                return false;
+            }
+
+            const YAML::Node &sequenceNode = iterator->second;
+            void *vectorAddress = field.GetValue (_objectAddress);
+            const auto vectorSize = static_cast<std::uint32_t> (sequenceNode.size ());
+            const StandardLayout::Mapping &itemMapping = field.GetVectorItemMapping ();
+            Container::UntypedVectorUtility::InitSize (vectorAddress, vectorSize * itemMapping.GetObjectSize ());
+            int32_t itemIndex = 0u;
+
+            for (std::uint8_t *pointer = Container::UntypedVectorUtility::Begin (vectorAddress);
+                 pointer != Container::UntypedVectorUtility::End (vectorAddress);
+                 pointer += itemMapping.GetObjectSize ())
+            {
+                itemMapping.Construct (pointer);
+                if (!DeserializeObjectFromYaml (sequenceNode[itemIndex], pointer, itemMapping, _patchableTypesRegistry))
+                {
+                    return false;
+                }
+
+                ++itemIndex;
+            }
+
+            break;
+        }
+
+        case YAML::NodeType::Map:
+        {
+            const StandardLayout::Field field =
+                FindFieldByName (_mapping, Memory::UniqueString {iterator->first.Scalar ().c_str ()});
+
+            if (!field)
+            {
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Mapping \"", _mapping.GetName (),
+                               "\" does not contain field \"", *iterator->first.Scalar ().c_str (), "\"!");
+                return false;
+            }
+
+            switch (field.GetArchetype ())
+            {
+            case StandardLayout::FieldArchetype::BIT:
+            case StandardLayout::FieldArchetype::INT:
+            case StandardLayout::FieldArchetype::UINT:
+            case StandardLayout::FieldArchetype::FLOAT:
+            case StandardLayout::FieldArchetype::STRING:
+            case StandardLayout::FieldArchetype::BLOCK:
+            case StandardLayout::FieldArchetype::UNIQUE_STRING:
+            case StandardLayout::FieldArchetype::UTF8_STRING:
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered map value for elementary field \"",
+                               *field.GetName (), "\" of mapping \"", *_mapping.GetName (), "\"!");
+                return false;
+
+            case StandardLayout::FieldArchetype::NESTED_OBJECT:
+                if (!DeserializeObjectFromYaml (iterator->second, field.GetValue (_objectAddress),
+                                                field.GetNestedObjectMapping (), _patchableTypesRegistry))
+                {
+                    return false;
+                }
+
+                break;
+
+            case StandardLayout::FieldArchetype::VECTOR:
+                EMERGENCE_LOG (ERROR, "Serialization::Yaml: Encountered map value for vector field \"",
+                               *field.GetName (), "\" of mapping \"", *_mapping.GetName (), "\"!");
+                return false;
+
+            case StandardLayout::FieldArchetype::PATCH:
+                YAML::Node typeNode = (iterator->second)["type"];
+
+                if (!typeNode.IsScalar ())
+                {
+                    EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch type node is not a scalar!");
+                    return false;
+                }
+
+                YAML::Node contentNode = (iterator->second)["content"];
+                if (!contentNode.IsMap ())
+                {
+                    EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch content node is not a map!");
+                    return false;
+                }
+
+                StandardLayout::Mapping patchMapping =
+                    _patchableTypesRegistry.Get (Memory::UniqueString {typeNode.Scalar ().c_str ()});
+
+                if (!patchMapping)
+                {
+                    EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to find patchable type \"",
+                                   typeNode.Scalar ().c_str (), "\" requested by patch field!");
+                    return false;
+                }
+
+                StandardLayout::PatchBuilder builder;
+                builder.Begin (patchMapping);
+
+                if (!DeserializePatchBodyFromYaml (contentNode, patchMapping, builder, ""))
+                {
+                    return false;
+                }
+
+                *static_cast<StandardLayout::Patch *> (field.GetValue (_objectAddress)) = builder.End ();
+                break;
+            }
+
+            break;
+        }
+        }
+    }
+
+    return true;
 }
 
 void SerializeObject (std::ostream &_output, const void *_object, const StandardLayout::Mapping &_mapping) noexcept
@@ -425,7 +692,10 @@ void SerializeObject (std::ostream &_output, const void *_object, const Standard
     _output << node;
 }
 
-bool DeserializeObject (std::istream &_input, void *_object, FieldNameLookupCache &_cache) noexcept
+bool DeserializeObject (std::istream &_input,
+                        void *_object,
+                        const StandardLayout::Mapping &_mapping,
+                        const Container::MappingRegistry &_patchableTypesRegistry) noexcept
 {
     YAML::Node node = YAML::Load (_input);
     if (!node.IsMap ())
@@ -434,253 +704,6 @@ bool DeserializeObject (std::istream &_input, void *_object, FieldNameLookupCach
         return false;
     }
 
-    auto leafDeserializer = [_object] (const YAML::Node &_input, const StandardLayout::Field &_field)
-    {
-        return DeserializeLeafValueFromYaml (_input, _field.GetValue (_object), _field);
-    };
-
-    return DeserializeFromYaml (node, leafDeserializer, "", _cache);
-}
-
-void SerializePatch (std::ostream &_output, const StandardLayout::Patch &_patch) noexcept
-{
-    YAML::Node root {YAML::NodeType::Map};
-    for (const StandardLayout::Patch::ChangeInfo &change : _patch)
-    {
-        StandardLayout::Field field = _patch.GetTypeMapping ().GetField (change.field);
-        SerializePatchValue (field, change.newValue, root, *field.GetName ());
-    }
-
-    _output << root;
-}
-
-bool DeserializePatch (std::istream &_input,
-                       StandardLayout::PatchBuilder &_builder,
-                       FieldNameLookupCache &_cache) noexcept
-{
-    YAML::Node node = YAML::Load (_input);
-    if (!node.IsMap ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to parse YAML node from given input!");
-        return false;
-    }
-
-    return DeserializePatchFromYaml (node, _builder, _cache);
-}
-
-static_assert (sizeof (YamlRootPlaceholder) == sizeof (YAML::Node));
-
-static_assert (sizeof (YamlIteratorPlaceholder) == sizeof (YAML::Node::iterator));
-
-BundleSerializerBase::BundleSerializerBase () noexcept
-{
-    new (yamlRootPlaceholder.data ()) YAML::Node {};
-}
-
-BundleSerializerBase::~BundleSerializerBase () noexcept
-{
-    block_cast<YAML::Node> (yamlRootPlaceholder).~Node ();
-}
-
-void BundleSerializerBase::Begin () noexcept
-{
-    block_cast<YAML::Node> (yamlRootPlaceholder) = YAML::Node {YAML::NodeType::Sequence};
-}
-
-void BundleSerializerBase::End (std::ostream &_output) noexcept
-{
-    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
-    _output << root;
-    root = YAML::Node {};
-}
-
-BundleDeserializerBase::BundleDeserializerBase () noexcept
-{
-    auto *node = new (yamlRootPlaceholder.data ()) YAML::Node {};
-    new (yamlIteratorPlaceholder.data ()) YAML::Node::iterator (node->begin ());
-}
-
-BundleDeserializerBase::~BundleDeserializerBase () noexcept
-{
-    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder).~iterator_base ();
-    block_cast<YAML::Node> (yamlRootPlaceholder).~Node ();
-}
-
-bool BundleDeserializerBase::Begin (std::istream &_input) noexcept
-{
-    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
-    root = YAML::Load (_input);
-
-    if (!root.IsSequence ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to parse YAML node from given input!");
-        return false;
-    }
-
-    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) = root.begin ();
-    return true;
-}
-
-bool BundleDeserializerBase::HasNext () const noexcept
-{
-    return block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) !=
-           block_cast<YAML::Node> (yamlRootPlaceholder).end ();
-}
-
-void BundleDeserializerBase::End () noexcept
-{
-    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
-    root = YAML::Node {};
-    block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder) = root.begin ();
-}
-
-ObjectBundleSerializer::ObjectBundleSerializer (StandardLayout::Mapping _mapping) noexcept
-    : mapping (std::move (_mapping))
-{
-}
-
-void ObjectBundleSerializer::Next (const void *_object) noexcept
-{
-    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
-    YAML::Node item {YAML::NodeType::Map};
-    SerializeObjectToYaml (item, _object, mapping);
-    root.push_back (item);
-}
-
-ObjectBundleDeserializer::ObjectBundleDeserializer (StandardLayout::Mapping _mapping) noexcept
-    : fieldNameLookupCache (std::move (_mapping))
-{
-}
-
-bool ObjectBundleDeserializer::Next (void *_object) noexcept
-{
-    if (!HasNext ())
-    {
-        return false;
-    }
-
-    auto &iterator = block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder);
-    auto leafDeserializer = [_object] (const YAML::Node &_input, const StandardLayout::Field &_field)
-    {
-        return DeserializeLeafValueFromYaml (_input, _field.GetValue (_object), _field);
-    };
-
-    const bool successful = DeserializeFromYaml (*iterator, leafDeserializer, "", fieldNameLookupCache);
-    ++iterator;
-    return successful;
-}
-
-void PatchBundleSerializer::Next (const StandardLayout::Patch &_patch) noexcept
-{
-    YAML::Node item {YAML::NodeType::Map};
-    item["type"] = *_patch.GetTypeMapping ().GetName ();
-    YAML::Node content {YAML::NodeType::Map};
-
-    for (const StandardLayout::Patch::ChangeInfo &change : _patch)
-    {
-        StandardLayout::Field field = _patch.GetTypeMapping ().GetField (change.field);
-        SerializePatchValue (field, change.newValue, content, *field.GetName ());
-    }
-
-    item["content"] = content;
-    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
-    root.push_back (item);
-}
-
-void PatchBundleDeserializer::RegisterType (const StandardLayout::Mapping &_mapping) noexcept
-{
-    cachesByTypeName.emplace (_mapping.GetName (), FieldNameLookupCache {_mapping});
-}
-
-Container::Optional<StandardLayout::Patch> PatchBundleDeserializer::Next () noexcept
-{
-    if (!HasNext ())
-    {
-        return std::nullopt;
-    }
-
-    auto &iterator = block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder);
-    YAML::Node typeNode = (*iterator)["type"];
-
-    if (!typeNode.IsScalar ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch type node is not a scalar!");
-        return std::nullopt;
-    }
-
-    YAML::Node contentNode = (*iterator)["content"];
-    if (!contentNode.IsMap ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Patch content node is not a map!");
-        return std::nullopt;
-    }
-
-    FieldNameLookupCache *cache = RequestCache (Memory::UniqueString {typeNode.Scalar ().c_str ()});
-    if (!cache)
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: Unable to find type \"", typeNode.Scalar ().c_str (),
-                       "\" requested by patch bundle!");
-        return std::nullopt;
-    }
-
-    StandardLayout::PatchBuilder builder;
-    if (DeserializePatchFromYaml (contentNode, builder, *cache))
-    {
-        ++iterator;
-        return builder.End ();
-    }
-
-    return std::nullopt;
-}
-
-FieldNameLookupCache *PatchBundleDeserializer::RequestCache (Memory::UniqueString _typeName) noexcept
-{
-    if (auto iterator = cachesByTypeName.find (_typeName); iterator != cachesByTypeName.end ())
-    {
-        return &iterator->second;
-    }
-
-    return nullptr;
-}
-
-void StringMappingSerializer::Next (Memory::UniqueString _key, const Container::Utf8String &_value) noexcept
-{
-    auto &root = block_cast<YAML::Node> (yamlRootPlaceholder);
-    YAML::Node item {YAML::NodeType::Map};
-    item[*_key] = _value.c_str ();
-    root.push_back (item);
-}
-
-bool StringMappingDeserializer::Next (Memory::UniqueString &_keyOutput, Container::Utf8String &_valueOutput) noexcept
-{
-    if (!HasNext ())
-    {
-        return false;
-    }
-
-    auto &iterator = block_cast<YAML::Node::iterator> (yamlIteratorPlaceholder);
-    if (!iterator->IsMap ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: String mapping node is not a map!");
-        return false;
-    }
-
-    if (iterator->begin () == iterator->end ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: String mapping node map is empty!");
-        return false;
-    }
-
-    if (++(iterator->begin ()) != iterator->end ())
-    {
-        EMERGENCE_LOG (ERROR, "Serialization::Yaml: String mapping node map has more than one pair!");
-        return false;
-    }
-
-    _keyOutput = Memory::UniqueString {iterator->begin ()->first.Scalar ().c_str ()};
-    // NOLINTNEXTLINE(readability-redundant-string-cstr): It's not, because allocators are different.
-    _valueOutput = iterator->begin ()->second.Scalar ().c_str ();
-    ++iterator;
-    return true;
+    return DeserializeObjectFromYaml (node, _object, _mapping, _patchableTypesRegistry);
 }
 } // namespace Emergence::Serialization::Yaml

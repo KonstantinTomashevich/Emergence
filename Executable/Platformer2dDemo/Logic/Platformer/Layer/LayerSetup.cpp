@@ -24,7 +24,7 @@ public:
     void Execute () noexcept;
 
 private:
-    void TryFetchLayer (Emergence::Celerity::UniqueId _objectId, uint16_t &_layerOutput) noexcept;
+    void TryFetchLayer (Emergence::Celerity::UniqueId _objectId, std::uint16_t &_layerOutput) noexcept;
 
     Emergence::Celerity::FetchSequenceQuery fetchSpriteAddedEvents;
     Emergence::Celerity::EditValueQuery editSpriteById;
@@ -59,7 +59,8 @@ void SpriteLayerInitializer::Execute () noexcept
     }
 }
 
-void SpriteLayerInitializer::TryFetchLayer (Emergence::Celerity::UniqueId _objectId, uint16_t &_layerOutput) noexcept
+void SpriteLayerInitializer::TryFetchLayer (Emergence::Celerity::UniqueId _objectId,
+                                            std::uint16_t &_layerOutput) noexcept
 {
     auto layerSetupCursor = fetchLayerSetupById.Execute (&_objectId);
     if (const auto *layerSetup = static_cast<const LayerSetupComponent *> (*layerSetupCursor))

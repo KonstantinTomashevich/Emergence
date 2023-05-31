@@ -3,7 +3,7 @@ sober_implementation_begin (BGFX)
     file (GLOB_RECURSE HEADERS *.hpp)
     list (APPEND SOURCES ${HEADERS})
 
-    sober_implementation_setup_target (STATIC "${SOURCES}")
+    sober_implementation_setup_target (OBJECT "${SOURCES}")
     sober_implementation_include_directory ("${CMAKE_CURRENT_SOURCE_DIR}")
 
     sober_naming_service_target (Log LOG_API_TARGET)

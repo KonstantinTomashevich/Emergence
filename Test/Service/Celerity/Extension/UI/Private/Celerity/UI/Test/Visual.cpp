@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <filesystem>
+#include <thread>
 
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
@@ -19,6 +20,7 @@
 #include <Celerity/UI/Events.hpp>
 #include <Celerity/UI/Test/ControlManagement.hpp>
 #include <Celerity/UI/Test/ImplementationStrings.hpp>
+#include <Celerity/UI/Test/ResourceProviderHolder.hpp>
 #include <Celerity/UI/Test/SDLContextHolder.hpp>
 #include <Celerity/UI/Test/Visual.hpp>
 #include <Celerity/UI/UI.hpp>
@@ -36,7 +38,7 @@ bool VisualTestIncludeMarker () noexcept
     return true;
 }
 
-static const Memory::UniqueString USED_LOCALE {"English"};
+static const Memory::UniqueString USED_LOCALE {"L_English"};
 
 class ScreenshotTester final : public TaskExecutorBase<ScreenshotTester>
 {
@@ -61,6 +63,8 @@ private:
     bool firstUpdate = true;
     bool screenshotRequested = false;
     bool *isFinishedOutput = nullptr;
+
+    bool dependenciesReadyPreviousFrame = false;
 };
 
 ScreenshotTester::ScreenshotTester (TaskConstructor &_constructor,
@@ -122,9 +126,9 @@ void ScreenshotTester::CheckScreenshot () const noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    FileSystem::Test::ExpectFilesEqual (
-        EMERGENCE_BUILD_STRING ("UITestResources/Expectation/", GetUIBackendScreenshotPrefix (), "/", passName, ".png"),
-        screenshotFile);
+    FileSystem::Test::CheckFilesEquality (
+        EMERGENCE_BUILD_STRING ("Expectation/", GetUIBackendScreenshotPrefix (), "/", passName, ".png"), screenshotFile,
+        0.02f);
 }
 
 bool ScreenshotTester::IsWaitingForDependencies () noexcept
@@ -136,7 +140,10 @@ bool ScreenshotTester::IsWaitingForDependencies () noexcept
     auto *locale = static_cast<LocaleSingleton *> (*localeCursor);
     locale->targetLocale = USED_LOCALE;
 
-    return assetManager->assetsLeftToLoad > 0u && locale->loadedLocale == USED_LOCALE;
+    const bool dependenciesReady = assetManager->assetsLeftToLoad == 0u && locale->loadedLocale == USED_LOCALE;
+    const bool everythingLoaded = dependenciesReady && dependenciesReadyPreviousFrame;
+    dependenciesReadyPreviousFrame = dependenciesReady;
+    return !everythingLoaded;
 }
 
 void ScreenshotTester::TakeScreenshot () const noexcept
@@ -162,26 +169,17 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
         RegisterUIEvents (registrar);
     }
 
-    constexpr uint64_t MAX_LOADING_TIME_NS = 16000000;
-    static const Emergence::Memory::UniqueString testMaterialsPath {"UITestResources/Materials"};
-    static const Emergence::Memory::UniqueString engineMaterialsPath {GetUIBackendMaterialPath ()};
-    static const Emergence::Memory::UniqueString engineShadersPath {GetUIBackendShaderPath ()};
-    static const Emergence::Memory::UniqueString testTexturesPath {"UITestResources/Textures"};
-    static const Emergence::Memory::UniqueString testFontsPath {"UITestResources/Fonts"};
-    static const Emergence::Memory::UniqueString testLocalePath {"UITestResources/Locales"};
     PipelineBuilder pipelineBuilder {world.GetRootView ()};
-
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (_frames));
-    FontManagement::AddToNormalUpdate (pipelineBuilder, {testFontsPath}, MAX_LOADING_TIME_NS,
-                                       assetReferenceBindingEventMap);
+    FontManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (), assetReferenceBindingEventMap);
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
-    Localization::AddToNormalUpdate (pipelineBuilder, testLocalePath, MAX_LOADING_TIME_NS);
-    MaterialManagement::AddToNormalUpdate (pipelineBuilder, {testMaterialsPath, engineMaterialsPath},
-                                           {engineShadersPath}, MAX_LOADING_TIME_NS, assetReferenceBindingEventMap);
+    Localization::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider ());
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+                                           assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, {testTexturesPath}, MAX_LOADING_TIME_NS,
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
                                           assetReferenceBindingEventMap);
     UI::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, {});
 
@@ -322,7 +320,7 @@ TEST_CASE (CustomSkin)
             CreateStyleFloatPairProperty {"DefaultStyle"_us, UIStyleFloatPairPropertyName::BUTTON_TEXT_ALIGN, 0.5f,
                                           0.5f},
 
-            CreateStyleFontProperty {"DefaultStyle"_us, "DroidSans.ttf#14"_us},
+            CreateStyleFontProperty {"DefaultStyle"_us, "F_DroidSans#14"_us},
 
             CreateStyleColorProperty {"OkButtonStyle"_us, UIStyleColorPropertyName::BUTTON, 0.0f, 0.5f, 0.0f, 1.0f},
             CreateStyleColorProperty {"OkButtonStyle"_us, UIStyleColorPropertyName::BUTTON_HOVERED, 0.0f, 0.9f, 0.0f,
@@ -408,7 +406,7 @@ TEST_CASE (CustomSkin)
             CreateIntInput (15u, 14u),
             CreateFloatInput (16u, 14u),
             CreateTextInput (17u, 14u),
-            CreateImage {18u, 14u, ""_us, 150u, 150u, "Earth.png"_us, {{0.0f, 0.0f}, {2.0f, 2.0f}}},
+            CreateImage {18u, 14u, ""_us, 150u, 150u, "T_Earth"_us, {{0.0f, 0.0f}, {2.0f, 2.0f}}},
         }});
 }
 

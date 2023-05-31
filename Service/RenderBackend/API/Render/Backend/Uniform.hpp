@@ -10,7 +10,7 @@ namespace Emergence::Render::Backend
 using UniformId = std::uint64_t;
 
 /// \brief Defines supported uniform types.
-enum class UniformType : uint8_t
+enum class UniformType : std::uint8_t
 {
     /// \brief 4 dimensional vector.
     VECTOR_4F = 0u,

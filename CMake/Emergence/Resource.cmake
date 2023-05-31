@@ -42,17 +42,11 @@ function (private_deploy_direct_resources TARGET DEPLOY_ROOT)
     endif ()
 endfunction ()
 
-# Creates symlinks for all resources used by target and its linked targets in target runtime output directory.
-function (deploy_used_resources TARGET)
-    get_target_property (DEPLOY_ROOT "${TARGET}" RUNTIME_OUTPUT_DIRECTORY)
-
-    # Fallback for deploying resources for targets without specified output directory.
-    if (DEPLOY_ROOT STREQUAL "DEPLOY_ROOT-NOTFOUND")
-        set (DEPLOY_ROOT ${CMAKE_CURRENT_BINARY_DIR})
-    endif ()
-
+# Creates symlinks for all resources used by target and its linked targets in given deploy root directory
+function (deploy_used_resources TARGET DEPLOY_ROOT)
+    file (MAKE_DIRECTORY "${DEPLOY_ROOT}")
     private_deploy_direct_resources ("${TARGET}" "${DEPLOY_ROOT}")
-    find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
+    sober_find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
 
     foreach (LINKED_TARGET ${ALL_LINKED_TARGETS})
         private_deploy_direct_resources ("${LINKED_TARGET}" "${DEPLOY_ROOT}")

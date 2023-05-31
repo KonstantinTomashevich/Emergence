@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cstring>
+#include <limits>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
 
@@ -106,7 +107,7 @@ bool Comparator<BaseComparator>::operator() (const void *_record, const OrderedI
 template <typename BaseComparator>
 const void *Comparator<BaseComparator>::GetValue (const void *_record) const noexcept
 {
-    return static_cast<const uint8_t *> (_record) + fieldOffset;
+    return static_cast<const std::uint8_t *> (_record) + fieldOffset;
 }
 
 #define READ_CURSOR_IMPLEMENTATION(Cursor, Iterator)                                                                   \
@@ -307,7 +308,7 @@ OrderedIndex::MassInsertionExecutor::~MassInsertionExecutor () noexcept
                                             Comparator (owner, _comparator));
                              });
 
-#ifndef NDEBUG
+#if defined(EMERGENCE_ASSERT_ENABLED)
     EMERGENCE_ASSERT (owner->massInsertionInProgress);
     owner->massInsertionInProgress = false;
 #endif
@@ -325,7 +326,7 @@ OrderedIndex::MassInsertionExecutor::MassInsertionExecutor (OrderedIndex *_owner
 {
     EMERGENCE_ASSERT (owner);
 
-#ifndef NDEBUG
+#if defined(EMERGENCE_ASSERT_ENABLED)
     EMERGENCE_ASSERT (!owner->massInsertionInProgress);
     owner->massInsertionInProgress = true;
 #endif
@@ -510,7 +511,7 @@ void OrderedIndex::OnWriterClosed () noexcept
             std::size_t intervalSize = intervalEnd - intervalBegin - 1u;
             EMERGENCE_ASSERT (intervalSize == 0u || intervalBegin + 1u < records.size ());
 
-#ifndef NDEBUG
+#if defined(EMERGENCE_ASSERT_ENABLED)
             // Interval begin can be out of bounds only if interval size is zero. It's ok, because memcpy skips
             // zero-size intervals. But debug version of Container::Vector throws out of bounds exception, therefore
             // we add this `if` in debug build. In release build it's skipped to improve performance.
@@ -518,7 +519,7 @@ void OrderedIndex::OnWriterClosed () noexcept
             {
 #endif
                 memcpy (&records[intervalBegin - offset], &records[intervalBegin + 1u], intervalSize * sizeof (void *));
-#ifndef NDEBUG
+#if defined(EMERGENCE_ASSERT_ENABLED)
             }
 #endif
 

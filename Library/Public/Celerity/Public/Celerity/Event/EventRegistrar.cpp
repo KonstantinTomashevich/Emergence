@@ -124,7 +124,7 @@ void EventRegistrar::OnChangeEvent (const OnChangeAutomatedEventSeed &_seed) noe
 
 void EventRegistrar::AssertEventUniqueness ([[maybe_unused]] const StandardLayout::Mapping &_type) const noexcept
 {
-#ifndef NDEBUG
+#if defined(EMERGENCE_ASSERT_ENABLED)
     EMERGENCE_ASSERT (world);
 
     for (World::EventScheme &scheme : world->eventSchemes)

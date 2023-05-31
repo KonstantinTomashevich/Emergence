@@ -11,8 +11,11 @@ Memory::Profiler::AllocationGroup GetAllocationGroup () noexcept;
 class Allocator final : public bx::AllocatorI
 {
 public:
-    void *realloc (
-        void *_pointer, size_t _size, size_t _alignment, const char * /*unused*/, uint32_t /*unused*/) override;
+    void *realloc (void *_pointer,
+                   std::size_t _size,
+                   std::size_t _alignment,
+                   const char * /*unused*/,
+                   std::uint32_t /*unused*/) override;
 
 private:
     Memory::Heap allocator {GetAllocationGroup ()};

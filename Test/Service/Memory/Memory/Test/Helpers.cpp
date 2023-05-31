@@ -1,3 +1,5 @@
+#include <atomic>
+
 #include <Container/StringBuilder.hpp>
 
 #include <Memory/Test/Helpers.hpp>

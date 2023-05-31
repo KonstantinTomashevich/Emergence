@@ -22,6 +22,6 @@ struct TestSingleton
 
     static const TestSingleton NON_DEFAULT_INSTANCE;
 
-    std::array<uint32_t, DATA_ITEMS> data = {0u};
+    std::array<std::uint32_t, DATA_ITEMS> data = {0u};
 };
 } // namespace Emergence::Warehouse::Test

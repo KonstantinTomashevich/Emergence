@@ -19,11 +19,11 @@ using namespace Emergence::Memory::Literals;
 
 namespace
 {
-EMERGENCE_CELERITY_EVENT1_DECLARATION (TestEvent, uint64_t, data);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (TestEvent, std::uint64_t, data);
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestEvent, data)
 
-using EventPlan = Container::Vector<Container::Vector<uint64_t>>;
+using EventPlan = Container::Vector<Container::Vector<std::uint64_t>>;
 
 class EventProducer final : public TaskExecutorBase<EventProducer>
 {
@@ -50,7 +50,7 @@ void Emergence::Celerity::Test::EventProducer::Execute () noexcept
     REQUIRE (executionIndex < productionPlan.size ());
     auto cursor = insertEvents.Execute ();
 
-    for (uint64_t data : productionPlan[executionIndex])
+    for (std::uint64_t data : productionPlan[executionIndex])
     {
         auto *event = static_cast<TestEvent *> (++cursor);
         event->data = data;
@@ -88,7 +88,7 @@ void Emergence::Celerity::Test::EventConsumer::Execute () noexcept
     REQUIRE (executionIndex < consumptionPlan.size ());
 
     // Generally, event order is not guaranteed, therefore we collect all data and sort it before comparison.
-    Container::Vector<uint64_t> fetchedData;
+    Container::Vector<std::uint64_t> fetchedData;
 
     auto cursor = fetchEvents.Execute ();
     while (const auto *event = static_cast<const TestEvent *> (*cursor))
@@ -99,7 +99,7 @@ void Emergence::Celerity::Test::EventConsumer::Execute () noexcept
 
     std::sort (fetchedData.begin (), fetchedData.end ());
     CHECK_EQUAL (fetchedData.size (), consumptionPlan[executionIndex].size ());
-    const uint64_t amountToCheck = std::min (fetchedData.size (), consumptionPlan[executionIndex].size ());
+    const std::uint64_t amountToCheck = std::min (fetchedData.size (), consumptionPlan[executionIndex].size ());
 
     for (std::size_t index = 0u; index < amountToCheck; ++index)
     {
@@ -148,7 +148,7 @@ void SimpleConsumptionTest (EventRoute _route, const EventPlan &_plan, bool _pre
         consumptionPlan.emplace (consumptionPlan.begin ());
     }
 
-    const uint64_t steps = productionPlan.size ();
+    const std::uint64_t steps = productionPlan.size ();
 
     PipelineBuilder builder {world.GetRootView ()};
     REQUIRE (GetEventProducingPipeline (_route) == GetEventConsumingPipeline (_route));

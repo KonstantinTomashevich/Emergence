@@ -1,3 +1,7 @@
+#include <SyntaxSugar/MuteWarnings.hpp>
+
+BEGIN_MUTING_PADDING_WARNING
+
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Test/Task.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
@@ -305,3 +309,5 @@ void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder, Container::Vector<R
 }
 } // namespace RequestExecutor
 } // namespace Emergence::Celerity::Test
+
+END_MUTING_WARNINGS

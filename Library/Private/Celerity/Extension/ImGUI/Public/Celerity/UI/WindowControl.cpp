@@ -12,6 +12,7 @@ const WindowControl::Reflection &WindowControl::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (nodeId);
         EMERGENCE_MAPPING_REGISTER_REGULAR (viewportName);
         EMERGENCE_MAPPING_REGISTER_REGULAR (titleKey);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (title);
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (closable);
         EMERGENCE_MAPPING_REGISTER_REGULAR (minimizable);

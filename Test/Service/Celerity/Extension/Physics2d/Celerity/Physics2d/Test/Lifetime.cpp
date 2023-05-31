@@ -194,10 +194,7 @@ TEST_CASE (IncorrectlyChangeShapeGeometry)
           }},
          {1u,
           {UpdateCollisionShape {
-              {0u,
-               0u,
-               "Test"_us,
-               {.type = CollisionGeometry2dType::LINE, .lineStart = {-1.0f, -1.0f}, .lineEnd = {1.0f, 1.0f}}}}}}},
+              {0u, 0u, "Test"_us, {.type = CollisionGeometry2dType::LINE, .line = {{-1.0f, -1.0f}, {1.0f, 1.0f}}}}}}}},
         {{0u,
           {
               CheckCollisionShapeExistence {0u, true},

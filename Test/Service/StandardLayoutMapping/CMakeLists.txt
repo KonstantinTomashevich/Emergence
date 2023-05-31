@@ -1,4 +1,4 @@
-sober_test_begin (StandardLayoutMapping)
+sober_test_begin (StandardLayoutMapping OBJECT)
     file (GLOB_RECURSE SOURCES *.cpp)
     file (GLOB_RECURSE HEADERS *.hpp)
     list (APPEND SOURCES ${HEADERS})

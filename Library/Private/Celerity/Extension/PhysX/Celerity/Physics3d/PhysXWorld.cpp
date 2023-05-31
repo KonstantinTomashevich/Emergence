@@ -13,33 +13,33 @@ ProfiledAllocator::ProfiledAllocator (Memory::Profiler::AllocationGroup _group)
 {
 }
 
-void *ProfiledAllocator::allocate (size_t _size, const char * /*unused*/, const char * /*unused*/, int /*unused*/)
+void *ProfiledAllocator::allocate (std::size_t _size, const char * /*unused*/, const char * /*unused*/, int /*unused*/)
 {
-    auto *block = static_cast<uint64_t *> (heap.Acquire (_size + 16u, 16u));
-    block[0u] = static_cast<uint64_t> (_size + 16u);
+    auto *block = static_cast<std::uint64_t *> (heap.Acquire (_size + 16u, 16u));
+    block[0u] = static_cast<std::uint64_t> (_size + 16u);
     return block + 2u;
 }
 
 void ProfiledAllocator::deallocate (void *_pointer)
 {
-    auto *block = static_cast<uint64_t *> (_pointer);
-    const uint64_t size = *(block - 2u);
+    auto *block = static_cast<std::uint64_t *> (_pointer);
+    const std::uint64_t size = *(block - 2u);
     heap.Release (block - 2u, size);
 }
 
 void PhysXJobDispatcher::submitTask (physx::PxBaseTask &_task)
 {
-    Job::Dispatcher::Global ().Dispatch (
-        [&_task] ()
-        {
-            _task.run ();
-            _task.release ();
-        });
+    Job::Dispatcher::Global ().Dispatch (Job::Priority::FOREGROUND,
+                                         [&_task] ()
+                                         {
+                                             _task.run ();
+                                             _task.release ();
+                                         });
 }
 
 uint32_t PhysXJobDispatcher::getWorkerCount () const
 {
-    return static_cast<uint32_t> (Job::Dispatcher::Global ().GetAvailableThreadsCount ());
+    return static_cast<std::uint32_t> (Job::Dispatcher::Global ().GetAvailableThreadsCount ());
 }
 
 PhysXWorld::PhysXWorld () noexcept = default;

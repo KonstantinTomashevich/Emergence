@@ -4,6 +4,8 @@
 
 #include <API/Common/Implementation/Iterator.hpp>
 
+#include <Container/Algorithm.hpp>
+
 #include <Pegasus/RecordUtility.hpp>
 #include <Pegasus/Storage.hpp>
 
@@ -238,7 +240,8 @@ Handling::Handle<OrderedIndex> Storage::CreateOrderedIndex (StandardLayout::Fiel
 }
 
 Handling::Handle<SignalIndex> Storage::CreateSignalIndex (
-    StandardLayout::FieldId _indexedField, const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+    StandardLayout::FieldId _indexedField,
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     EMERGENCE_ASSERT (writers == 0u);
     EMERGENCE_ASSERT (readers == 0u);
@@ -408,21 +411,18 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
 
     for (const IndexedField &indexedField : indexedFields)
     {
-        // ::indexedFields should contain only leaf-fields, not intermediate nested objects.
-        EMERGENCE_ASSERT (indexedField.field.GetArchetype () != StandardLayout::FieldArchetype::NESTED_OBJECT);
-
         switch (indexedField.field.GetArchetype ())
         {
         case StandardLayout::FieldArchetype::BIT:
         {
-            uint8_t mask = 1u << indexedField.field.GetBitOffset ();
-            if (*static_cast<const uint8_t *> (indexedField.field.GetValue (_record)) & mask)
+            std::uint8_t mask = 1u << indexedField.field.GetBitOffset ();
+            if (*static_cast<const std::uint8_t *> (indexedField.field.GetValue (_record)) & mask)
             {
-                *static_cast<uint8_t *> (indexedField.field.GetValue (editedRecordBackup)) |= mask;
+                *static_cast<std::uint8_t *> (indexedField.field.GetValue (editedRecordBackup)) |= mask;
             }
             else
             {
-                *static_cast<uint8_t *> (indexedField.field.GetValue (editedRecordBackup)) &= ~mask;
+                *static_cast<std::uint8_t *> (indexedField.field.GetValue (editedRecordBackup)) &= ~mask;
             }
 
             break;
@@ -433,7 +433,6 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
         case StandardLayout::FieldArchetype::FLOAT:
         case StandardLayout::FieldArchetype::BLOCK:
         case StandardLayout::FieldArchetype::UNIQUE_STRING:
-        case StandardLayout::FieldArchetype::NESTED_OBJECT:
         {
             memcpy (indexedField.field.GetValue (editedRecordBackup), indexedField.field.GetValue (_record),
                     indexedField.field.GetSize ());
@@ -447,6 +446,14 @@ void Storage::BeginRecordEdition (const void *_record) noexcept
                      indexedField.field.GetSize () / sizeof (char));
             break;
         }
+
+        case StandardLayout::FieldArchetype::UTF8_STRING:
+        case StandardLayout::FieldArchetype::NESTED_OBJECT:
+        case StandardLayout::FieldArchetype::VECTOR:
+        case StandardLayout::FieldArchetype::PATCH:
+            // Unsupported field archetypes.
+            EMERGENCE_ASSERT (false);
+            break;
         }
     }
 }
@@ -507,11 +514,12 @@ void Storage::DropIndex (const HashIndex &_index) noexcept
         UnregisterIndexedFieldUsage (indexedField);
     }
 
-    hashIndices.EraseExchangingWithLast (std::find_if (hashIndices.Begin (), hashIndices.End (),
-                                                       [&_index] (const IndexHolder<HashIndex> &_indexHolder) -> bool
-                                                       {
-                                                           return _indexHolder.index == &_index;
-                                                       }));
+    hashIndices.EraseExchangingWithLast (
+        Container::FindIf (hashIndices.Begin (), hashIndices.End (),
+                           [&_index] (const IndexHolder<HashIndex> &_indexHolder) -> bool
+                           {
+                               return _indexHolder.index == &_index;
+                           }));
 
     RebuildIndexMasks ();
 }
@@ -520,11 +528,11 @@ void Storage::DropIndex (const OrderedIndex &_index) noexcept
 {
     UnregisterIndexedFieldUsage (_index.GetIndexedField ());
     orderedIndices.EraseExchangingWithLast (
-        std::find_if (orderedIndices.Begin (), orderedIndices.End (),
-                      [&_index] (const IndexHolder<OrderedIndex> &_indexHolder) -> bool
-                      {
-                          return _indexHolder.index == &_index;
-                      }));
+        Container::FindIf (orderedIndices.Begin (), orderedIndices.End (),
+                           [&_index] (const IndexHolder<OrderedIndex> &_indexHolder) -> bool
+                           {
+                               return _indexHolder.index == &_index;
+                           }));
 
     RebuildIndexMasks ();
 }
@@ -533,11 +541,11 @@ void Storage::DropIndex (const SignalIndex &_index) noexcept
 {
     UnregisterIndexedFieldUsage (_index.GetIndexedField ());
     signalIndices.EraseExchangingWithLast (
-        std::find_if (signalIndices.Begin (), signalIndices.End (),
-                      [&_index] (const IndexHolder<SignalIndex> &_indexHolder) -> bool
-                      {
-                          return _indexHolder.index == &_index;
-                      }));
+        Container::FindIf (signalIndices.Begin (), signalIndices.End (),
+                           [&_index] (const IndexHolder<SignalIndex> &_indexHolder) -> bool
+                           {
+                               return _indexHolder.index == &_index;
+                           }));
 
     RebuildIndexMasks ();
 }
@@ -551,11 +559,11 @@ void Storage::DropIndex (const VolumetricIndex &_index) noexcept
     }
 
     volumetricIndices.EraseExchangingWithLast (
-        std::find_if (volumetricIndices.Begin (), volumetricIndices.End (),
-                      [&_index] (const IndexHolder<VolumetricIndex> &_indexHolder) -> bool
-                      {
-                          return _indexHolder.index == &_index;
-                      }));
+        Container::FindIf (volumetricIndices.Begin (), volumetricIndices.End (),
+                           [&_index] (const IndexHolder<VolumetricIndex> &_indexHolder) -> bool
+                           {
+                               return _indexHolder.index == &_index;
+                           }));
 
     RebuildIndexMasks ();
 }
@@ -576,11 +584,11 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_
 
     for (const IndexedField &indexedField : indexedFields)
     {
-        auto indexIterator = std::find_if (_index.GetIndexedFields ().Begin (), _index.GetIndexedFields ().End (),
-                                           [&indexedField] (const StandardLayout::Field &_field) -> bool
-                                           {
-                                               return indexedField.field.IsSame (_field);
-                                           });
+        auto indexIterator = Container::FindIf (_index.GetIndexedFields ().Begin (), _index.GetIndexedFields ().End (),
+                                                [&indexedField] (const StandardLayout::Field &_field) -> bool
+                                                {
+                                                    return indexedField.field.IsSame (_field);
+                                                });
 
         if (indexIterator != _index.GetIndexedFields ().End ())
         {
@@ -596,11 +604,11 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const HashIndex &_
 Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const OrderedIndex &_index) noexcept
 {
 #define BUILD_SINGLE_FIELD_MASK                                                                                        \
-    auto fieldIterator = std::find_if (indexedFields.Begin (), indexedFields.End (),                                   \
-                                       [&_index] (const IndexedField &_field) -> bool                                  \
-                                       {                                                                               \
-                                           return _field.field.IsSame (_index.GetIndexedField ());                     \
-                                       });                                                                             \
+    auto fieldIterator = Container::FindIf (indexedFields.Begin (), indexedFields.End (),                              \
+                                            [&_index] (const IndexedField &_field) -> bool                             \
+                                            {                                                                          \
+                                                return _field.field.IsSame (_index.GetIndexedField ());                \
+                                            });                                                                        \
                                                                                                                        \
     EMERGENCE_ASSERT (fieldIterator != indexedFields.End ());                                                          \
     return 1u << (fieldIterator - indexedFields.Begin ())
@@ -621,11 +629,11 @@ Constants::Storage::IndexedFieldMask Storage::BuildIndexMask (const VolumetricIn
     {
         auto findField = [this] (const StandardLayout::Field &_field)
         {
-            return std::find_if (indexedFields.Begin (), indexedFields.End (),
-                                 [&_field] (const IndexedField &_indexedField) -> bool
-                                 {
-                                     return _indexedField.field.IsSame (_field);
-                                 });
+            return Container::FindIf (indexedFields.Begin (), indexedFields.End (),
+                                      [&_field] (const IndexedField &_indexedField) -> bool
+                                      {
+                                          return _indexedField.field.IsSame (_field);
+                                      });
         };
 
         auto minIterator = findField ((*iterator).minField);
@@ -656,11 +664,11 @@ void Storage::RegisterIndexedFieldUsage (const StandardLayout::Field &_field) no
 
 void Storage::UnregisterIndexedFieldUsage (const StandardLayout::Field &_field) noexcept
 {
-    auto iterator = std::find_if (indexedFields.Begin (), indexedFields.End (),
-                                  [&_field] (const IndexedField &_indexedField) -> bool
-                                  {
-                                      return _indexedField.field.IsSame (_field);
-                                  });
+    auto iterator = Container::FindIf (indexedFields.Begin (), indexedFields.End (),
+                                       [&_field] (const IndexedField &_indexedField) -> bool
+                                       {
+                                           return _indexedField.field.IsSame (_field);
+                                       });
 
     EMERGENCE_ASSERT (iterator != indexedFields.End ());
     EMERGENCE_ASSERT (iterator->usages > 0u);

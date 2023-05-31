@@ -65,10 +65,10 @@ struct WindowControl final
     int32_t y = 0;
 
     /// \brief Target window width.
-    uint32_t width = 0u;
+    std::uint32_t width = 0u;
 
     /// \brief Target window height.
-    uint32_t height = 0u;
+    std::uint32_t height = 0u;
 
     /// \brief Input action that will be sent in InputActionHolder on window close.
     InputAction onClosedAction;
@@ -81,6 +81,7 @@ struct WindowControl final
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId viewportName;
         StandardLayout::FieldId titleKey;
+        StandardLayout::FieldId title;
 
         StandardLayout::FieldId closable;
         StandardLayout::FieldId minimizable;

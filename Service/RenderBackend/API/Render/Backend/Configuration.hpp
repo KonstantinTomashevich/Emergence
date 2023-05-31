@@ -23,10 +23,10 @@ enum class MultiSampleAntiAliasingType
 struct Config final
 {
     /// \brief Window width in pixels.
-    uint32_t width = 0u;
+    std::uint32_t width = 0u;
 
     /// \brief Window height in pixels.
-    uint32_t height = 0u;
+    std::uint32_t height = 0u;
 
     /// \brief Selected MSAA mode.
     MultiSampleAntiAliasingType msaa = MultiSampleAntiAliasingType::NONE;

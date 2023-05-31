@@ -13,9 +13,10 @@ void ThreadFunction (Logger &_logger, std::size_t _index)
 {
     auto log = [&_logger, _index] (Level _level, const char *_message)
     {
-        const char *message = Test::ConstructMessage (_index, _message).Get ();
-        _logger.Log (_level, message);
-        GlobalLogger::Log (_level, message);
+        Emergence::Container::StringBuilder builder;
+        Test::ConstructMessage (builder, _index, _message);
+        _logger.Log (_level, builder.Get ());
+        GlobalLogger::Log (_level, builder.Get ());
     };
 
     for (std::size_t iteration = 1u; iteration <= Test::ITERATIONS; ++iteration)

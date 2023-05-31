@@ -3,7 +3,7 @@ if (NOT TARGET PhysX)
     return ()
 endif ()
 
-sober_test_begin (CelerityPhysics3d)
+sober_test_begin (CelerityPhysics3d OBJECT)
     file (GLOB_RECURSE SOURCES *.cpp)
     file (GLOB_RECURSE HEADERS *.hpp)
     list (APPEND SOURCES ${HEADERS})

@@ -15,7 +15,7 @@ struct PlatformerLoadingSingleton final
     bool movementConfigurationsLoaded = false;
     bool movementConfigurationsLoadingRequested = false;
 
-    uint64_t loadingStartTimeNs = 0u;
+    std::uint64_t loadingStartTimeNs = 0u;
 
     struct Reflection final
     {

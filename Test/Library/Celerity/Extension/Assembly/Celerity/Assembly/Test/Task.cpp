@@ -1,3 +1,11 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <SyntaxSugar/MuteWarnings.hpp>
+
+BEGIN_MUTING_PADDING_WARNING
+
+#include <cstring>
+
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
@@ -73,13 +81,20 @@ void Configurator::Execute () noexcept
 
                     for (const PatchSource &source : _task.patches)
                     {
-                        static std::array<uint8_t, 1024u> buffer;
-                        REQUIRE (buffer.size () >= source.type.GetObjectSize ());
+                        static std::array<std::uint8_t, 1024u> buffer;
+                        std::uint8_t *data = buffer.data ();
 
-                        source.type.Construct (buffer.data ());
+                        // Make sure that alignment requirements are met.
+                        while (reinterpret_cast<uintptr_t> (data) % source.type.GetObjectAlignment () != 0u)
+                        {
+                            ++data;
+                        }
+
+                        REQUIRE (static_cast<std::size_t> (&*buffer.end () - data) >= source.type.GetObjectSize ());
+                        source.type.Construct (data);
                         descriptor->components.emplace_back (StandardLayout::PatchBuilder::FromDifference (
-                            source.type, source.changedAfterCreation, buffer.data ()));
-                        source.type.Destruct (buffer.data ());
+                            source.type, source.changedAfterCreation, data));
+                        source.type.Destruct (data);
                     }
                 }
                 else if constexpr (std::is_same_v<Task, SpawnPrototype>)
@@ -220,3 +235,5 @@ void AddConfiguratorAndValidator (PipelineBuilder &_pipelineBuilder,
     _pipelineBuilder.AddTask ("Validator"_us).SetExecutor<Validator> (std::move (_validatorTasks));
 }
 } // namespace Emergence::Celerity::Test
+
+END_MUTING_WARNINGS

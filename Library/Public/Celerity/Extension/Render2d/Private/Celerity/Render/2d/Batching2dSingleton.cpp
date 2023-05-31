@@ -15,8 +15,8 @@ const Batching2dSingleton::Reflection &Batching2dSingleton::Reflect () noexcept
     return reflection;
 }
 
-Batch2d &Batching2dSingleton::GetBatch (size_t _viewportIndex,
-                                        uint16_t _layer,
+Batch2d &Batching2dSingleton::GetBatch (std::size_t _viewportIndex,
+                                        std::uint16_t _layer,
                                         Memory::UniqueString _materialInstanceId) noexcept
 {
     EMERGENCE_ASSERT (_viewportIndex < viewports.size ());
@@ -50,17 +50,19 @@ Batch2d &Batching2dSingleton::GetBatch (size_t _viewportIndex,
                            Container::Vector<UniqueId> {viewport.batches.get_allocator ()}});
     }
 
-    Batch2d &pooledBatch = freeBatches.back ();
+    Batch2d &pooledBatch = *viewport.batches.emplace (next, std::move (freeBatches.back ()));
     freeBatches.pop_back ();
 
     pooledBatch.layer = _layer;
     pooledBatch.materialInstanceId = _materialInstanceId;
-    return *viewport.batches.emplace (next, std::move (pooledBatch));
+    pooledBatch.sprites.clear ();
+    pooledBatch.debugShapes.clear ();
+    return pooledBatch;
 }
 
 void Batching2dSingleton::Reset () noexcept
 {
-    size_t viewportBatchCount = 0u;
+    std::size_t viewportBatchCount = 0u;
     for (ViewportInfoContainer &viewport : viewports)
     {
         viewportBatchCount += viewport.batches.size ();

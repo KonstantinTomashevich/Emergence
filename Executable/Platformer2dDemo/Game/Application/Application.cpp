@@ -7,6 +7,7 @@
 
 #include <Assert/Assert.hpp>
 
+#include <Configuration/ResourceProviderTypes.hpp>
 #include <Configuration/WorldStates.hpp>
 
 #include <Log/Log.hpp>
@@ -21,8 +22,13 @@
 
 #include <Serialization/Yaml.hpp>
 
-#include <SDL.h>
-#include <SDL_syswm.h>
+#if defined(__unix__)
+#    include <SDL2/SDL.h>
+#    include <SDL2/SDL_syswm.h>
+#else
+#    include <SDL.h>
+#    include <SDL_syswm.h>
+#endif
 
 #include <SyntaxSugar/Time.hpp>
 
@@ -40,7 +46,8 @@ static Emergence::Memory::Profiler::EventObserver StartMemoryRecording (
 
 Application::Application () noexcept
     : memoryEventOutput ("MemoryRecording.track", std::ios::binary),
-      memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput))
+      memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput)),
+      resourceProvider (GetResourceTypesRegistry (), GetPatchableTypesRegistry ())
 {
     Emergence::Log::GlobalLogger::Init (Emergence::Log::Level::ERROR,
                                         {Emergence::Log::Sinks::StandardOut {{Emergence::Log::Level::INFO}}});
@@ -51,6 +58,14 @@ Application::Application () noexcept
         sdlTicksAfterInit = SDL_GetTicks64 ();
         sdlInitTimeNs = Emergence::Time::NanosecondsSinceStartup ();
         Emergence::ReportCriticalError ("SDL initialization", __FILE__, __LINE__);
+    }
+
+    if (Emergence::Resource::Provider::SourceOperationResponse result = resourceProvider.AddSource ("../Resources"_us);
+        result != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+    {
+        Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Resource provider initialization error code ",
+                                                                static_cast<std::uint16_t> (result)),
+                                        __FILE__, __LINE__);
     }
 }
 
@@ -86,9 +101,8 @@ void Application::LoadSettings () noexcept
     {
         EMERGENCE_LOG (INFO, "Application: Loading settings...");
         std::ifstream input {settingsPath};
-        Emergence::Serialization::FieldNameLookupCache cache {Settings::Reflect ().mapping};
 
-        if (!Emergence::Serialization::Yaml::DeserializeObject (input, &settings, cache))
+        if (!Emergence::Serialization::Yaml::DeserializeObject (input, &settings, Settings::Reflect ().mapping, {}))
         {
             EMERGENCE_LOG (INFO, "Application: Failed to load settings, falling back to default.");
             settings = {};
@@ -105,7 +119,7 @@ void Application::LoadSettings () noexcept
 void Application::InitWindow () noexcept
 {
     EMERGENCE_LOG (INFO, "Application: Initializing window...");
-    uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
+    std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
 
     if (settings.fullscreen)
     {
@@ -122,7 +136,7 @@ void Application::InitWindow () noexcept
 
 #if SDL_VIDEO_DRIVER_X11
     void *nativeDisplayType = windowsManagerInfo.info.x11.display;
-    void *nativeWindowHandle = (void *) (uintptr_t) windowsManagerInfo.info.x11.window;
+    void *nativeWindowHandle = (void *) (std::uintptr_t) windowsManagerInfo.info.x11.window;
 #elif SDL_VIDEO_DRIVER_COCOA
     void *nativeDisplayType = nullptr;
     void *nativeWindowHandle = windowsManagerInfo.info.cocoa.window;
@@ -143,8 +157,10 @@ void Application::InitWindow () noexcept
 
 void Application::InitGameState () noexcept
 {
-    gameState = new (gameStateHeap.Acquire (sizeof (GameState), alignof (GameState))) GameState {
-        {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, Modules::Root::GetViewConfig ()}, Modules::Root::Initializer};
+    gameState = new (gameStateHeap.Acquire (sizeof (GameState), alignof (GameState)))
+        GameState {&resourceProvider,
+                   {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, Modules::Root::GetViewConfig ()},
+                   Modules::Root::Initializer};
 
     WorldStateDefinition mainMenuState;
     mainMenuState.name = WorldStates::MAIN_MENU;
@@ -262,7 +278,7 @@ void Application::EventLoop () noexcept
     }
 }
 
-uint64_t Application::SDLTicksToTime (uint64_t _ticks) const noexcept
+uint64_t Application::SDLTicksToTime (std::uint64_t _ticks) const noexcept
 {
     return (_ticks - sdlTicksAfterInit) * 1000000u + sdlInitTimeNs;
 }

@@ -54,8 +54,8 @@ struct ExpectWindowPosition final
 struct ExpectWindowSize final
 {
     UniqueId nodeId = INVALID_UNIQUE_ID;
-    uint32_t width = 0u;
-    uint32_t height = 0u;
+    std::uint32_t width = 0u;
+    std::uint32_t height = 0u;
 };
 
 struct ExpectControlsRemoved final

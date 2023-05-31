@@ -1,6 +1,0 @@
-- type: StaticModelComponent
-  content:
-    objectId: 0
-    modelId: 0
-    materialNames:
-      values[0]: Materials/WallTileBorderRed.xml

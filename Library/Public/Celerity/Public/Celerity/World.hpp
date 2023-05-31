@@ -15,6 +15,8 @@
 
 namespace Emergence::Celerity
 {
+class World;
+
 struct WorldSingleton;
 
 // TODO: Note about performance.
@@ -257,7 +259,7 @@ public:
 
     /// \brief Updates only normal time by given delta and runs normal update once.
     /// \warning Do not use if normal-fixed time integrity is required! Update world conventionally instead.
-    static void RunNormalUpdateOnce (World &_world, uint64_t _timeDeltaNs) noexcept;
+    static void RunNormalUpdateOnce (World &_world, std::uint64_t _timeDeltaNs) noexcept;
 
     /// \brief Updates only fixed time by one frame and runs fixed update once.
     /// \warning Do not use if normal-fixed time integrity is required! Update world conventionally instead.

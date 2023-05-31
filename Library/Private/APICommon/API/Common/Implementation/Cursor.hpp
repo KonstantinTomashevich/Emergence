@@ -33,7 +33,7 @@
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
-    ServiceClass::ServiceClass (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                                    \
+    ServiceClass::ServiceClass (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept                               \
     {                                                                                                                  \
         new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (_data)));                         \
     }
@@ -71,7 +71,7 @@
         return *this;                                                                                                  \
     }                                                                                                                  \
                                                                                                                        \
-    ServiceClass::ServiceClass (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept                                    \
+    ServiceClass::ServiceClass (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept                               \
     {                                                                                                                  \
         new (&data) ImplementationClass (std::move (block_cast<ImplementationClass> (_data)));                         \
     }

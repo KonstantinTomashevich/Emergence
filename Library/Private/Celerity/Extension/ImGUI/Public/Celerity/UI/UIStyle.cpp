@@ -4,6 +4,14 @@
 
 namespace Emergence::Celerity
 {
+UIStyleColorProperty::UIStyleColorProperty () noexcept
+    : red (0.0f),
+      green (0.0f),
+      blue (0.0f),
+      alpha (0.0f)
+{
+}
+
 const UIStyleColorProperty::Reflection &UIStyleColorProperty::Reflect () noexcept
 {
     static const Reflection reflection = [] ()

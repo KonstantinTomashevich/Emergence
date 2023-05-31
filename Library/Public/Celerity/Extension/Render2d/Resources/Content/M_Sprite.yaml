@@ -1,0 +1,7 @@
+# MaterialAsset
+vertexShader: "S_Sprite"
+fragmentShader: "S_Sprite"
+uniforms:
+  - name: colorTexture
+    type: 3
+    textureStage: 0

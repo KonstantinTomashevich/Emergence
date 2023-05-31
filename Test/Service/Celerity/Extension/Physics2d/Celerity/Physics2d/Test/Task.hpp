@@ -107,7 +107,7 @@ struct CollisionShapeData
     bool trigger = false;
     bool visibleToWorldQueries = true;
     bool maintainCollisionContacts = false;
-    uint8_t collisionGroup = 0u;
+    std::uint8_t collisionGroup = 0u;
 };
 
 struct AddCollisionShape final : public CollisionShapeData
@@ -139,7 +139,7 @@ using ConfiguratorTask = Container::Variant<ConfiguratorTasks::AddDynamicsMateri
 
 struct ConfiguratorFrame final
 {
-    uint64_t frameIndex = 0u;
+    std::uint64_t frameIndex = 0u;
     Container::Vector<ConfiguratorTask> tasks;
 };
 
@@ -177,7 +177,7 @@ using ValidatorTask = Container::Variant<ValidatorTasks::CheckRigidBodyExistence
 
 struct ValidatorFrame final
 {
-    uint64_t frameIndex = 0u;
+    std::uint64_t frameIndex = 0u;
     Container::Vector<ValidatorTask> tasks;
 };
 

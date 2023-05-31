@@ -6,7 +6,7 @@
  <properties>
   <property name="ScaleDivider" type="float" value="128"/>
  </properties>
- <image source="../Resources/Textures/ForestTiles.png" width="640" height="512"/>
+ <image source="../Resources/Content/Textures/ForestTiles.png" width="640" height="512"/>
  <tile id="0" class="WaterTile1">
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="128" height="128">

@@ -15,8 +15,8 @@
 
 namespace Emergence::Celerity::Test
 {
-constexpr uint32_t WIDTH = 400u;
-constexpr uint32_t HEIGHT = 300u;
+constexpr std::uint32_t WIDTH = 400u;
+constexpr std::uint32_t HEIGHT = 300u;
 
 namespace Tasks
 {
@@ -96,7 +96,7 @@ struct CreateSprite final
     Memory::UniqueString materialInstanceId;
     Math::AxisAlignedBox2d uv;
     Math::Vector2f halfSize;
-    uint16_t layer = 0u;
+    std::uint16_t layer = 0u;
     std::uint64_t visibilityMask = ~0u;
 };
 
@@ -106,7 +106,7 @@ struct UpdateSprite final
     Memory::UniqueString materialInstanceId;
     Math::AxisAlignedBox2d uv;
     Math::Vector2f halfSize;
-    uint16_t layer = 0u;
+    std::uint16_t layer = 0u;
     std::uint64_t visibilityMask = ~0u;
 };
 
@@ -144,7 +144,7 @@ struct CreateSpriteAnimation final
     UniqueId objectId = INVALID_UNIQUE_ID;
     UniqueId spriteId = INVALID_UNIQUE_ID;
     Memory::UniqueString animationId;
-    uint64_t currentTimeNs = 0u;
+    std::uint64_t currentTimeNs = 0u;
     bool tickTime = true;
     bool loop = false;
     bool flipU = false;
@@ -155,7 +155,7 @@ struct UpdateSpriteAnimation final
 {
     UniqueId spriteId = INVALID_UNIQUE_ID;
     Memory::UniqueString animationId;
-    uint64_t currentTimeNs = 0u;
+    std::uint64_t currentTimeNs = 0u;
     bool tickTime = true;
     bool loop = false;
     bool flipU = false;
@@ -200,7 +200,7 @@ struct ScreenShotPoint final
 
 struct FrameSkipPoint final
 {
-    uint64_t frameCount = 0u;
+    std::uint64_t frameCount = 0u;
 };
 
 using Scenario = Container::Vector<Container::Variant<TaskPoint, AssetWaitPoint, ScreenShotPoint, FrameSkipPoint>>;

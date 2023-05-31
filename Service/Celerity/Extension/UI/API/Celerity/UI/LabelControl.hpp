@@ -24,6 +24,7 @@ struct LabelControl final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId labelKey;
+        StandardLayout::FieldId label;
         StandardLayout::Mapping mapping;
     };
 

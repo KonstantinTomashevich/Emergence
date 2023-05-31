@@ -11,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Enumerates types of supported shapes for debug drawing.
-enum class DebugShape2dType : uint8_t
+enum class DebugShape2dType : std::uint8_t
 {
     BOX = 0u,
     CIRCLE,

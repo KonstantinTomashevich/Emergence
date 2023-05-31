@@ -50,11 +50,11 @@ public:
     Texture () noexcept;
 
     /// \brief Constructs texture from given data. Data format is implementation-dependant.
-    Texture (const uint8_t *_data, std::uint64_t _size, const TextureSettings &_settings) noexcept;
+    Texture (const std::uint8_t *_data, std::uint64_t _size, const TextureSettings &_settings) noexcept;
 
     /// \brief Constructs texture from given RGBA32 data.
     /// \details Data ownership is not transferred to texture. Instead, data is copied.
-    Texture (const uint8_t *_data,
+    Texture (const std::uint8_t *_data,
              std::uint64_t _width,
              std::uint64_t _height,
              const TextureSettings &_settings) noexcept;
@@ -78,6 +78,6 @@ public:
 private:
     friend class Uniform;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t));
 };
 } // namespace Emergence::Render::Backend

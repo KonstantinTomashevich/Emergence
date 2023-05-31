@@ -6,6 +6,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/World.hpp>
 
+#include <Container/Algorithm.hpp>
 #include <Container/Variant.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
@@ -22,7 +23,7 @@ namespace
 {
 struct TestRecord final
 {
-    uint64_t id = 0u;
+    std::uint64_t id = 0u;
     float health = 0.0f;
     float x = 0.0f;
     float y = 0.0f;
@@ -65,7 +66,7 @@ const TestRecord::Reflection &TestRecord::Reflect () noexcept
     return reflection;
 }
 
-EMERGENCE_CELERITY_EVENT1_DECLARATION (TestRecordAddedEvent, uint64_t, id);
+EMERGENCE_CELERITY_EVENT1_DECLARATION (TestRecordAddedEvent, std::uint64_t, id);
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestRecordAddedEvent, id)
 
@@ -79,7 +80,7 @@ void RegisterTestRecordAddedEvent (EventRegistrar &_registrar)
 /// \details In lots of cases we need to know about addition in several pipelines (fixed and normal, for example).
 ///          In order to do it, we need to have two event types: one per pipeline. We're using this event type in pair
 ///          with TestRecordAddedEvent to check that this behaviour works correctly.
-EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordAddedSharedEvent, uint64_t, id, float, health);
+EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordAddedSharedEvent, std::uint64_t, id, float, health);
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (TestRecordAddedSharedEvent, id, health)
 
@@ -94,7 +95,7 @@ void RegisterTestRecordAddedSharedEvent (EventRegistrar &_registrar)
 }
 
 // Intentionally copy everything except health to test copy out of separate blocks.
-EMERGENCE_CELERITY_EVENT4_DECLARATION (TestRecordRemovedEvent, uint64_t, id, float, x, float, y, float, angle);
+EMERGENCE_CELERITY_EVENT4_DECLARATION (TestRecordRemovedEvent, std::uint64_t, id, float, x, float, y, float, angle);
 
 EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TestRecordRemovedEvent, id, x, y, angle)
 
@@ -110,7 +111,7 @@ void RegisterTestRecordRemovedEvent (EventRegistrar &_registrar)
                                }});
 }
 
-EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordHealthChangedEvent, uint64_t, id, float, previousHealth);
+EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordHealthChangedEvent, std::uint64_t, id, float, previousHealth);
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (TestRecordHealthChangedEvent, id, previousHealth)
 
@@ -125,7 +126,7 @@ void RegisterTestRecordHealthChangedEvent (EventRegistrar &_registrar)
 }
 
 EMERGENCE_CELERITY_EVENT4_DECLARATION (
-    TestRecordTransformChangedEvent, uint64_t, id, float, previousX, float, previousY, float, previousAngle);
+    TestRecordTransformChangedEvent, std::uint64_t, id, float, previousX, float, previousY, float, previousAngle);
 
 EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TestRecordTransformChangedEvent, id, previousX, previousY, previousAngle)
 
@@ -146,7 +147,7 @@ void RegisterTestRecordTransformChangedEvent (EventRegistrar &_registrar)
 /// \details Although this event has no practical sense, it is used
 ///          to check how change detection in separate blocks works.
 EMERGENCE_CELERITY_EVENT3_DECLARATION (
-    TestRecordHealthOrAngleChangedEvent, uint64_t, id, float, previousHealth, float, previousAngle);
+    TestRecordHealthOrAngleChangedEvent, std::uint64_t, id, float, previousHealth, float, previousAngle);
 
 EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (TestRecordHealthOrAngleChangedEvent, id, previousHealth, previousAngle)
 
@@ -165,7 +166,7 @@ void RegisterTestRecordHealthOrAngleChangedEvent (EventRegistrar &_registrar)
 
 /// \details Although this event has no practical sense, it is used to check how change tracker zoning works.
 EMERGENCE_CELERITY_EVENT3_DECLARATION (
-    TestRecordHealthOrXChangedEvent, uint64_t, id, float, previousHealth, float, previousX);
+    TestRecordHealthOrXChangedEvent, std::uint64_t, id, float, previousHealth, float, previousX);
 
 EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (TestRecordHealthOrXChangedEvent, id, previousHealth, previousX)
 
@@ -191,13 +192,13 @@ struct AddRecord final
 
 struct EditRecord final
 {
-    uint64_t recordId;
+    std::uint64_t recordId;
     TestRecord replaceWith;
 };
 
 struct RemoveRecord final
 {
-    uint64_t recordId;
+    std::uint64_t recordId;
 };
 
 using Task = Container::Variant<Tasks::AddRecord, Tasks::EditRecord, Tasks::RemoveRecord>;
@@ -322,11 +323,11 @@ void Validator<EventType>::Execute ()
     while (const auto *event = static_cast<const EventType *> (*cursor))
     {
         // We expect that there is no duplicates among events in these tests (for test code simplification).
-        REQUIRE (std::find_if (found.begin (), found.end (),
-                               [event] (const EventType *_found)
-                               {
-                                   return *event == *_found;
-                               }) == found.end ());
+        REQUIRE (Container::FindIf (found.begin (), found.end (),
+                                    [event] (const EventType *_found)
+                                    {
+                                        return *event == *_found;
+                                    }) == found.end ());
 
         found.emplace_back (event);
         ++cursor;
@@ -335,11 +336,11 @@ void Validator<EventType>::Execute ()
     CHECK_EQUAL (found.size (), expected.size ());
     for (const EventType *event : found)
     {
-        CHECK (std::find_if (expected.begin (), expected.end (),
-                             [event] (const EventType &_expected)
-                             {
-                                 return *event == _expected;
-                             }) != expected.end ());
+        CHECK (Container::FindIf (expected.begin (), expected.end (),
+                                  [event] (const EventType &_expected)
+                                  {
+                                      return *event == _expected;
+                                  }) != expected.end ());
     }
 }
 

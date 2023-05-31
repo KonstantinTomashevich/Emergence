@@ -3,6 +3,7 @@
 #include <Assert/Assert.hpp>
 
 #include <Container/StringBuilder.hpp>
+#include <Container/Vector.hpp>
 
 namespace Emergence::Container
 {
@@ -124,7 +125,7 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
     switch (_reflectedField.reflection.GetArchetype ())
     {
     case StandardLayout::FieldArchetype::BIT:
-        return Append ((*static_cast<const uint8_t *> (_reflectedField.pointer) &
+        return Append ((*static_cast<const std::uint8_t *> (_reflectedField.pointer) &
                         (1u << _reflectedField.reflection.GetBitOffset ())) != 0u);
 
     case StandardLayout::FieldArchetype::INT:
@@ -149,16 +150,16 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
         switch (_reflectedField.reflection.GetSize ())
         {
         case 1u:
-            return Append (static_cast<unsigned> (*static_cast<const uint8_t *> (_reflectedField.pointer)));
+            return Append (static_cast<unsigned> (*static_cast<const std::uint8_t *> (_reflectedField.pointer)));
         case 2u:
-            return Append (static_cast<unsigned> (*static_cast<const uint16_t *> (_reflectedField.pointer)));
+            return Append (static_cast<unsigned> (*static_cast<const std::uint16_t *> (_reflectedField.pointer)));
         case 4u:
-            return Append (*static_cast<const uint32_t *> (_reflectedField.pointer));
+            return Append (*static_cast<const std::uint32_t *> (_reflectedField.pointer));
         case 8u:
-            return Append (*static_cast<const uint64_t *> (_reflectedField.pointer));
+            return Append (*static_cast<const std::uint64_t *> (_reflectedField.pointer));
         }
 
-        return Append ("<unknown uint size>");
+        return Append ("<unknown std::uint size>");
     }
 
     case StandardLayout::FieldArchetype::FLOAT:
@@ -179,8 +180,8 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
 
     case StandardLayout::FieldArchetype::BLOCK:
     {
-        const auto *block = static_cast<const uint8_t *> (_reflectedField.pointer);
-        for (size_t index = 0u; index < _reflectedField.reflection.GetSize (); ++index)
+        const auto *block = static_cast<const std::uint8_t *> (_reflectedField.pointer);
+        for (std::size_t index = 0u; index < _reflectedField.reflection.GetSize (); ++index)
         {
             Append (static_cast<unsigned> (block[index]));
             if (index + 1u != _reflectedField.reflection.GetSize ())
@@ -197,6 +198,37 @@ StringBuilder &StringBuilder::Append (const FieldPointer &_reflectedField) noexc
 
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
         return Append (ObjectPointer {_reflectedField.pointer, _reflectedField.reflection.GetNestedObjectMapping ()});
+
+    case StandardLayout::FieldArchetype::UTF8_STRING:
+        return Append (static_cast<const Container::Utf8String *> (_reflectedField.pointer)->c_str ());
+
+    case StandardLayout::FieldArchetype::VECTOR:
+    {
+        Append ("{ ");
+        bool firstField = true;
+
+        for (const std::uint8_t *pointer = UntypedVectorUtility::Begin (_reflectedField.pointer);
+             pointer != UntypedVectorUtility::End (_reflectedField.pointer);
+             pointer += _reflectedField.reflection.GetVectorItemMapping ().GetObjectSize ())
+        {
+            if (firstField)
+            {
+                firstField = false;
+            }
+            else
+            {
+                Append (", ");
+            }
+
+            Append (ObjectPointer {pointer, _reflectedField.reflection.GetVectorItemMapping ()});
+        }
+
+        return Append (" }");
+    }
+
+    case StandardLayout::FieldArchetype::PATCH:
+        // Patches might be huge, therefore we're not unwrapping them right now.
+        return Append ("<patch>");
     }
 
     return Append ("<unknown field archetype>");
@@ -229,6 +261,11 @@ StringBuilder &StringBuilder::Append (const ObjectPointer &_reflectedObject) noe
 
     Append (" }");
     return *this;
+}
+
+std::size_t StringBuilder::GetCount () const noexcept
+{
+    return count;
 }
 
 std::size_t StringBuilder::SpaceLeft () const noexcept

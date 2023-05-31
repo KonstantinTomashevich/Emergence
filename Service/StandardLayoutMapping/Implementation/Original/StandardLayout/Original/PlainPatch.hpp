@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstdlib>
 
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
@@ -12,12 +13,12 @@
 
 namespace Emergence::StandardLayout
 {
-constexpr std::size_t VALUE_MAX_SIZE = sizeof (uint64_t);
+constexpr std::size_t VALUE_MAX_SIZE = sizeof (std::uint64_t);
 
 struct ValueSetter
 {
     FieldId field;
-    std::array<uint8_t, VALUE_MAX_SIZE> value;
+    std::array<std::uint8_t, VALUE_MAX_SIZE> value;
 };
 
 static_assert (std::is_trivial_v<ValueSetter>);
@@ -94,7 +95,7 @@ public:
 
     void Begin (Mapping _mapping) noexcept;
 
-    void Set (FieldId _field, const std::array<uint8_t, VALUE_MAX_SIZE> &_value) noexcept;
+    void Set (FieldId _field, const std::array<std::uint8_t, VALUE_MAX_SIZE> &_value) noexcept;
 
     PlainPatch *End () noexcept;
 

@@ -70,6 +70,13 @@ Mapping Field::GetNestedObjectMapping () const noexcept
     return Mapping (array_cast (nestedMapping));
 }
 
+class Mapping Field::GetVectorItemMapping () const noexcept
+{
+    EMERGENCE_ASSERT (IsHandleValid ());
+    Handling::Handle<PlainMapping> itemMapping = static_cast<const FieldData *> (handle)->GetVectorItemMapping ();
+    return Mapping (array_cast (itemMapping));
+}
+
 Memory::UniqueString Field::GetName () const noexcept
 {
     return static_cast<const FieldData *> (handle)->GetName ();
@@ -83,7 +90,7 @@ void *Field::GetValue (void *_object) const noexcept
 const void *Field::GetValue (const void *_object) const noexcept
 {
     EMERGENCE_ASSERT (_object);
-    return static_cast<const uint8_t *> (_object) + GetOffset ();
+    return static_cast<const std::uint8_t *> (_object) + GetOffset ();
 }
 
 bool Field::IsSame (const Field &_other) const noexcept

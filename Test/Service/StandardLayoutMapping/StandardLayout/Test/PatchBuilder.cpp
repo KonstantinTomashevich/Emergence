@@ -17,20 +17,20 @@ bool PatchBuilderTestIncludeMarker () noexcept
 
 struct TestStruct
 {
-    static constexpr uint8_t ALIVE_FLAG_OFFSET = 0u;
-    static constexpr uint8_t POISONED_FLAG_OFFSET = 1u;
+    static constexpr std::uint8_t ALIVE_FLAG_OFFSET = 0u;
+    static constexpr std::uint8_t POISONED_FLAG_OFFSET = 1u;
 
-    uint8_t flags = 1u << ALIVE_FLAG_OFFSET;
+    std::uint8_t flags = 1u << ALIVE_FLAG_OFFSET;
 
     int8_t int8 = 16;
     int16_t int16 = -6751;
     int32_t int32 = 172649;
     int64_t int64 = -172937461;
 
-    uint8_t uint8 = 16u;
-    uint16_t uint16 = 6751u;
-    uint32_t uint32 = 172649u;
-    uint64_t uint64 = 172937461u;
+    std::uint8_t uint8 = 16u;
+    std::uint16_t uint16 = 6751u;
+    std::uint32_t uint32 = 172649u;
+    std::uint64_t uint64 = 172937461u;
 
     float floating = 1627.18274f;
     double doubleFloating = 162.17248172;
@@ -67,9 +67,9 @@ struct TestStruct
 
 bool TestStruct::operator== (const TestStruct &_other) const
 {
-    // We can not just use default ==, because it will check ::flags as uint variable, while reflection treats it
+    // We can not just use default ==, because it will check ::flags as std::uint variable, while reflection treats it
     // as a bit set and therefore updates only used bits, not whole number.
-    constexpr uint8_t USED_BITS = (1u << ALIVE_FLAG_OFFSET) | (1u << POISONED_FLAG_OFFSET);
+    constexpr std::uint8_t USED_BITS = (1u << ALIVE_FLAG_OFFSET) | (1u << POISONED_FLAG_OFFSET);
 
     return (flags & USED_BITS) == (_other.flags & USED_BITS) && int8 == _other.int8 && int16 == _other.int16 &&
            int32 == _other.int32 && int64 == _other.int64 && uint8 == _other.uint8 && uint16 == _other.uint16 &&
@@ -249,22 +249,22 @@ TEST_CASE (Int64Difference)
     DIFFERENCE_REGULAR_TEST (int64, 1727493);
 }
 
-TEST_CASE (UInt8Difference)
+TEST_CASE (std::uint8Difference)
 {
     DIFFERENCE_REGULAR_TEST (uint8, 13u);
 }
 
-TEST_CASE (UInt16Difference)
+TEST_CASE (std::uint16Difference)
 {
     DIFFERENCE_REGULAR_TEST (uint16, 29u);
 }
 
-TEST_CASE (UInt32Difference)
+TEST_CASE (std::uint32Difference)
 {
     DIFFERENCE_REGULAR_TEST (uint32, 1726u);
 }
 
-TEST_CASE (UInt64Difference)
+TEST_CASE (std::uint64Difference)
 {
     DIFFERENCE_REGULAR_TEST (uint64, 1727493u);
 }

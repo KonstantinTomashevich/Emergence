@@ -36,7 +36,7 @@ bool StreamDeserializer::TryReadNext () noexcept
     }
 
     Event event {0u, 0u, UniqueString {}};
-    if (Serialization::Binary::DeserializeObject (*input, &event, Event::Reflect ().mapping))
+    if (Serialization::Binary::DeserializeObject (*input, &event, Event::Reflect ().mapping, {}))
     {
         switch (event.type)
         {

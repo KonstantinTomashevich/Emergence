@@ -24,9 +24,9 @@ public:
         /// Prepared query constructs cursors.
         friend class ModifySignalQuery;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 
-        explicit Cursor (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit Cursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     EMERGENCE_EDITABLE_PREPARED_QUERY_OPERATIONS (ModifySignalQuery, Cursor);
@@ -35,16 +35,16 @@ public:
 
     /// \details Prefer using this method instead of comparison with ::GetSignaledValue,
     ///          because it strips off insignificant bits that may arise due to memory reinterpretation.
-    [[nodiscard]] bool IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const;
+    [[nodiscard]] bool IsSignaledValue (const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const;
 
-    [[nodiscard]] std::array<uint8_t, sizeof (uint64_t)> GetSignaledValue () const noexcept;
+    [[nodiscard]] std::array<std::uint8_t, sizeof (std::uint64_t)> GetSignaledValue () const noexcept;
 
 private:
     /// Registry constructs prepared queries.
     friend class Registry;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 
-    explicit ModifySignalQuery (std::array<uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    explicit ModifySignalQuery (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Warehouse

@@ -38,12 +38,19 @@ void MappingBuilder::SetConstructor (void (*_constructor) (void *)) noexcept
     block_cast<PlainMappingBuilder> (data).SetConstructor (_constructor);
 }
 
+void MappingBuilder::SetMoveConstructor (void (*_constructor) (void *, void *)) noexcept
+{
+    block_cast<PlainMappingBuilder> (data).SetMoveConstructor (_constructor);
+}
+
 void MappingBuilder::SetDestructor (void (*_destructor) (void *)) noexcept
 {
     block_cast<PlainMappingBuilder> (data).SetDestructor (_destructor);
 }
 
-FieldId MappingBuilder::RegisterBit (Memory::UniqueString _name, std::size_t _offset, uint_fast8_t _bitOffset) noexcept
+FieldId MappingBuilder::RegisterBit (Memory::UniqueString _name,
+                                     std::size_t _offset,
+                                     std::uint_fast8_t _bitOffset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (FieldData::BitSeed {_name, _offset, _bitOffset, false});
 }
@@ -75,25 +82,25 @@ FieldId MappingBuilder::RegisterInt64 (Memory::UniqueString _name, std::size_t _
 FieldId MappingBuilder::RegisterUInt8 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint8_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (std::uint8_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt16 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint16_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (std::uint16_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt32 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint32_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (std::uint32_t)});
 }
 
 FieldId MappingBuilder::RegisterUInt64 (Memory::UniqueString _name, std::size_t _offset) noexcept
 {
     return block_cast<PlainMappingBuilder> (data).AddField (
-        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (uint64_t)});
+        FieldData::StandardSeed {_name, FieldArchetype::UINT, false, _offset, sizeof (std::uint64_t)});
 }
 
 FieldId MappingBuilder::RegisterFloat (Memory::UniqueString _name, std::size_t _offset) noexcept
@@ -194,6 +201,22 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
                                                                          _offset + field.GetOffset (),
                                                                          field.GetNestedObjectMapping ().Get (), true});
             break;
+
+        case FieldArchetype::UTF8_STRING:
+            nestedFieldId = state.AddField (
+                FieldData::Utf8StringSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset (), true});
+            break;
+
+        case FieldArchetype::VECTOR:
+            nestedFieldId =
+                state.AddField (FieldData::VectorSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset (),
+                                                       field.GetVectorItemMapping ().Get (), true});
+            break;
+
+        case FieldArchetype::PATCH:
+            nestedFieldId = state.AddField (
+                FieldData::PatchSeed {Memory::UniqueString {fullName}, _offset + field.GetOffset (), true});
+            break;
         }
 
         EMERGENCE_ASSERT (nestedFieldId == ProjectNestedField (objectFieldId, fieldId));
@@ -207,6 +230,24 @@ FieldId MappingBuilder::RegisterNestedObject (Memory::UniqueString _name,
     }
 
     return objectFieldId;
+}
+
+FieldId MappingBuilder::RegisterUtf8String (Memory::UniqueString _name, std::size_t _offset) noexcept
+{
+    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::Utf8StringSeed {_name, _offset, false});
+}
+
+FieldId MappingBuilder::RegisterVector (Memory::UniqueString _name,
+                                        std::size_t _offset,
+                                        const Mapping &_itemMapping) noexcept
+{
+    return block_cast<PlainMappingBuilder> (data).AddField (
+        FieldData::VectorSeed {_name, _offset, block_cast<Handling::Handle<PlainMapping>> (_itemMapping.data), false});
+}
+
+FieldId MappingBuilder::RegisterPatch (Memory::UniqueString _name, std::size_t _offset) noexcept
+{
+    return block_cast<PlainMappingBuilder> (data).AddField (FieldData::PatchSeed {_name, _offset, false});
 }
 
 void MappingBuilder::PushVisibilityCondition (FieldId _field,

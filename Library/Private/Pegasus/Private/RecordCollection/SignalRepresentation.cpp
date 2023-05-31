@@ -63,13 +63,13 @@ StandardLayout::Field SignalRepresentation::GetKeyField () const noexcept
     return reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ()->GetIndexedField ();
 }
 
-bool SignalRepresentation::IsSignaledValue (const std::array<uint8_t, sizeof (uint64_t)> &_value) const
+bool SignalRepresentation::IsSignaledValue (const std::array<std::uint8_t, sizeof (std::uint64_t)> &_value) const
 {
     EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ()->IsSignaledValue (_value);
 }
 
-std::array<uint8_t, sizeof (uint64_t)> SignalRepresentation::GetSignaledValue () const
+std::array<std::uint8_t, sizeof (std::uint64_t)> SignalRepresentation::GetSignaledValue () const
 {
     EMERGENCE_ASSERT (handle);
     return reinterpret_cast<const Handling::Handle<Pegasus::SignalIndex> *> (&handle)->Get ()->GetSignaledValue ();

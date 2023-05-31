@@ -1,5 +1,7 @@
 #include <SyntaxSugar/MuteWarnings.hpp>
 
+#include <limits>
+
 #include <Assert/Assert.hpp>
 
 BEGIN_MUTING_WARNINGS
@@ -18,7 +20,7 @@ namespace Emergence::Celerity
 // NOLINTNEXTLINE(modernize-use-equals-default): It's not actually trivial. Why linter thinks it is?
 PhysicsWorld2dSingleton::PhysicsWorld2dSingleton () noexcept
 {
-    collisionMasks.fill (std::numeric_limits<uint32_t>::max ());
+    collisionMasks.fill (std::numeric_limits<std::uint32_t>::max ());
     block_cast<b2World *> (implementationBlock) = nullptr;
 }
 

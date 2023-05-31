@@ -1,4 +1,4 @@
-sober_library_begin (CelerityResourceObject STATIC)
+sober_library_begin (CelerityResourceObject OBJECT)
     file (GLOB_RECURSE HEADERS *.hpp)
     file (GLOB_RECURSE SOURCES *.cpp)
     list (APPEND SOURCES ${HEADERS})
@@ -11,6 +11,9 @@ sober_library_begin (CelerityResourceObject STATIC)
 
     sober_library_link_library (PUBLIC ${CELERITY_ASSEMBLY_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${RESOURCE_OBJECT_LIBRARY_TARGET})
+
+    sober_library_use_service (EXPECTED PRIVATE JobDispatcher)
+    sober_library_use_service (EXPECTED PRIVATE Log)
 
     sober_variant_begin (Original)
     sober_variant_end ()

@@ -1,35 +1,32 @@
-#include <fstream>
-
 #include <Celerity/PipelineBuilderMacros.hpp>
-
-#include <Configuration/Paths.hpp>
 
 #include <Root/LevelsConfigurationLoading.hpp>
 #include <Root/LevelsConfigurationSingleton.hpp>
 
-#include <Serialization/Yaml.hpp>
-
 namespace LevelsConfigurationLoading
 {
+using namespace Emergence::Memory::Literals;
+
 const Emergence::Memory::UniqueString Checkpoint::STARTED {"LevelsConfigurationLoading::Started"};
 const Emergence::Memory::UniqueString Checkpoint::FINISHED {"LevelsConfigurationLoading::Finished"};
 
 class Loader final : public Emergence::Celerity::TaskExecutorBase<Loader>
 {
 public:
-    Loader (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
+    Loader (Emergence::Celerity::TaskConstructor &_constructor,
+            Emergence::Resource::Provider::ResourceProvider *_resourceProvider) noexcept;
 
     void Execute () noexcept;
 
 private:
     Emergence::Celerity::ModifySingletonQuery modifyLevelsConfiguration;
-
-    Emergence::Serialization::FieldNameLookupCache levelsConfigurationLoadingCache {
-        LevelsConfigurationSingleton::Reflect ().mapping};
+    Emergence::Resource::Provider::ResourceProvider *resourceProvider;
 };
 
-Loader::Loader (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyLevelsConfiguration (MODIFY_SINGLETON (LevelsConfigurationSingleton))
+Loader::Loader (Emergence::Celerity::TaskConstructor &_constructor,
+                Emergence::Resource::Provider::ResourceProvider *_resourceProvider) noexcept
+    : modifyLevelsConfiguration (MODIFY_SINGLETON (LevelsConfigurationSingleton)),
+      resourceProvider (_resourceProvider)
 {
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.DependOn (Checkpoint::FINISHED);
@@ -43,33 +40,38 @@ void Loader::Execute () noexcept
     if (!levelsConfiguration->loaded)
     {
         // Levels configuration is pretty lightweight, so we're loading it in one frame.
-        std::ifstream input {*GetLevelsConfigurationPath ()};
-
-        if (input)
+        switch (resourceProvider->LoadObject (LevelsConfigurationSingleton::Reflect ().mapping, "LCS_Levels"_us,
+                                              levelsConfiguration))
         {
-            if (!Emergence::Serialization::Yaml::DeserializeObject (input, levelsConfiguration,
-                                                                    levelsConfigurationLoadingCache))
-            {
-                Emergence::ReportCriticalError (
-                    "LevelsConfigurationLoading: Unable to deserialize levels configuration!", __FILE__, __LINE__);
-            }
+        case Emergence::Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
+            break;
 
-            EMERGENCE_ASSERT (*levelsConfiguration->tutorialLevelName);
-        }
-        else
-        {
-            Emergence::ReportCriticalError ("LevelsConfigurationLoading: Unable to open levels configuration!",
+        case Emergence::Resource::Provider::LoadingOperationResponse::NOT_FOUND:
+            Emergence::ReportCriticalError ("LevelsConfigurationLoading: Levels configuration not found!", __FILE__,
+                                            __LINE__);
+            break;
+
+        case Emergence::Resource::Provider::LoadingOperationResponse::IO_ERROR:
+            Emergence::ReportCriticalError ("LevelsConfigurationLoading: Unable to deserialize levels configuration!",
                                             __FILE__, __LINE__);
+            break;
+
+        case Emergence::Resource::Provider::LoadingOperationResponse::WRONG_TYPE:
+            Emergence::ReportCriticalError ("LevelsConfigurationLoading: Levels configuration has wrong type!",
+                                            __FILE__, __LINE__);
+            break;
         }
 
         levelsConfiguration->loaded = true;
     }
 }
 
-void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
+void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
+                        Emergence::Resource::Provider::ResourceProvider *_resourceProvider) noexcept
 {
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
-    _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"LevelsConfigurationLoader"}).SetExecutor<Loader> ();
+    _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"LevelsConfigurationLoader"})
+        .SetExecutor<Loader> (_resourceProvider);
 }
 } // namespace LevelsConfigurationLoading

@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 
 #include <StandardLayout/Visualization.hpp>

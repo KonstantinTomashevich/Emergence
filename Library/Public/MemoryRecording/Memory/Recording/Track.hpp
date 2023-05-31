@@ -52,13 +52,13 @@ public:
     [[nodiscard]] UniqueString GetId () const noexcept;
 
     /// \return Amount of bytes, that are used by any object.
-    [[nodiscard]] size_t GetAcquired () const noexcept;
+    [[nodiscard]] std::size_t GetAcquired () const noexcept;
 
     /// \return Amount of bytes, that are not used by any object, but reserved for usage in future.
-    [[nodiscard]] size_t GetReserved () const noexcept;
+    [[nodiscard]] std::size_t GetReserved () const noexcept;
 
     /// \return Total amount of bytes, that are owned by allocation group.
-    [[nodiscard]] size_t GetTotal () const noexcept;
+    [[nodiscard]] std::size_t GetTotal () const noexcept;
 
     /// Groups are managed by Track, therefore copying and assigning is forbidden.
     EMERGENCE_DELETE_ASSIGNMENT (RecordedAllocationGroup);

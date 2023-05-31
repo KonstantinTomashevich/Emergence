@@ -15,10 +15,10 @@ struct Sprite2dUvAnimationFrame final
     Math::AxisAlignedBox2d uv {{0.0f, 0.0f}, {1.0f, 1.0f}};
 
     /// \brief Indicates how long is this frame in nanoseconds.
-    uint64_t durationNs = 0;
+    std::uint64_t durationNs = 0;
 
     /// \brief Moment of animation time after which this frame becomes active.
-    uint64_t startTimeNs = 0u;
+    std::uint64_t startTimeNs = 0u;
 
     struct Reflection final
     {
@@ -48,6 +48,7 @@ struct Sprite2dUvAnimation final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId materialInstanceId;
+        StandardLayout::FieldId frames;
         StandardLayout::Mapping mapping;
     };
 

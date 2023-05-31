@@ -1,4 +1,4 @@
-sober_library_begin (CelerityPhysics2dDebugDraw STATIC)
+sober_library_begin (CelerityPhysics2dDebugDraw OBJECT)
     file (GLOB_RECURSE HEADERS "*.hpp")
     file (GLOB_RECURSE SOURCES "*.cpp")
     file (GLOB_RECURSE SHADERS "Resources/Shaders/*.sc")
@@ -24,10 +24,7 @@ sober_library_end ()
 
 set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
 file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Materials"
-        "${RESOURCES_COMPILED_DIRECTORY}/Materials" SYMBOLIC)
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/MaterialInstances"
-        "${RESOURCES_COMPILED_DIRECTORY}/MaterialInstances" SYMBOLIC)
+file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "${RESOURCES_COMPILED_DIRECTORY}/Content" SYMBOLIC)
 register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 sober_naming_library_base_target (CelerityPhysics2dDebugDraw CELERITY_PHYSICS_2D_DEBUG_DRAW_LIBRARY)

@@ -1,5 +1,5 @@
 sober_implementation_begin (Parallel)
-    sober_implementation_setup_target (STATIC ${SOBER_TEST_RUNNER_STUB_SOURCE})
+    sober_implementation_setup_target (OBJECT ${SOBER_TEST_RUNNER_STUB_SOURCE})
     sober_naming_variant_target (ParallelTaskExecutor Original IMPLEMENTATION_LIBRARY_TARGET)
     sober_implementation_link_library ("${IMPLEMENTATION_LIBRARY_TARGET}")
 sober_implementation_end ()

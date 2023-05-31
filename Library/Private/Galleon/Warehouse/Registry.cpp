@@ -187,7 +187,7 @@ ModifyDescendingRangeQuery Registry::ModifyDescendingRange (const StandardLayout
 
 FetchSignalQuery Registry::FetchSignal (const StandardLayout::Mapping &_typeMapping,
                                         StandardLayout::FieldId _keyField,
-                                        const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+                                        const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);
@@ -196,9 +196,10 @@ FetchSignalQuery Registry::FetchSignal (const StandardLayout::Mapping &_typeMapp
     return FetchSignalQuery (array_cast (query));
 }
 
-ModifySignalQuery Registry::ModifySignal (const StandardLayout::Mapping &_typeMapping,
-                                          StandardLayout::FieldId _keyField,
-                                          const std::array<uint8_t, sizeof (uint64_t)> &_signaledValue) noexcept
+ModifySignalQuery Registry::ModifySignal (
+    const StandardLayout::Mapping &_typeMapping,
+    StandardLayout::FieldId _keyField,
+    const std::array<std::uint8_t, sizeof (std::uint64_t)> &_signaledValue) noexcept
 {
     auto &internal = block_cast<RegistryData> (data);
     EMERGENCE_ASSERT (internal.deck);

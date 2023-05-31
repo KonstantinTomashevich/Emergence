@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <Math/Scalar.hpp>
 #include <Math/Transform2d.hpp>
 

@@ -1533,11 +1533,11 @@ static void UpdateLineGeometryAndPose (const CollisionShape2dComponent *_shape,
         Math::Matrix3x3f {Math::Transform2d {_shape->translation, _shape->rotation, Math::Vector2f::ONE}};
 
     const Math::Vector3f firstPoint3d =
-        localTransformMatrix * Math::Vector3f {_shape->geometry.lineStart.x, _shape->geometry.lineStart.y, 1.0f};
+        localTransformMatrix * Math::Vector3f {_shape->geometry.line.start.x, _shape->geometry.line.start.y, 1.0f};
     const Math::Vector2f firstPoint2d {firstPoint3d.x, firstPoint3d.y};
 
     const Math::Vector3f secondPoint3d =
-        localTransformMatrix * Math::Vector3f {_shape->geometry.lineEnd.x, _shape->geometry.lineEnd.y, 1.0f};
+        localTransformMatrix * Math::Vector3f {_shape->geometry.line.end.x, _shape->geometry.line.end.y, 1.0f};
     const Math::Vector2f secondPoint2d {secondPoint3d.x, secondPoint3d.y};
 
     _lineShape->SetTwoSided (ToBox2d (firstPoint2d), ToBox2d (secondPoint2d));

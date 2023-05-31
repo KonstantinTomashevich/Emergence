@@ -1,0 +1,14 @@
+# LocaleConfiguration
+strings:
+  - key: InputInt
+    value: Integer input
+  - key: InputFloat
+    value: Floating input
+  - key: InputText
+    value: Text input
+  - key: Ok
+    value: Ok
+  - key: Cancel
+    value: Cancel
+  - key: Help
+    value: Help

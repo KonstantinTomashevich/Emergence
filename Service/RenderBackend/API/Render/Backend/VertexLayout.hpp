@@ -1,12 +1,14 @@
 #pragma once
 
+#include <cstdint>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
 namespace Emergence::Render::Backend
 {
 /// \brief Enumerates supported vertex attributes.
-enum class Attribute : uint8_t
+enum class Attribute : std::uint8_t
 {
     POSITION,
     NORMAL,
@@ -29,7 +31,7 @@ enum class Attribute : uint8_t
 };
 
 /// \brief Enumerates supported vertex attribute types.
-enum class AttributeType : uint8_t
+enum class AttributeType : std::uint8_t
 {
     UINT8 = 0u,
     INT16,
@@ -56,9 +58,9 @@ private:
     friend class TransientVertexBuffer;
     friend class VertexLayoutBuilder;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 11u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 11u);
 
-    VertexLayout (std::array<uint8_t, DATA_MAX_SIZE> *_data) noexcept;
+    VertexLayout (std::array<std::uint8_t, DATA_MAX_SIZE> *_data) noexcept;
 };
 
 /// \brief Provides API for building VertexLayout's.
@@ -80,7 +82,7 @@ public:
     /// \param _normalized GPU will convert integer type values into [0.0; 1.0] range values.
     VertexLayoutBuilder &Add (Attribute _attribute,
                               AttributeType _type,
-                              uint8_t _elementCount,
+                              std::uint8_t _elementCount,
                               bool _normalized = false) noexcept;
 
     /// \brief Finish building layout.
@@ -89,6 +91,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (VertexLayoutBuilder);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 11u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 11u);
 };
 } // namespace Emergence::Render::Backend

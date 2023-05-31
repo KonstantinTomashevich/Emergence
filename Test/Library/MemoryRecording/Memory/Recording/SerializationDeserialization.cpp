@@ -68,10 +68,10 @@ static void CheckSerializationDeserializationRoutine (Recording::StreamSerialize
         {
         case Recording::EventType::DECLARE_GROUP:
         {
-            CHECK_EQUAL (runtime->reservedBytes, deserialized->reservedBytes);
-            CHECK_EQUAL (runtime->acquiredBytes, deserialized->acquiredBytes);
-            CHECK_EQUAL (runtime->parent, deserialized->parent);
-            CHECK_EQUAL (runtime->id, deserialized->id);
+            CHECK_EQUAL (runtime->declareGroup.reservedBytes, deserialized->declareGroup.reservedBytes);
+            CHECK_EQUAL (runtime->declareGroup.acquiredBytes, deserialized->declareGroup.acquiredBytes);
+            CHECK_EQUAL (runtime->declareGroup.parent, deserialized->declareGroup.parent);
+            CHECK_EQUAL (runtime->declareGroup.id, deserialized->declareGroup.id);
             break;
         }
         case Recording::EventType::ALLOCATE:
@@ -79,14 +79,14 @@ static void CheckSerializationDeserializationRoutine (Recording::StreamSerialize
         case Recording::EventType::RELEASE:
         case Recording::EventType::FREE:
         {
-            CHECK_EQUAL (runtime->group, deserialized->group);
-            CHECK_EQUAL (runtime->bytes, deserialized->bytes);
+            CHECK_EQUAL (runtime->memory.group, deserialized->memory.group);
+            CHECK_EQUAL (runtime->memory.bytes, deserialized->memory.bytes);
             break;
         }
         case Recording::EventType::MARKER:
         {
-            CHECK_EQUAL (runtime->scope, deserialized->scope);
-            CHECK_EQUAL (runtime->markerId, deserialized->markerId);
+            CHECK_EQUAL (runtime->marker.scope, deserialized->marker.scope);
+            CHECK_EQUAL (runtime->marker.markerId, deserialized->marker.markerId);
             break;
         }
         }

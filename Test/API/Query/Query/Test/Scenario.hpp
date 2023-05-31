@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <limits>
 
 #include <Container/String.hpp>
 
@@ -44,7 +45,7 @@ struct Signal final
 {
     Container::String name;
     StandardLayout::FieldId queriedField;
-    std::array<uint8_t, sizeof (uint64_t)> signaledValue;
+    std::array<std::uint8_t, sizeof (std::uint64_t)> signaledValue;
 };
 
 struct Volumetric final
@@ -59,13 +60,13 @@ struct Volumetric final
 
         SupportedValue (int64_t _value) noexcept;
 
-        SupportedValue (uint8_t _value) noexcept;
+        SupportedValue (std::uint8_t _value) noexcept;
 
-        SupportedValue (uint16_t _value) noexcept;
+        SupportedValue (std::uint16_t _value) noexcept;
 
-        SupportedValue (uint32_t _value) noexcept;
+        SupportedValue (std::uint32_t _value) noexcept;
 
-        SupportedValue (uint64_t _value) noexcept;
+        SupportedValue (std::uint64_t _value) noexcept;
 
         SupportedValue (float _value) noexcept;
 
@@ -76,10 +77,10 @@ struct Volumetric final
         int32_t int32;
         int64_t int64;
 
-        uint8_t uint8;
-        uint16_t uint16;
-        uint32_t uint32;
-        uint64_t uint64;
+        std::uint8_t uint8;
+        std::uint16_t uint16;
+        std::uint32_t uint32;
+        std::uint64_t uint64;
 
         float floating;
         double doubleFloating;
@@ -346,12 +347,12 @@ Scenario RemapSources (Scenario _scenario,
 /// \brief Lays out min-max arrays as sequence of min-max pairs.
 /// \details Because test drivers usually do not keep info about storages,
 ///          it's more convenient to pass only sizes of fields for used dimensions.
-Container::Vector<uint8_t> LayoutShapeIntersectionQueryParameters (const Tasks::ShapeIntersectionQueryBase &_query,
-                                                                   const Container::Vector<std::size_t> &_valueSizes);
+Container::Vector<std::uint8_t> LayoutShapeIntersectionQueryParameters (
+    const Tasks::ShapeIntersectionQueryBase &_query, const Container::Vector<std::size_t> &_valueSizes);
 
 /// \brief Same as LayoutShapeIntersectionQueryParameters, but for ray intersection queries.
-Container::Vector<uint8_t> LayoutRayIntersectionQueryParameters (const Tasks::RayIntersectionQueryBase &_query,
-                                                                 const Container::Vector<std::size_t> &_valueSizes);
+Container::Vector<std::uint8_t> LayoutRayIntersectionQueryParameters (
+    const Tasks::RayIntersectionQueryBase &_query, const Container::Vector<std::size_t> &_valueSizes);
 
 Container::Vector<Task> &operator+= (Container::Vector<Task> &_left, const Container::Vector<Task> &_right);
 

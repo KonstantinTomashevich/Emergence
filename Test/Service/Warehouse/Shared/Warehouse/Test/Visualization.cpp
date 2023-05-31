@@ -94,12 +94,12 @@ TEST_CASE (LongTerms)
             PrepareFetchSignalQuery {
                 {playerReflection.mapping, "FetchPoisoned"},
                 playerReflection.poisoned,
-                array_cast<uint8_t, sizeof (uint64_t)> (Query::Test::Player::Status::FLAG_POISONED)},
+                array_cast<std::uint8_t, sizeof (std::uint64_t)> (Query::Test::Player::Status::FLAG_POISONED)},
 
             PrepareModifySignalQuery {
                 {playerReflection.mapping, "ModifyPoisoned"},
                 playerReflection.poisoned,
-                array_cast<uint8_t, sizeof (uint64_t)> (Query::Test::Player::Status::FLAG_POISONED)},
+                array_cast<std::uint8_t, sizeof (std::uint64_t)> (Query::Test::Player::Status::FLAG_POISONED)},
 
             PrepareFetchShapeIntersectionQuery {{boxReflection.mapping, "FetchShape"}, dimensions},
             PrepareModifyShapeIntersectionQuery {{boxReflection.mapping, "ModifyShape"}, dimensions},

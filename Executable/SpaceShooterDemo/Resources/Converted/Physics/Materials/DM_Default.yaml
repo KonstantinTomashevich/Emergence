@@ -1,0 +1,6 @@
+# DynamicsMaterial3d
+staticFriction: 0.4
+dynamicFriction: 0.4
+enableFriction: 1
+restitution: 0.3
+density: 400.0

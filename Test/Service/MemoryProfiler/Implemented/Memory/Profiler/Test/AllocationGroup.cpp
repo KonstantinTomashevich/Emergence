@@ -75,7 +75,7 @@ TEST_CASE (Recording)
     AllocationGroup first {core, "Recording::First"_us};
     AllocationGroup second {core, "Recording::Second"_us};
 
-    auto check = [] (const AllocationGroup &_group, size_t _reserved, size_t _acquired)
+    auto check = [] (const AllocationGroup &_group, std::size_t _reserved, std::size_t _acquired)
     {
         CHECK_EQUAL (_group.GetReserved (), _reserved);
         CHECK_EQUAL (_group.GetAcquired (), _acquired);
@@ -185,7 +185,7 @@ TEST_CASE (PlaceholderSafety)
     CHECK_EQUAL (placeholder.GetAcquired (), 0u);
     CHECK_EQUAL (placeholder.GetTotal (), 0u);
 
-    [[maybe_unused]] uintptr_t hash = placeholder.Hash ();
+    [[maybe_unused]] std::uintptr_t hash = placeholder.Hash ();
 }
 
 END_SUITE

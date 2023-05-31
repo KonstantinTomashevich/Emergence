@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
 
 #include <API/Common/ImplementationBinding.hpp>
 
@@ -9,7 +10,7 @@
 namespace Emergence::StandardLayout
 {
 /// \brief Mapped field unique identifier.
-using FieldId = uint_fast64_t;
+using FieldId = std::uint_fast64_t;
 
 /// \brief Defines mapping-independent field space projection rule.
 ///
@@ -21,7 +22,7 @@ FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept
 /// \brief Declares field archetype, that can be used to reconstruct actual field type.
 ///
 /// \details Field type reconstruction can be useful for serialization or reflection-based comparison.
-enum class FieldArchetype : uint8_t
+enum class FieldArchetype : std::uint8_t
 {
     /// \brief Single bit.
     BIT = 0u,
@@ -35,7 +36,7 @@ enum class FieldArchetype : uint8_t
     /// \brief Floating point number.
     FLOAT,
 
-    /// \brief Zero terminated string.
+    /// \brief Zero terminated inplace string.
     STRING,
 
     /// \brief Fixed size memory block.
@@ -50,6 +51,20 @@ enum class FieldArchetype : uint8_t
     /// \details All nested fields are projected into root mapping, but sometimes
     ///          it's useful to process complex fields as independent nested objects.
     NESTED_OBJECT,
+
+    /// \brief Instance of Container::Utf8String.
+    /// \details In contrast to ::STRING, ::UTF8_STRING represents string in external address space.
+    UTF8_STRING,
+
+    /// \brief Instance of Emergence::Container::Vector that stores objects, that can be described by their mappings.
+    /// \details Field projection is impossible here due to different and dynamic address space.
+    ///          Therefore, this archetype primary goal is to make serialization easier.
+    VECTOR,
+
+    /// \brief Instance of Patch.
+    /// \details Field projection is impossible here due to dynamic and unpredictable nature of patches.
+    ///          Therefore, this archetype primary goal is to make serialization easier.
+    PATCH,
 };
 
 /// \brief Projected field name is `objectFieldName + PROJECTION_NAME_SEPARATOR + nestedFieldName`.
@@ -97,6 +112,11 @@ public:
     /// \invariant Handle must be valid.
     /// \invariant Field archetype is FieldArchetype::NESTED_OBJECT.
     [[nodiscard]] class Mapping GetNestedObjectMapping () const noexcept;
+
+    /// \return Mapping, that describes vector items.
+    /// \invariant Handle must be valid.
+    /// \invariant Field archetype is FieldArchetype::VECTOR.
+    [[nodiscard]] class Mapping GetVectorItemMapping () const noexcept;
 
     /// \return Human readable field name.
     /// \invariant Handle must be valid.

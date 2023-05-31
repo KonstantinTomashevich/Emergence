@@ -11,38 +11,51 @@
 
 namespace Emergence::Resource::Object
 {
-/// \brief Declaration contains various information about an object, but has no information about object content.
-struct Declaration final
+/// \brief Contains information about one particular part of resource object.
+struct ObjectComponent final
 {
-    /// \brief Name of the objects that is logical parent for this object or empty value if no parent is required.
-    /// \details Parent content will be merged with this object content to form final ready-to-use object.
-    Memory::UniqueString parent;
+    /// \brief Patch that transform this part into required state.
+    StandardLayout::Patch component;
 
     struct Reflection final
     {
-        StandardLayout::FieldId parent;
+        StandardLayout::FieldId component;
         StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Body contains information about object content in the form of changelist.
-struct Body final
+/// \brief Contains full serializable information about resource object.
+/// \details Mapping is called ResourceObject, because serialization and mappings know nothing about namespaces.
+struct Object final
 {
-    /// \brief Ready-to-use changelist that is already merged with Declaration::parent changelist (if parent exists).
-    Container::Vector<StandardLayout::Patch> fullChangelist {
-        Memory::Profiler::AllocationGroup {GetRootAllocationGroup (), Memory::UniqueString {"Body"}}};
+    /// \brief Name of the objects that is logical parent for this object or empty value if no parent is required.
+    /// \details Parent content will be merged with this object content to form final ready-to-use object.
+    Memory::UniqueString parent;
+
+    /// \brief Changelist will all object components.
+    /// \details Depending on object loading stage, might be local-only or already merged with parent changelist.
+    ///          If object is fully loaded, then changelists are merged.
+    Container::Vector<ObjectComponent> changelist {
+        Memory::Profiler::AllocationGroup {GetRootAllocationGroup (), Memory::UniqueString {"Object"}}};
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId parent;
+        StandardLayout::FieldId changelist;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 
-/// \brief Forms ready-to-use body by merging parent body with child changelist.
-Body ApplyInheritance (const TypeManifest &_typeManifest,
-                       const Body &_parent,
-                       const Container::Vector<StandardLayout::Patch> &_childChangelist) noexcept;
+/// \brief Merges parent object changelist into given child object.
+void ApplyInheritance (const TypeManifest &_typeManifest, const Object &_parent, Object &_child) noexcept;
 
-/// \brief Extracts child changelist by comparing child body with parent body.
+/// \brief Extracts child local changelist by comparing child object with parent object.
 void ExtractChildChangelist (const TypeManifest &_typeManifest,
-                             const Body &_parent,
-                             const Body &_child,
-                             Container::Vector<StandardLayout::Patch> &_output) noexcept;
+                             const Object &_parent,
+                             const Object &_child,
+                             Container::Vector<ObjectComponent> &_output) noexcept;
 } // namespace Emergence::Resource::Object

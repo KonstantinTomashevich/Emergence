@@ -74,13 +74,13 @@ public:
 
     /// \brief Submits given texture to given stage using given uniform.
     /// \invariant Uniform was constructed with UniformType::SAMPLER.
-    void SetSampler (UniformId _uniform, uint8_t _stage, TextureId _texture) noexcept;
+    void SetSampler (UniformId _uniform, std::uint8_t _stage, TextureId _texture) noexcept;
 
     /// \brief Sets screen rect scissor for the next submit.
-    void SetScissor (uint32_t _x, uint32_t _y, uint32_t _width, uint32_t _height) noexcept;
+    void SetScissor (std::uint32_t _x, std::uint32_t _y, std::uint32_t _width, std::uint32_t _height) noexcept;
 
     /// \brief Sets current state that controls what is written and how. See STATE_* constants.
-    void SetState (uint64_t _state) noexcept;
+    void SetState (std::uint64_t _state) noexcept;
 
     /// \brief Submits given geometry to given viewport that will be rendered using given program.
     void SubmitGeometry (ViewportId _viewport,
@@ -93,11 +93,11 @@ public:
     void SubmitGeometry (ViewportId _viewport,
                          ProgramId _program,
                          const TransientVertexBuffer &_vertices,
-                         uint32_t _verticesOffset,
-                         uint32_t _verticesCount,
+                         std::uint32_t _verticesOffset,
+                         std::uint32_t _verticesCount,
                          const TransientIndexBuffer &_indices,
-                         uint32_t _indicesOffset,
-                         uint32_t _indicesCount) noexcept;
+                         std::uint32_t _indicesOffset,
+                         std::uint32_t _indicesCount) noexcept;
 
     /// \brief Informs backend that given viewport is still in use, even if no geometries were submitted to it.
     /// \details Needed to trigger internal procedures like color and depth clearing.
@@ -108,7 +108,7 @@ public:
 private:
     friend class Renderer;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t));
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t));
 
     explicit SubmissionAgent (void *_pointer) noexcept;
 };
@@ -142,6 +142,6 @@ public:
 private:
     friend class Viewport;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uint64_t) * 5u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 5u);
 };
 } // namespace Emergence::Render::Backend

@@ -5,9 +5,9 @@
 /// \details Slowdown is singleton, because it is global mechanic, that can only be used by player.
 struct SlowdownSingleton final
 {
-    uint64_t durationNs = 1250000000u; // 1.25 seconds.
+    std::uint64_t durationNs = 1250000000u; // 1.25 seconds.
 
-    uint64_t endTimeNs = 0u;
+    std::uint64_t endTimeNs = 0u;
 
     float strength = 0.75f;
 

@@ -1,5 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <cstring>
+
 // We use CGLM for math (especially non-trivial one), because it is written in an optimized way (including SIMD usage).
 // We use a lot of const casts, because CGLM doesn't use const keyword even when arguments are constant.
 #include <cglm/affine2d.h>

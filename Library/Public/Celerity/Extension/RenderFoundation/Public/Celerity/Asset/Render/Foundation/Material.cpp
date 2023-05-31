@@ -4,24 +4,11 @@
 
 namespace Emergence::Celerity
 {
-const MaterialAssetHeader::Reflection &MaterialAssetHeader::Reflect () noexcept
+const UniformDescription::Reflection &UniformDescription::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialAssetHeader);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (vertexShader);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (fragmentShader);
-        EMERGENCE_MAPPING_REGISTRATION_END ();
-    }();
-
-    return reflection;
-}
-
-const UniformBundleItem::Reflection &UniformBundleItem::Reflect () noexcept
-{
-    static Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (UniformBundleItem);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (UniformDescription);
         EMERGENCE_MAPPING_REGISTER_REGULAR (name);
         EMERGENCE_MAPPING_REGISTER_REGULAR (type);
 
@@ -29,6 +16,20 @@ const UniformBundleItem::Reflection &UniformBundleItem::Reflect () noexcept
         EMERGENCE_MAPPING_REGISTER_REGULAR (textureStage);
         EMERGENCE_MAPPING_UNION_VARIANT_END ();
 
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const MaterialAsset::Reflection &MaterialAsset::Reflect () noexcept
+{
+    static Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (MaterialAsset);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (vertexShader);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (fragmentShader);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uniforms);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

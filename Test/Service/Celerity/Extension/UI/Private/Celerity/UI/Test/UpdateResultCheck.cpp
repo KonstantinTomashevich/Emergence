@@ -42,7 +42,7 @@ private:
     FetchValueQuery fetchWindowByNodeId;
 
     FrameInputAccumulator *inputAccumulator;
-    uint64_t currentFrameIndex = 0u;
+    std::uint64_t currentFrameIndex = 0u;
     Container::Vector<Frame> frames;
 };
 
@@ -92,9 +92,9 @@ void ResultChecker::CompareInputEvents () noexcept
     CHECK_EQUAL (extractedEvents.size (), frames[currentFrameIndex].expectedInputLeft.size ());
     for (const InputEvent &event : extractedEvents)
     {
-        const size_t found = std::count (extractedEvents.begin (), extractedEvents.end (), event);
-        const size_t expected = std::count (frames[currentFrameIndex].expectedInputLeft.begin (),
-                                            frames[currentFrameIndex].expectedInputLeft.end (), event);
+        const std::size_t found = std::count (extractedEvents.begin (), extractedEvents.end (), event);
+        const std::size_t expected = std::count (frames[currentFrameIndex].expectedInputLeft.begin (),
+                                                 frames[currentFrameIndex].expectedInputLeft.end (), event);
         CHECK_EQUAL (found, expected);
     }
 }
@@ -111,9 +111,9 @@ void ResultChecker::CompareInputActionHolders () noexcept
     CHECK_EQUAL (extractedHolders.size (), frames[currentFrameIndex].expectedInput.size ());
     for (const InputActionHolder &holder : extractedHolders)
     {
-        const size_t found = std::count (extractedHolders.begin (), extractedHolders.end (), holder);
-        const size_t expected = std::count (frames[currentFrameIndex].expectedInput.begin (),
-                                            frames[currentFrameIndex].expectedInput.end (), holder);
+        const std::size_t found = std::count (extractedHolders.begin (), extractedHolders.end (), holder);
+        const std::size_t expected = std::count (frames[currentFrameIndex].expectedInput.begin (),
+                                                 frames[currentFrameIndex].expectedInput.end (), holder);
         CHECK_EQUAL (found, expected);
     }
 }

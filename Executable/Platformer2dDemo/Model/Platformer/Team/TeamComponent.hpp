@@ -8,7 +8,7 @@ struct TeamComponent final
 {
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    uint8_t teamId = 0u;
+    std::uint8_t teamId = 0u;
 
     struct Reflection final
     {

@@ -3,16 +3,15 @@
 #include <Celerity/Asset/AssetReferenceBinding.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
+#include <Resource/Provider/ResourceProvider.hpp>
+
 namespace Emergence::Celerity::Sprite2dUvAnimationManagement
 {
 /// \brief Adds task for Sprite2dUvAnimation asset loading and unloading in normal update pipeline.
 /// \details Inserted into asset loading, therefore has no specific checkpoints.
 ///
-/// \param _animationRootPaths Known root folders for sprite 2d uv animation search.
-/// \param _maxLoadingTimePerFrameNs Maximum time per frame allocated for Sprite2dUvAnimation loading.
 /// \param _eventMap Event map generated as a result of asset events binding.
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        const Container::Vector<Memory::UniqueString> &_animationRootPaths,
-                        uint64_t _maxLoadingTimePerFrameNs,
+                        Resource::Provider::ResourceProvider *_resourceProvider,
                         const AssetReferenceBindingEventMap &_eventMap) noexcept;
 } // namespace Emergence::Celerity::Sprite2dUvAnimationManagement

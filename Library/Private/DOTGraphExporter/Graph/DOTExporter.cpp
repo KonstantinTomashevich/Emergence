@@ -167,6 +167,6 @@ Container::Optional<Container::HashSet<Container::String>> Context::Process (con
     }
 
     output << _outerIndentation << "}" << std::endl;
-    return std::move (relativePaths);
+    return relativePaths;
 }
 } // namespace Emergence::Graph::DOTExporter

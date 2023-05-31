@@ -1,12 +1,14 @@
 #pragma once
 
+#include <Container/MappingRegistry.hpp>
+
 #include <Resource/Object/TypeManifest.hpp>
 
 namespace Emergence::Resource::Object::Test
 {
 struct FirstComponent final
 {
-    uint64_t objectId = 0u;
+    std::uint64_t objectId = 0u;
     float x = 0.0f;
     float y = 0.0f;
     float z = 0.0f;
@@ -27,10 +29,10 @@ struct FirstComponent final
 
 struct SecondComponent final
 {
-    uint64_t objectId = 0u;
-    uint64_t health = 0u;
-    uint64_t money = 0u;
-    uint64_t experience = 0u;
+    std::uint64_t objectId = 0u;
+    std::uint64_t health = 0u;
+    std::uint64_t money = 0u;
+    std::uint64_t experience = 0u;
 
     struct Reflection final
     {
@@ -46,8 +48,8 @@ struct SecondComponent final
 
 struct MultiComponent final
 {
-    uint64_t objectId = 0u;
-    uint64_t instanceId = 0u;
+    std::uint64_t objectId = 0u;
+    std::uint64_t instanceId = 0u;
     Memory::UniqueString modelId;
     Memory::UniqueString materialId;
 
@@ -65,7 +67,7 @@ struct MultiComponent final
 
 struct InjectionComponent final
 {
-    uint64_t objectId = 0u;
+    std::uint64_t objectId = 0u;
     Memory::UniqueString injectionId;
 
     struct Reflection final
@@ -79,4 +81,8 @@ struct InjectionComponent final
 };
 
 const TypeManifest &GetTypeManifest () noexcept;
+
+const Container::MappingRegistry &GetResourceObjectMappingRegistry () noexcept;
+
+const Container::MappingRegistry &GetPatchableTypesMappingRegistry () noexcept;
 } // namespace Emergence::Resource::Object::Test

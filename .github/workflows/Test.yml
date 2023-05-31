@@ -15,8 +15,9 @@ jobs:
         build_type: [ Release, Debug ]
         # Only Windows builds are enabled, because preinstalled CLang and GCC version on both ubuntu-latest and
         # macos-latest images do not fully support transparent unordered_multiset operations and concepts library.
-        os: [ windows-2022 ]
-        toolchain: [ CLangCL, MSVC ]
+        os: [ windows-2022, ubuntu-22.04 ]
+        # Native toolchain is native compiler for the platform: MSVC for Windows and GCC for Ubuntu.
+        toolchain: [ CLang, Native ]
         include:
           # As of March 2022, there is a strange problem with llvm coverage on clang-cl 13.0 from VS 2022:
           # llvm-profdata emits 'unsupported instrumentation profile format version' error for profraw's, emitted
@@ -24,7 +25,7 @@ jobs:
           # Therefore, we are using separate VS 2019 build to check coverage.
           - build_type: Debug
             os: windows-2019
-            toolchain: CLangCL
+            toolchain: CLang
 
     defaults:
       run:
@@ -41,10 +42,20 @@ jobs:
           submodules: recursive
 
       - name: Setup dependencies
+        # Currently, things that use Urho3D or PhysX aren't supported on Ubuntu.
+        if: matrix.os != 'ubuntu-22.04'
         uses: ./.github/actions/SetupDependencies
         with:
           platform: ${{runner.os}}
           build_type: ${{matrix.build_type}}
+
+      - name: Install Ninja
+        if: matrix.os == 'ubuntu-22.04'
+        run: sudo apt-get install ninja-build
+
+      - name: Install SDL2
+        if: matrix.os == 'ubuntu-22.04'
+        run: sudo apt-get install libsdl2-dev
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
@@ -53,7 +64,7 @@ jobs:
         # On Windows images there is a separate LLVM installation that is already in Env:Path.
         # We want to use CLangCL for coverage, therefore we must delete this installation from path to avoid mismatches.
       - name: Configure coverage check
-        if: matrix.build_type == 'Debug' && matrix.os == 'windows-2019' && matrix.toolchain == 'CLangCL'
+        if: matrix.build_type == 'Debug' && matrix.os == 'windows-2019' && matrix.toolchain == 'CLang'
         run: |
           echo "ENABLE_COVERAGE=yes" >> $Env:GITHUB_ENV
           echo "CMAKE_ENABLE_COVERAGE=-DEMERGENCE_ENABLE_COVERAGE=ON" >> $Env:GITHUB_ENV
@@ -63,13 +74,29 @@ jobs:
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
 
-      - name: Select CLangCL toolset
-        if: matrix.os == 'windows-2022' && matrix.toolchain == 'CLangCL'
+      - name: Windows - Select CLang toolset
+        if: matrix.os == 'windows-2022' && matrix.toolchain == 'CLang'
         run: echo "CMAKE_GENERATOR=-G `"Visual Studio 17 2022`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
 
-      - name: Select MSVC 143 toolset
-        if: matrix.os == 'windows-2022' && matrix.toolchain == 'MSVC'
+      - name: Windows - Select MSVC 143 toolset
+        if: matrix.os == 'windows-2022' && matrix.toolchain == 'Native'
         run: echo "CMAKE_GENERATOR=-G `"Visual Studio 17 2022`" -A x64 -T v143" >> $Env:GITHUB_ENV
+
+      - name: Ubuntu - Select GCC 11 toolset
+        if: matrix.os == 'ubuntu-22.04' && matrix.toolchain == 'Native'
+        run: |
+          echo "CC=gcc" >> $Env:GITHUB_ENV
+          echo "CXX=g++" >> $Env:GITHUB_ENV
+          echo "CMAKE_GENERATOR=-G `"Ninja Multi-Config`"" >> $Env:GITHUB_ENV
+          echo "CMAKE_FALLBACK_TO_CXX20=-DEMERGENCE_FALLBACK_TO_CXX_20=ON" >> $Env:GITHUB_ENV
+
+      - name: Ubuntu - Select CLang 14 toolset
+        if: matrix.os == 'ubuntu-22.04' && matrix.toolchain == 'CLang'
+        run: |
+          echo "CC=clang-14" >> $Env:GITHUB_ENV
+          echo "CXX=clang-14" >> $Env:GITHUB_ENV
+          echo "CMAKE_GENERATOR=-G `"Ninja Multi-Config`"" >> $Env:GITHUB_ENV
+          echo "CMAKE_FALLBACK_TO_CXX20=-DEMERGENCE_FALLBACK_TO_CXX_20=ON" >> $Env:GITHUB_ENV
 
       - name: Configure
         working-directory: ${{env.BUILD_DIRECTORY}}

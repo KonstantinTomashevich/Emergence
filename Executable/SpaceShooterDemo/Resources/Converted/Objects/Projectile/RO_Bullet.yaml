@@ -1,0 +1,48 @@
+# ResourceObject
+parent: ""
+changelist:
+  - component:
+      type: MortalComponent
+      content:
+        objectId: 0
+        invincible: 1
+        maximumLifetimeS: 3.0
+        corpseLifetimeS: 0.0
+
+  - component:
+      type: RigidBody3dComponent
+      content:
+        objectId: 0
+        type: 2 # Dynamic
+        affectedByGravity: 0
+        linearVelocity:
+          z: 25.0
+
+  - component:
+      type: CollisionShape3dComponent
+      content:
+        objectId: 0
+        shapeId: 0
+        materialId: DM_Default
+        sendContactEvents: 1
+        geometry:
+          type: 1 # Sphere
+          sphereRadius: 0.2
+        collisionGroup: 3 # Bullet
+
+  - component:
+      type: DamageDealerComponent
+      content:
+        objectId: 0
+        damage: 1.0
+        multiUse: 0
+
+  - component:
+      type: StaticModelComponent
+      content:
+        objectId: 0
+        modelId: 0
+        modelName: Models/Bullet.mdl
+        materialNames:
+          count: 1
+          values[0]: Materials/Bullet.xml

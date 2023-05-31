@@ -202,12 +202,13 @@ void LoadingOrchestrator::Execute () noexcept
 
     auto assetManagerCursor = fetchAssetManager.Execute ();
     const auto *assetManager = static_cast<const Emergence::Celerity::AssetManagerSingleton *> (*assetManagerCursor);
+    const bool assetsWereLoaded = platformerLoading->assetsLoaded;
     platformerLoading->assetsLoaded = assetManager->assetsLeftToLoad == 0u;
 
     auto loadingAnimationCursor = modifyLoadingAnimation.Execute ();
     auto *loadingAnimation = static_cast<LoadingAnimationSingleton *> (*loadingAnimationCursor);
 
-    if (levelsConfiguration->loaded && levelLoading->state == LevelLoadingState::DONE &&
+    if (levelsConfiguration->loaded && levelLoading->state == LevelLoadingState::DONE && assetsWereLoaded &&
         platformerLoading->assetsLoaded && platformerLoading->characterAnimationConfigurationsLoaded &&
         platformerLoading->dynamicsMaterialsLoaded && locale->loadedLocale == locale->targetLocale)
     {
@@ -217,7 +218,7 @@ void LoadingOrchestrator::Execute () noexcept
         InitInput ();
         viewDropHandle.RequestViewDrop (ownerView);
 
-        const uint64_t loadingTimeNs =
+        const std::uint64_t loadingTimeNs =
             Emergence::Time::NanosecondsSinceStartup () - platformerLoading->loadingStartTimeNs;
         platformerLoading->loadingStartTimeNs = 0u;
 
@@ -242,7 +243,7 @@ void LoadingOrchestrator::SpawnViewports (const Emergence::Celerity::WorldSingle
     auto *camera = static_cast<Emergence::Celerity::Camera2dComponent *> (++cameraCursor);
     camera->objectId = cameraTransform->GetObjectId ();
     camera->halfOrthographicSize = 3.75f;
-    camera->visibilityMask = static_cast<uint64_t> (VisibilityMask::GAME_SCENE);
+    camera->visibilityMask = static_cast<std::uint64_t> (VisibilityMask::GAME_SCENE);
 
     auto cameraContextCursor = insertCameraContext.Execute ();
     auto *cameraContext = static_cast<CameraContextComponent *> (++cameraContextCursor);

@@ -10,7 +10,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Describes type of the data that can be passed to InputControl.
-enum class InputControlType : uint8_t
+enum class InputControlType : std::uint8_t
 {
     /// \brief Any text can be typed into control.
     TEXT = 0u,
@@ -26,7 +26,7 @@ enum class InputControlType : uint8_t
 struct InputControl final
 {
     /// \brief Maximum length of the text that can be typed into InputControlType::TEXT.
-    static constexpr size_t MAX_TEXT_LENGTH = 64u;
+    static constexpr std::size_t MAX_TEXT_LENGTH = 64u;
 
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
@@ -65,6 +65,7 @@ struct InputControl final
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId type;
         StandardLayout::FieldId labelKey;
+        StandardLayout::FieldId label;
 
         StandardLayout::FieldId onChangedAction;
         StandardLayout::FieldId onChangedActionDispatch;

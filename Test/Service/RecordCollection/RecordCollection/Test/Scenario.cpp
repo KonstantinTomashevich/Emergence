@@ -361,7 +361,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToRead
     VolumetricRepresentation representation =
         std::get<VolumetricRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    Container::Vector<uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+    Container::Vector<std::uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
@@ -373,7 +373,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryShapeIntersectionToEdit
     VolumetricRepresentation representation =
         std::get<VolumetricRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    Container::Vector<uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
+    Container::Vector<std::uint8_t> sequence = Query::Test::LayoutShapeIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
@@ -385,7 +385,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToRead &
     VolumetricRepresentation representation =
         std::get<VolumetricRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    Container::Vector<uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+    Container::Vector<std::uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),
@@ -397,7 +397,7 @@ void ExecuteTask (ExecutionContext &_context, const QueryRayIntersectionToEdit &
     VolumetricRepresentation representation =
         std::get<VolumetricRepresentation> (GetObject<RepresentationReference> (_context, _task.sourceName));
 
-    Container::Vector<uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
+    Container::Vector<std::uint8_t> sequence = Query::Test::LayoutRayIntersectionQueryParameters (
         _task, CollectVolumetricRepresentationKeyFieldSizes (representation));
 
     AddObject<Cursor> (_context, _task.cursorName, _context.collection.GetTypeMapping (),

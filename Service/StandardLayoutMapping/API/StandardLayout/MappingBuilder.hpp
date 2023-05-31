@@ -44,6 +44,10 @@ public:
     /// \invariant There is active mapping construction routine that uses this builder.
     void SetConstructor (void (*_constructor) (void *)) noexcept;
 
+    /// \brief Sets default move constructor for objects of constructed mapping.
+    /// \invariant There is active mapping construction routine that uses this builder.
+    void SetMoveConstructor (void (*_constructor) (void *, void *)) noexcept;
+
     /// \brief Sets default destructor for objects of constructed mapping.
     /// \invariant There is active mapping construction routine that uses this builder.
     void SetDestructor (void (*_destructor) (void *)) noexcept;
@@ -52,7 +56,7 @@ public:
     /// \invariant There is active mapping construction routine, that uses this builder.
     [[nodiscard]] FieldId RegisterBit (Memory::UniqueString _name,
                                        std::size_t _offset,
-                                       uint_fast8_t _bitOffset) noexcept;
+                                       std::uint_fast8_t _bitOffset) noexcept;
 
     /// \brief Registers 1 byte long integer.
     /// \invariant There is active mapping construction routine that uses this builder.
@@ -114,6 +118,20 @@ public:
                                                 std::size_t _offset,
                                                 const Mapping &_objectMapping) noexcept;
 
+    /// \brief Registers Container::Utf8String field.
+    /// \invariant There is active mapping construction routine that uses this builder.
+    [[nodiscard]] FieldId RegisterUtf8String (Memory::UniqueString _name, std::size_t _offset) noexcept;
+
+    /// \brief Registers vector that contains items of given Mapping.
+    /// \invariant There is active mapping construction routine that uses this builder.
+    [[nodiscard]] FieldId RegisterVector (Memory::UniqueString _name,
+                                          std::size_t _offset,
+                                          const Mapping &_itemMapping) noexcept;
+
+    /// \brief Registers Patch field.
+    /// \invariant There is active mapping construction routine that uses this builder.
+    [[nodiscard]] FieldId RegisterPatch (Memory::UniqueString _name, std::size_t _offset) noexcept;
+
     /// \brief Pushes new condition to visibility conditions stack.
     /// \see Mapping::ConditionalFieldIterator
     /// \invariant `_field` is FieldArchetype::UINT.
@@ -128,6 +146,6 @@ public:
     MappingBuilder &operator= (MappingBuilder &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 3u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
 };
 } // namespace Emergence::StandardLayout

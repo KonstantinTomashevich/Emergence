@@ -4,25 +4,26 @@
 
 namespace Emergence::Celerity
 {
-const Sprite2dUvAnimationAssetHeader::Reflection &Sprite2dUvAnimationAssetHeader::Reflect () noexcept
+const Sprite2dUvAnimationFrameInfo::Reflection &Sprite2dUvAnimationFrameInfo::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2dUvAnimationAssetHeader);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (materialInstanceId);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2dUvAnimationFrameInfo);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (uv);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (durationS);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;
 }
 
-const Sprite2dUvAnimationFrameBundleItem::Reflection &Sprite2dUvAnimationFrameBundleItem::Reflect () noexcept
+const Sprite2dUvAnimationAsset::Reflection &Sprite2dUvAnimationAsset::Reflect () noexcept
 {
     static Reflection reflection = [] ()
     {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2dUvAnimationFrameBundleItem);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (uv);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (durationS);
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Sprite2dUvAnimationAsset);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (materialInstanceId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (frames);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 

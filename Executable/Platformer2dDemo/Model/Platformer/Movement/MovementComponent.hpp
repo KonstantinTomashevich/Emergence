@@ -19,7 +19,7 @@ struct MovementComponent final
 
     MovementDirection lastMovementDirection = MovementDirection::RIGHT;
 
-    uint64_t stateStartTimeNs = 0u;
+    std::uint64_t stateStartTimeNs = 0u;
 
     Emergence::Math::Vector2f lastMovementVelocity = Emergence::Math::Vector2f::ZERO;
 
@@ -31,10 +31,10 @@ struct MovementComponent final
     ///          - Some collision removals are detected one frame later than they happened for some reason.
     ///            This problem usually occurs with jumps, when foot circle is already in the air, but ground
     ///            collision is still reported for some reason.
-    uint64_t framesInAir = 0u;
+    std::uint64_t framesInAir = 0u;
 
     /// \details See ::framesInAir.
-    uint64_t framesOnGround = 0u;
+    std::uint64_t framesOnGround = 0u;
 
     struct Reflection final
     {

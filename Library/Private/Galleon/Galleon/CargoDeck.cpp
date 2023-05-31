@@ -1,5 +1,7 @@
 #include <Assert/Assert.hpp>
 
+#include <Container/Algorithm.hpp>
+
 #include <Galleon/CargoDeck.hpp>
 
 namespace Emergence::Galleon
@@ -30,7 +32,7 @@ CargoDeck::~CargoDeck () noexcept
     // Assert that all containers are either detached or exist only due to garbage collection disabled flag.
     // We do not need to detach them as they'll be automatically cleared by typed pool destructors.
 
-#ifdef EMERGENCE_ASSERT_ENABLED
+#if defined(EMERGENCE_ASSERT_ENABLED)
     for (SingletonContainer &container : singleton)
     {
         EMERGENCE_ASSERT (container.GetReferenceCount () == 0u);
@@ -53,7 +55,7 @@ CargoDeck::~CargoDeck () noexcept
 
 Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const StandardLayout::Mapping &_typeMapping)
 {
-    auto iterator = std::find_if (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping});
+    auto iterator = Container::FindIf (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping});
     if (iterator != singleton.End ())
     {
         return &*iterator;
@@ -65,7 +67,7 @@ Handling::Handle<SingletonContainer> CargoDeck::AcquireSingletonContainer (const
 
 Handling::Handle<ShortTermContainer> CargoDeck::AcquireShortTermContainer (const StandardLayout::Mapping &_typeMapping)
 {
-    auto iterator = std::find_if (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping});
+    auto iterator = Container::FindIf (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping});
     if (iterator != shortTerm.End ())
     {
         return &*iterator;
@@ -77,7 +79,7 @@ Handling::Handle<ShortTermContainer> CargoDeck::AcquireShortTermContainer (const
 
 Handling::Handle<LongTermContainer> CargoDeck::AcquireLongTermContainer (const StandardLayout::Mapping &_typeMapping)
 {
-    auto iterator = std::find_if (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping});
+    auto iterator = Container::FindIf (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping});
     if (iterator != longTerm.End ())
     {
         return &*iterator;
@@ -89,17 +91,20 @@ Handling::Handle<LongTermContainer> CargoDeck::AcquireLongTermContainer (const S
 
 bool CargoDeck::IsSingletonContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping}) != singleton.End ();
+    return Container::FindIf (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping}) !=
+           singleton.End ();
 }
 
 bool CargoDeck::IsShortTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping}) != shortTerm.End ();
+    return Container::FindIf (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping}) !=
+           shortTerm.End ();
 }
 
 bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept
 {
-    return std::find_if (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping}) != longTerm.End ();
+    return Container::FindIf (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping}) !=
+           longTerm.End ();
 }
 
 void CargoDeck::SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typeMapping, bool _enabled) noexcept
@@ -108,7 +113,7 @@ void CargoDeck::SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typ
     {
         garbageCollectionDisabled.erase (_typeMapping);
         auto singletonIterator =
-            std::find_if (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping});
+            Container::FindIf (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping});
 
         if (singletonIterator != singleton.End () && (*singletonIterator).GetReferenceCount () == 0u)
         {
@@ -116,14 +121,15 @@ void CargoDeck::SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typ
         }
 
         auto shortTermIterator =
-            std::find_if (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping});
+            Container::FindIf (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping});
 
         if (shortTermIterator != shortTerm.End () && (*shortTermIterator).GetReferenceCount () == 0u)
         {
             DetachContainer (&*shortTermIterator);
         }
 
-        auto longTermIterator = std::find_if (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping});
+        auto longTermIterator =
+            Container::FindIf (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping});
         if (longTermIterator != longTerm.End () && (*longTermIterator).GetReferenceCount () == 0u)
         {
             DetachContainer (&*longTermIterator);

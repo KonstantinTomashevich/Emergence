@@ -3,7 +3,7 @@
 # - Tests for stubbed out profiling, that check if it has expected safe behaviour.
 
 # Test for real implementations.
-sober_test_begin (MemoryProfiler)
+sober_test_begin (MemoryProfiler OBJECT)
     file (GLOB_RECURSE SOURCES "Implemented/*.cpp")
     file (GLOB_RECURSE HEADERS "Implemented/*.hpp")
     list (APPEND SOURCES ${HEADERS})
@@ -52,7 +52,7 @@ sober_naming_implementation_target (StandardLayoutMapping Original STANDARD_LAYO
 sober_naming_implementation_target (Testing Doctest TESTING_LIBRARY_TARGET)
 sober_naming_service_target (MemoryProfiler MEMORY_PROFILER_TARGET)
 
-target_link_libraries (TestMemoryProfilerNone PRIVATE
+sober_target_link_libraries (TestMemoryProfilerNone PRIVATE
         ${ASSERT_IMPLEMENTATION_TARGET} ${LOG_IMPLEMENTATION_TARGET}
         ${MEMORY_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_IMPLEMENTATION_TARGET}
         ${STANDARD_LAYOUT_MAPPING_IMPLEMENTATION_TARGET}
