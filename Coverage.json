@@ -58,9 +58,32 @@
       "Reason": "Currently these queries just wrap Warehouse queries, therefore there is no need to cover them fully."
     },
     {
+      "Prefix": "./Library/Public/Container/Container/BoostExceptionMock.hpp",
+      "Action": "Exclude",
+      "Reason": "We expect our tests to never throw exceptions, therefore exception mock is uncovered."
+    },
+    {
+      "Prefix": "./Library/Public/Container/Container/MappingRegistry.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "For now, only simple returns are uncovered (file is very small), therefore it is ok to lower coverage requirement."
+    },
+    {
+      "Prefix": "./Library/Public/Container/Container/StringBuilder.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 69.0,
+      "Reason": "A lot of formatting options aren't used by tests yet and there is no separate tests for Container. Perhaps, should be fixed later."
+    },
+    {
       "Prefix": "./Library/Public/Math",
       "Action": "Exclude",
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."
+    },
+    {
+      "Prefix": "./Library/Public/ResourceObject/Resource/Object/LibraryLoader.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "Huge part of library loader is error logging and it isn't covered as we have no negative tests for now."
     },
     {
       "Prefix": "./Library/Public/ResourceObject/Resource/Object/TypeManifest.cpp",
@@ -69,9 +92,33 @@
       "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when class is used properly."
     },
     {
+      "Prefix": "./Library/Public/Serialization/Serialization/Binary.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 69.0,
+      "Reason": "This file contains lots of error handling and trivial type specific logic that is difficult to cover fully."
+    },
+    {
+      "Prefix": "./Library/Public/Serialization/Serialization/Yaml.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 69.0,
+      "Reason": "This file contains lots of error handling and trivial type specific logic that is difficult to cover fully."
+    },
+    {
       "Prefix": "./Service/Assert/Implementation/",
       "Action": "Exclude",
       "Reason": "Assert should not be triggered during tests, therefore its coverage will be zero."
+    },
+    {
+      "Prefix": "./Service/MemoryProfiler/Implementation/Original/Memory/Profiler/Original/EventManager.hpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 49.0,
+      "Reason": "Default destructor call isn't covered for some reason, perhaps because it has only one static instance."
+    },
+    {
+      "Prefix": "./Service/ResourceProvider/Implementation/Original/Resource/Provider/Original/ResourceProvider.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 68.0,
+      "Reason": "This class has a lots of error handling logic that isn't covered because we're aren't writing negative tests for now."
     },
     {
       "Prefix": "./Test/Library/ResourceObject/Resource/Object/Test/Helpers.cpp",
