@@ -19,6 +19,7 @@ struct DynamicsMaterial3d final
 
     DynamicsMaterial3d (DynamicsMaterial3d &&_other) noexcept;
 
+    // NOLINTNEXTLINE(performance-trivially-destructible): It's up to implementation to decide whether it is trivial.
     ~DynamicsMaterial3d () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (DynamicsMaterial3d);

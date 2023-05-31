@@ -816,6 +816,7 @@ TEST_CASE (FieldsIteration)
     CHECK ((iterator == iteratorCopyAtSecond));
 
     iterator = std::move (iteratorCopyAtBegin);
+    // NOLINTNEXTLINE(bugprone-use-after-move): API requires that moved out iterators are still usable.
     CHECK ((iterator == iteratorCopyAtBegin));
     CHECK ((iterator != iteratorCopyAtSecond));
 }
@@ -837,6 +838,7 @@ TEST_CASE (MappingEquality)
     Emergence::StandardLayout::Mapping twoIntsCorrectOrderMappingMoved = std::move (twoIntsCorrectOrderMapping);
     CHECK ((twoIntsCorrectOrderMappingMoved == twoIntsCorrectOrderMappingMoved));
     CHECK ((twoIntsCorrectOrderMappingMoved == twoIntsCorrectOrderMappingCopy));
+    // NOLINTNEXTLINE(bugprone-use-after-move): API requires that moved out iterators are still usable.
     CHECK ((twoIntsCorrectOrderMappingMoved != twoIntsCorrectOrderMapping));
     CHECK ((twoIntsCorrectOrderMappingCopy != twoIntsCorrectOrderMapping));
     CHECK ((twoIntsCorrectOrderMappingMoved != twoIntsReversedOrderMapping));

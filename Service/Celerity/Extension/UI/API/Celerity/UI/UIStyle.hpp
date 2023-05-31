@@ -51,9 +51,16 @@ struct UIStyleColorProperty final
     {
         struct
         {
+            // NOLINTNEXTLINE(modernize-use-default-member-init): Using default initializer here breaks some compilers.
             float red;
+
+            // NOLINTNEXTLINE(modernize-use-default-member-init): Using default initializer here breaks some compilers.
             float green;
+
+            // NOLINTNEXTLINE(modernize-use-default-member-init): Using default initializer here breaks some compilers.
             float blue;
+
+            // NOLINTNEXTLINE(modernize-use-default-member-init): Using default initializer here breaks some compilers.
             float alpha;
         };
 
