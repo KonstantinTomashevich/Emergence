@@ -105,7 +105,8 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
 void ExecutorImplementation::Execute () noexcept
 {
     EMERGENCE_ASSERT (!entryTaskIndices.empty ());
-    static CPU::Profiler::SectionDefinition executeSection {*"ParallelTaskExecutor"_us, 0xFF009900u};;
+    static CPU::Profiler::SectionDefinition executeSection {*"ParallelTaskExecutor"_us, 0xFF009900u};
+    ;
     CPU::Profiler::SectionInstance section {executeSection};
 
     if (entryTaskIndices.empty ())
@@ -116,13 +117,16 @@ void ExecutorImplementation::Execute () noexcept
     tasksExecuting.test_and_set (std::memory_order_acquire);
     tasksLeftToExecute = tasks.size ();
 
-    for (std::size_t taskIndex : entryTaskIndices)
     {
-        Job::Dispatcher::Global ().Dispatch (Job::Priority::FOREGROUND,
-                                             [this, taskIndex] ()
-                                             {
-                                                 TaskFunction (taskIndex);
-                                             });
+        Job::Dispatcher::Batch batch {Job::Dispatcher::Global ()};
+        for (std::size_t taskIndex : entryTaskIndices)
+        {
+            batch.Dispatch (Job::Priority::FOREGROUND,
+                            [this, taskIndex] ()
+                            {
+                                TaskFunction (taskIndex);
+                            });
+        }
     }
 
     tasksExecuting.wait (true, std::memory_order_acquire);

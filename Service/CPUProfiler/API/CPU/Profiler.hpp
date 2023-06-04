@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -30,7 +32,7 @@ public:
 private:
     friend class SectionInstance;
 
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 4u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 4u);
 };
 
 /// \brief Instantiates given section and marks it as currently running until this object is destroyed.
@@ -51,6 +53,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (SectionInstance);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
 };
 } // namespace Emergence::CPU::Profiler
