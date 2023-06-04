@@ -22,6 +22,7 @@ sober_test_begin (Warehouse OBJECT)
 
     sober_library_use_service (PER_VARIANT PRIVATE TestWarehouseVisualizationGraphs)
     sober_library_use_service (SHARED PRIVATE Assert)
+    sober_library_use_service (SHARED PRIVATE CPUProfiler)
     sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)

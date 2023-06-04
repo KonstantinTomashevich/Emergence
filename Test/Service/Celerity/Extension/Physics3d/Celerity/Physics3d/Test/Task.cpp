@@ -47,7 +47,9 @@ private:
 };
 
 Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<ConfiguratorFrame> _frames) noexcept
-    : frames (std::move (_frames)),
+    : TaskExecutorBase (_constructor),
+
+      frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
       modifyPhysicsWorld (MODIFY_SINGLETON (PhysicsWorld3dSingleton)),
@@ -269,7 +271,9 @@ private:
 };
 
 Validator::Validator (TaskConstructor &_constructor, Container::Vector<ValidatorFrame> _frames) noexcept
-    : frames (std::move (_frames)),
+    : TaskExecutorBase (_constructor),
+
+      frames (std::move (_frames)),
       framesIterator (frames.begin ()),
 
       fetchBodyById (FETCH_VALUE_1F (RigidBody3dComponent, objectId)),

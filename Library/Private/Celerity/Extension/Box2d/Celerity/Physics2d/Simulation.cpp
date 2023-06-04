@@ -125,7 +125,9 @@ private:
 };
 
 WorldUpdater::WorldUpdater (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorld2dSingleton)),
       fetchConfigurationChangedEvents (FETCH_SEQUENCE (PhysicsWorld2dConfigurationChanged))
 {
@@ -196,7 +198,9 @@ private:
 };
 
 MaterialChangesSynchronizer::MaterialChangesSynchronizer (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial2d, id)),
       fetchMaterialChangedEvents (FETCH_SEQUENCE (DynamicsMaterial2dChangedEvent)),
       fetchShapeByMaterialId (FETCH_VALUE_1F (CollisionShape2dComponent, materialId)),
@@ -246,7 +250,9 @@ private:
 };
 
 MaterialDeleter::MaterialDeleter (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchMaterialRemovedEvents (FETCH_SEQUENCE (DynamicsMaterial2dRemovedEvent)),
       removeShapeByMaterialId (REMOVE_VALUE_1F (CollisionShape2dComponent, materialId))
 {
@@ -288,7 +294,9 @@ private:
 };
 
 ShapeInitializer::ShapeInitializer (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
 
       modifyShapeByShapeId (MODIFY_VALUE_1F (CollisionShape2dComponent, shapeId)),
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial2d, id)),
@@ -471,7 +479,8 @@ private:
 };
 
 ShapeChangesSynchronizer::ShapeChangesSynchronizer (TaskConstructor &_constructor) noexcept
-    : ShapeRemoveHelper (_constructor),
+    : TaskExecutorBase (_constructor),
+      ShapeRemoveHelper (_constructor),
 
       modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchShapeByShapeId (FETCH_VALUE_1F (CollisionShape2dComponent, shapeId)),
@@ -649,7 +658,8 @@ private:
 };
 
 ShapeDeleter::ShapeDeleter (TaskConstructor &_constructor) noexcept
-    : ShapeRemoveHelper (_constructor),
+    : TaskExecutorBase (_constructor),
+      ShapeRemoveHelper (_constructor),
 
       modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchBodyByObjectId (FETCH_VALUE_1F (RigidBody2dComponent, objectId)),
@@ -694,7 +704,9 @@ private:
 };
 
 BodyInitializer::BodyInitializer (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorld2dSingleton)),
 
       fetchMaterialById (FETCH_VALUE_1F (DynamicsMaterial2d, id)),
@@ -866,7 +878,9 @@ private:
 };
 
 BodyDeleter::BodyDeleter (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchShapeByObjectId (FETCH_VALUE_1F (CollisionShape2dComponent, objectId)),
       fetchBodyRemovedEvents (FETCH_SEQUENCE (RigidBody2dComponentRemovedEvent)),
 
@@ -929,7 +943,9 @@ private:
 };
 
 BodyMassSynchronizer::BodyMassSynchronizer (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchBodyByObjectId (FETCH_VALUE_1F (RigidBody2dComponent, objectId)),
       fetchBodyMassInvalidationEvents (FETCH_SEQUENCE (RigidBody2dComponentMassInvalidatedEvent))
 {
@@ -1015,7 +1031,9 @@ private:
 };
 
 SimulationExecutor::SimulationExecutor (TaskConstructor &_constructor) noexcept
-    : modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBox2d (MODIFY_SINGLETON (Box2dAccessSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (PhysicsWorld2dSingleton)),
       fetchTime (FETCH_SINGLETON (TimeSingleton)),
 

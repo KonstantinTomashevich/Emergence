@@ -51,7 +51,9 @@ private:
 };
 
 LevelLoader::LevelLoader (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
       modifyLevelLoading (MODIFY_SINGLETON (LevelLoadingSingleton)),
 
       insertResourceObjectRequest (INSERT_SHORT_TERM (Emergence::Celerity::ResourceObjectRequest)),

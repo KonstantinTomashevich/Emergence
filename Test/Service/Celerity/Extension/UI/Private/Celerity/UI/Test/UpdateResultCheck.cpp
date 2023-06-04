@@ -49,7 +49,9 @@ private:
 ResultChecker::ResultChecker (TaskConstructor &_constructor,
                               FrameInputAccumulator *_inputAccumulator,
                               Container::Vector<Frame> _frames) noexcept
-    : fetchInputActionHolders (FETCH_SEQUENCE (InputActionHolder)),
+    : TaskExecutorBase (_constructor),
+
+      fetchInputActionHolders (FETCH_SEQUENCE (InputActionHolder)),
 
       fetchButtonByNodeId (FETCH_VALUE_1F (ButtonControl, nodeId)),
       fetchCheckboxByNodeId (FETCH_VALUE_1F (CheckboxControl, nodeId)),

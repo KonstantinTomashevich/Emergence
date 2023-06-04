@@ -15,6 +15,8 @@
 
 namespace Emergence::Celerity::Sprite2dUvAnimationManagement
 {
+using namespace Memory::Literals;
+
 class Manager final : public TaskExecutorBase<Manager>, public StatefulAssetManagerBase<Manager>
 {
 public:
@@ -44,7 +46,8 @@ private:
 Manager::Manager (TaskConstructor &_constructor,
                   Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
-    : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
+    : TaskExecutorBase (_constructor),
+      StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
 
       insertAnimation (INSERT_LONG_TERM (Sprite2dUvAnimation)),
       removeAnimationById (REMOVE_VALUE_1F (Sprite2dUvAnimation, assetId)),
@@ -62,6 +65,9 @@ AssetState Manager::StartLoading (Sprite2dUvAnimationLoadingState *_loadingState
         [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
          sharedState {_loadingState->sharedState}] ()
         {
+            static CPU::Profiler::SectionDefinition loadingSection {*"Sprite2dUvAnimationLoading"_us, 0xFF999900u};
+            CPU::Profiler::SectionInstance section {loadingSection};
+
             switch (cachedResourceProvider->LoadObject (Sprite2dUvAnimationAsset::Reflect ().mapping, assetId,
                                                         &sharedState->asset))
             {
@@ -133,7 +139,7 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
     }
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("Sprite2dUvAnimationManagement");
-    _pipelineBuilder.AddTask (Memory::UniqueString {"Sprite2dUvAnimationManager"})
+    _pipelineBuilder.AddTask ("Sprite2dUvAnimationManager"_us)
         .SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::Sprite2dUvAnimationManagement

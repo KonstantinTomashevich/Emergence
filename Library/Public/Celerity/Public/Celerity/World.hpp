@@ -5,6 +5,8 @@
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/Query/ModifySingletonQuery.hpp>
 
+#include <CPU/Profiler.hpp>
+
 #include <Container/HashSet.hpp>
 #include <Container/TypedOrderedPool.hpp>
 #include <Container/Vector.hpp>
@@ -165,6 +167,8 @@ private:
     std::array<EventSchemeInstance, static_cast<std::size_t> (PipelineType::COUNT)> eventSchemeInstances;
 
     Container::HashSet<StandardLayout::Mapping> eventProductionForbiddenInChildren;
+
+    CPU::Profiler::SectionDefinition pipelineExecutionSection;
 };
 
 /// \brief Contains basic configuration for WorldSingleton and TimeSingleton.
@@ -249,6 +253,8 @@ private:
 
     Warehouse::ModifySingletonQuery modifyTime;
     Warehouse::ModifySingletonQuery modifyWorld;
+
+    CPU::Profiler::SectionDefinition updateSection;
 };
 
 /// \brief Contains useful functions for tests.

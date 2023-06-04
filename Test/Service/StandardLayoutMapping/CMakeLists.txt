@@ -19,6 +19,7 @@ sober_test_begin (StandardLayoutMapping OBJECT)
     sober_library_link_library (PRIVATE ${SYNTAX_SUGAR_LIBRARY_TARGET})
 
     sober_library_use_service (SHARED PRIVATE Assert)
+    sober_library_use_service (SHARED PRIVATE CPUProfiler)
     sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler)

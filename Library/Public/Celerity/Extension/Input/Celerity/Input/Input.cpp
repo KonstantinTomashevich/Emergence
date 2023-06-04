@@ -70,7 +70,9 @@ private:
 };
 
 FixedInputProcessor::FixedInputProcessor (TaskConstructor &_constructor) noexcept
-    : InputProcessorBase (_constructor),
+    : TaskExecutorBase (_constructor),
+      InputProcessorBase (_constructor),
+
       modifyInputActionHolders (MODIFY_SEQUENCE (InputActionHolder))
 {
     _constructor.DependOn (TransformHierarchyCleanup::Checkpoint::FINISHED);
@@ -129,7 +131,9 @@ private:
 
 NormalInputProcessor::NormalInputProcessor (TaskConstructor &_constructor,
                                             FrameInputAccumulator *_inputAccumulator) noexcept
-    : InputProcessorBase (_constructor),
+    : TaskExecutorBase (_constructor),
+      InputProcessorBase (_constructor),
+
       modifyInputActionHolders (MODIFY_SEQUENCE (InputActionHolder)),
       insertActionHolder (INSERT_SHORT_TERM (InputActionHolder)),
 

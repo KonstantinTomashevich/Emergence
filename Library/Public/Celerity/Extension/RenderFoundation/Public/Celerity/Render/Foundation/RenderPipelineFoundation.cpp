@@ -28,7 +28,9 @@ private:
 };
 
 ViewportSynchronizer::ViewportSynchronizer (TaskConstructor &_constructor) noexcept
-    : fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
       fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
 
       fetchViewportAddedNormalEvent (FETCH_SEQUENCE (ViewportAddedNormalEvent)),
@@ -96,7 +98,9 @@ private:
 };
 
 RenderFinalizer::RenderFinalizer (TaskConstructor &_constructor) noexcept
-    : modifyRenderFoundation (MODIFY_SINGLETON (RenderFoundationSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyRenderFoundation (MODIFY_SINGLETON (RenderFoundationSingleton)),
       fetchViewportBySortIndexAscending (FETCH_ASCENDING_RANGE (Viewport, sortIndex))
 {
     _constructor.DependOn (Checkpoint::RENDER_FINISHED);

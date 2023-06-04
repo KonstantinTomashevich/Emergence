@@ -63,7 +63,9 @@ private:
 
 LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &_constructor,
                                           bool *_loadingFinishedOutput) noexcept
-    : modifyWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
       fetchResourceConfigResponse (FETCH_SEQUENCE (Emergence::Celerity::ResourceConfigLoadedResponse)),
       fetchResourceObjectResponse (FETCH_SEQUENCE (Emergence::Celerity::ResourceObjectLoadedResponse)),

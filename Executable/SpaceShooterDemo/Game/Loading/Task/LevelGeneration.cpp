@@ -90,7 +90,9 @@ private:
 };
 
 LevelGenerator::LevelGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyRequest (MODIFY_SEQUENCE (LevelGenerationRequest)),
+    : TaskExecutorBase (_constructor),
+
+      modifyRequest (MODIFY_SEQUENCE (LevelGenerationRequest)),
       fetchWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
       modifyRenderScene (MODIFY_SINGLETON (RenderSceneSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Celerity::PhysicsWorld3dSingleton)),

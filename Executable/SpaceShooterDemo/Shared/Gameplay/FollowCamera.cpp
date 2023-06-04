@@ -38,7 +38,9 @@ private:
 };
 
 CameraUpdater::CameraUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),
       fetchFollowCameraSettings (FETCH_SINGLETON (FollowCameraSettingsSingleton)),
 
       fetchControlledObject (FETCH_SIGNAL (ControllableComponent, controlledByLocalPlayer, true)),

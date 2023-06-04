@@ -66,7 +66,9 @@ private:
 LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &_constructor,
                                           const ViewDropHandle &_viewDropHandle,
                                           Emergence::Celerity::WorldView *_ownerView) noexcept
-    : fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
       fetchLevelsConfiguration (FETCH_SINGLETON (LevelsConfigurationSingleton)),
       modifyLevelLoading (MODIFY_SINGLETON (LevelLoadingSingleton)),
       modifyLoadingAnimation (MODIFY_SINGLETON (LoadingAnimationSingleton)),

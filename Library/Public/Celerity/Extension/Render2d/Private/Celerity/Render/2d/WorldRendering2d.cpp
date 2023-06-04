@@ -101,7 +101,9 @@ private:
 };
 
 WorldRenderer::WorldRenderer (TaskConstructor &_constructor) noexcept
-    : modifyBatching (MODIFY_SINGLETON (Batching2dSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBatching (MODIFY_SINGLETON (Batching2dSingleton)),
       fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
       fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
       fetchCameraById (FETCH_VALUE_1F (Camera2dComponent, objectId)),

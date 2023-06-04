@@ -85,7 +85,9 @@ private:
 };
 
 Editor::Editor (TaskConstructor &_constructor, Container::Vector<EditionFrame> _frames) noexcept
-    : insertComponent (INSERT_LONG_TERM (TestComponent)),
+    : TaskExecutorBase (_constructor),
+
+      insertComponent (INSERT_LONG_TERM (TestComponent)),
       modifyComponent (MODIFY_VALUE_1F (TestComponent, objectId)),
       frames (std::move (_frames))
 {
@@ -142,7 +144,9 @@ private:
 
 ComponentVerifier::ComponentVerifier (TaskConstructor &_constructor,
                                       Container::Vector<ComponentVerificationFrame> _frames) noexcept
-    : fetchComponents (FETCH_ASCENDING_RANGE (TestComponent, objectId)),
+    : TaskExecutorBase (_constructor),
+
+      fetchComponents (FETCH_ASCENDING_RANGE (TestComponent, objectId)),
       frames (std::move (_frames))
 {
     _constructor.DependOn (EDITION_FINISHED_CHECKPOINT);
@@ -195,7 +199,9 @@ private:
 };
 
 EventVerifier::EventVerifier (TaskConstructor &_constructor, Container::Vector<EventVerificationFrame> _frames) noexcept
-    : fetchAddedEvents (FETCH_SEQUENCE (TestComponentAddedNormalEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchAddedEvents (FETCH_SEQUENCE (TestComponentAddedNormalEvent)),
       fetchChangedEvents (FETCH_SEQUENCE (TestComponentChangedNormalEvent)),
       fetchRemovedEvents (FETCH_SEQUENCE (TestComponentRemovedNormalEvent)),
       frames (std::move (_frames))

@@ -43,7 +43,9 @@ private:
 };
 
 Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<ConfiguratorTask> _tasks) noexcept
-    : fetchWorld (FETCH_SINGLETON (WorldSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchWorld (FETCH_SINGLETON (WorldSingleton)),
 
       insertAssemblyDescriptor (INSERT_LONG_TERM (AssemblyDescriptor)),
       insertTransform (INSERT_LONG_TERM (Transform3dComponent)),
@@ -138,7 +140,9 @@ private:
 };
 
 Validator::Validator (TaskConstructor &_constructor, Container::Vector<ValidatorTask> _tasks) noexcept
-    : tasks (std::move (_tasks))
+    : TaskExecutorBase (_constructor),
+
+      tasks (std::move (_tasks))
 {
     _constructor.DependOn (Assembly::Checkpoint::FINISHED);
 

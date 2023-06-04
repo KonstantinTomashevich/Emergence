@@ -73,3 +73,6 @@
 [submodule "ThirdParty/boost/static_assert"]
 	path = ThirdParty/boost/static_assert
 	url = https://github.com/boostorg/static_assert.git
+[submodule "ThirdParty/tracy"]
+	path = ThirdParty/tracy
+	url = https://github.com/wolfpld/tracy.git

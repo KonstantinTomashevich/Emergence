@@ -1,5 +1,7 @@
 #include <thread>
 
+#include <CPU/Profiler.hpp>
+
 #include <SyntaxSugar/AtomicFlagGuard.hpp>
 
 namespace Emergence
@@ -15,8 +17,13 @@ AtomicFlagGuard::~AtomicFlagGuard () noexcept
     UnlockAtomicFlag (flag);
 }
 
+static const char *LOCK_SECTION = "AtomicFlagLock";
+
 void LockAtomicFlag (std::atomic_flag &_flag) noexcept
 {
+    static CPU::Profiler::SectionDefinition lockSection {LOCK_SECTION, 0xFF990000u};
+    CPU::Profiler::SectionInstance section {lockSection};
+
     while (_flag.test_and_set (std::memory_order_acquire))
     {
         std::this_thread::yield ();

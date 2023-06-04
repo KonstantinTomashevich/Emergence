@@ -60,7 +60,9 @@ Executor::Executor (TaskConstructor &_constructor,
                     Resource::Provider::ResourceProvider *_resourceProvider,
                     Container::Vector<Task> _tasks,
                     bool *_isFinished) noexcept
-    : fetchLoadingResponse (FETCH_SEQUENCE (ResourceConfigLoadedResponse)),
+    : TaskExecutorBase (_constructor),
+
+      fetchLoadingResponse (FETCH_SEQUENCE (ResourceConfigLoadedResponse)),
       fetchUnitConfigByAscendingId (FETCH_ASCENDING_RANGE (UnitConfig, id)),
       fetchBuildingConfigByAscendingId (FETCH_ASCENDING_RANGE (BuildingConfig, id)),
       insertLoadingRequest (INSERT_SHORT_TERM (ResourceConfigRequest)),

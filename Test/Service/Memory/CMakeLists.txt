@@ -13,6 +13,7 @@ sober_test_begin (Memory OBJECT)
     sober_library_link_library (PUBLIC ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
 
     sober_library_use_service (SHARED PRIVATE Assert)
+    sober_library_use_service (SHARED PRIVATE CPUProfiler)
     sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE MemoryProfiler Original FROZEN)
     sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)

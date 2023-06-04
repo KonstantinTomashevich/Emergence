@@ -9,6 +9,8 @@
 
 namespace Emergence::Celerity::Localization
 {
+using namespace Memory::Literals;
+
 const Memory::UniqueString Checkpoint::SYNC_STARTED {"Localization::SyncStarted"};
 const Memory::UniqueString Checkpoint::SYNC_FINISHED {"Localization::SyncFinished"};
 
@@ -34,7 +36,9 @@ private:
 
 LocalizationSynchronizer::LocalizationSynchronizer (TaskConstructor &_constructor,
                                                     Resource::Provider::ResourceProvider *_resourceProvider) noexcept
-    : modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
       insertLocalizedString (INSERT_LONG_TERM (LocalizedString)),
       removeLocalizedString (REMOVE_ASCENDING_RANGE (LocalizedString, key)),
 
@@ -68,6 +72,9 @@ void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noex
             [targetLocale {_locale->targetLocale}, capturedResourceProvider {resourceProvider},
              sharedState {_locale->sharedState}] ()
             {
+                static CPU::Profiler::SectionDefinition loadingSection {*"LocalizationLoading"_us, 0xFF999900u};
+                CPU::Profiler::SectionInstance section {loadingSection};
+
                 switch (capturedResourceProvider->LoadObject (LocaleConfiguration::Reflect ().mapping, targetLocale,
                                                               &sharedState->configurationInLoading))
                 {
@@ -132,7 +139,6 @@ void AddToNormalUpdate (PipelineBuilder &_builder, Resource::Provider::ResourceP
 {
     _builder.AddCheckpoint (Checkpoint::SYNC_STARTED);
     _builder.AddCheckpoint (Checkpoint::SYNC_FINISHED);
-    _builder.AddTask (Memory::UniqueString {"LocalizationSynchronizer"})
-        .SetExecutor<LocalizationSynchronizer> (_resourceProvider);
+    _builder.AddTask ("LocalizationSynchronizer"_us).SetExecutor<LocalizationSynchronizer> (_resourceProvider);
 }
 } // namespace Emergence::Celerity::Localization

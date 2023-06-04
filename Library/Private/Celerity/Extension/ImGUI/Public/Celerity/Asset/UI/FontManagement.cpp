@@ -21,6 +21,8 @@
 
 namespace Emergence::Celerity::FontManagement
 {
+using namespace Memory::Literals;
+
 class Manager : public TaskExecutorBase<Manager>, public StatefulAssetManagerBase<Manager>
 {
 public:
@@ -50,7 +52,9 @@ private:
 Manager::Manager (TaskConstructor &_constructor,
                   Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
-    : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
+    : TaskExecutorBase (_constructor),
+      StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
+
       insertFont (INSERT_LONG_TERM (Font)),
       removeFontById (REMOVE_VALUE_1F (Font, assetId)),
 
@@ -65,6 +69,9 @@ AssetState Manager::StartLoading (FontLoadingState *_loadingState) noexcept
         [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
          sharedState {_loadingState->sharedState}] ()
         {
+            static CPU::Profiler::SectionDefinition loadingSection {*"FontLoading"_us, 0xFF999900u};
+            CPU::Profiler::SectionInstance section {loadingSection};
+
             const char *sizeSeparator = strchr (*assetId, FONT_SIZE_SEPARATOR);
             EMERGENCE_ASSERT (sizeSeparator && *(sizeSeparator + 1u) != '\0');
             EMERGENCE_ASSERT (sizeSeparator != *assetId);
@@ -168,7 +175,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
     }
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("FontManagement");
-    _pipelineBuilder.AddTask (Memory::UniqueString {"FontManager"})
-        .SetExecutor<Manager> (_resourceProvider, iterator->second);
+    _pipelineBuilder.AddTask ("FontManager"_us).SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::FontManagement

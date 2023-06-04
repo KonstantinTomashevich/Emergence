@@ -36,7 +36,9 @@ private:
 };
 
 ControlSwitcher::ControlSwitcher (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
 
       insertInputSubscription (INSERT_LONG_TERM (Emergence::Celerity::InputSubscriptionComponent)),
       removeInputSubscriptionByObjectId (REMOVE_VALUE_1F (Emergence::Celerity::InputSubscriptionComponent, objectId)),

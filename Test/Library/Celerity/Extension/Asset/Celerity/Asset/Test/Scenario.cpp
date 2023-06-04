@@ -35,7 +35,9 @@ private:
 };
 
 Configurator::Configurator (TaskConstructor &_constructor, Container::Vector<ConfiguratorFrame> _frames) noexcept
-    : frames (std::move (_frames)),
+    : TaskExecutorBase (_constructor),
+
+      frames (std::move (_frames)),
       modifyAssetManager (MODIFY_SINGLETON (AssetManagerSingleton)),
 
       insertSingleAssetUser (INSERT_LONG_TERM (SingleAssetUser)),
@@ -174,7 +176,9 @@ private:
 AssetStateUpdater::AssetStateUpdater (TaskConstructor &_constructor,
                                       Container::Vector<AssetStateUpdaterFrame> _frames,
                                       const AssetReferenceBindingEventMap &_eventMap) noexcept
-    : frames (std::move (_frames)),
+    : TaskExecutorBase (_constructor),
+
+      frames (std::move (_frames)),
       insertFirstAssetStateUpdate (
           _constructor.InsertShortTerm (_eventMap.stateUpdate.at (FirstAssetType::Reflect ().mapping))),
       insertSecondAssetStateUpdate (
@@ -235,7 +239,9 @@ private:
 };
 
 Verifier::Verifier (TaskConstructor &_constructor, Container::Vector<Container::Vector<VerifierTask>> _frames) noexcept
-    : frames (std::move (_frames)),
+    : TaskExecutorBase (_constructor),
+
+      frames (std::move (_frames)),
       fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
       fetchAssetById (FETCH_VALUE_1F (Asset, id))
 {

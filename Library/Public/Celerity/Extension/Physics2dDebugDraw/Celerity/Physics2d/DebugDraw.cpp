@@ -100,7 +100,9 @@ private:
 };
 
 DebugDrawManager::DebugDrawManager (TaskConstructor &_constructor) noexcept
-    : modifyDebugDraw (MODIFY_SINGLETON (Physics2dDebugDrawSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyDebugDraw (MODIFY_SINGLETON (Physics2dDebugDrawSingleton)),
       fetchRender2d (FETCH_SINGLETON (Render2dSingleton)),
 
       fetchRigidBodyAddedFixedEvents (FETCH_SEQUENCE (RigidBody2dComponentAddedFixedEvent)),

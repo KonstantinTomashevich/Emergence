@@ -4,8 +4,6 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
-#include <SyntaxSugar/Time.hpp>
-
 namespace Emergence::Resource::Object
 {
 LibraryLoader::LibraryLoader (Provider::ResourceProvider *_resourceProvider, TypeManifest _typeManifest) noexcept
@@ -16,7 +14,6 @@ LibraryLoader::LibraryLoader (Provider::ResourceProvider *_resourceProvider, Typ
 
 Library LibraryLoader::Load (const Container::Vector<LibraryLoadingTask> &_loadingTasks) noexcept
 {
-    std::uint64_t loadingStartTimeNs = Time::NanosecondsSinceStartup ();
     FormObjectList (_loadingTasks);
     std::size_t objectIndex = 0u;
 
@@ -25,10 +22,6 @@ Library LibraryLoader::Load (const Container::Vector<LibraryLoadingTask> &_loadi
         PostProcessObject (objectIndex);
         ++objectIndex;
     }
-
-    const std::uint64_t loadingTimeNs = Time::NanosecondsSinceStartup () - loadingStartTimeNs;
-    EMERGENCE_LOG (INFO, "Resource::Object::LibraryLoader: Library loading took ",
-                   static_cast<float> (loadingTimeNs) * 1e-9f, " seconds.");
 
     objectList.clear ();
     indexInObjectList.clear ();

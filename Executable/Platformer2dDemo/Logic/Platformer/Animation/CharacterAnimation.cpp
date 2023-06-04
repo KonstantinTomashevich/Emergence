@@ -42,7 +42,9 @@ private:
 };
 
 Controller::Controller (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyCharacterAnimationControllerByIdAscending (
+    : TaskExecutorBase (_constructor),
+
+      modifyCharacterAnimationControllerByIdAscending (
           MODIFY_ASCENDING_RANGE (CharacterAnimationControllerComponent, objectId)),
 
       insertSpriteAnimation (INSERT_LONG_TERM (Emergence::Celerity::Sprite2dUvAnimationComponent)),

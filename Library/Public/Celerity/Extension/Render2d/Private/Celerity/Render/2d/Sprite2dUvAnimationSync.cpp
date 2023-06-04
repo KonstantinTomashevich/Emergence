@@ -42,7 +42,9 @@ private:
 };
 
 PreBatchingSynchronizer::PreBatchingSynchronizer (TaskConstructor &_constructor) noexcept
-    : fetchAnimationAddedEvents (FETCH_SEQUENCE (Sprite2dUvAnimationAddedNormalEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchAnimationAddedEvents (FETCH_SEQUENCE (Sprite2dUvAnimationAddedNormalEvent)),
       fetchAnimationChangedEvents (FETCH_SEQUENCE (Sprite2dUvAnimationSyncedValuesChangedNormalEvent)),
       modifyWaitingForAnimationToLoad (
           _constructor.ModifySignalPartial (Sprite2dUvAnimationComponent::Reflect ().mapping,
@@ -155,7 +157,9 @@ private:
 };
 
 PostBatchingSynchronizer::PostBatchingSynchronizer (TaskConstructor &_constructor) noexcept
-    : fetchBatching (FETCH_SINGLETON (Batching2dSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchBatching (FETCH_SINGLETON (Batching2dSingleton)),
       fetchTime (FETCH_SINGLETON (TimeSingleton)),
 
       modifyAnimationBySpriteId (

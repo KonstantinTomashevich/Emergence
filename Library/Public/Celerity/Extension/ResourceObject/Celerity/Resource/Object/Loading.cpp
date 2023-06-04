@@ -45,7 +45,9 @@ private:
 LoadingProcessor::LoadingProcessor (TaskConstructor &_constructor,
                                     Resource::Provider::ResourceProvider *_resourceProvider,
                                     Resource::Object::TypeManifest _manifest) noexcept
-    : modifyState (MODIFY_SINGLETON (ResourceObjectLoadingStateSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyState (MODIFY_SINGLETON (ResourceObjectLoadingStateSingleton)),
 
       modifyRequests (MODIFY_SEQUENCE (ResourceObjectRequest)),
       insertResponses (INSERT_SHORT_TERM (ResourceObjectLoadedResponse)),
@@ -117,18 +119,22 @@ void LoadingProcessor::ProcessRequests (ResourceObjectLoadingStateSingleton *_st
 
     if (!loadingState->requestedObjectList.empty ())
     {
-        Job::Dispatcher::Global ().Dispatch (Job::Priority::BACKGROUND,
-                                             [loadingState] ()
-                                             {
-                                                 Container::Vector<Resource::Object::LibraryLoadingTask> tasks;
-                                                 for (Memory::UniqueString objectId : loadingState->requestedObjectList)
-                                                 {
-                                                     tasks.emplace_back () = {objectId};
-                                                 }
+        Job::Dispatcher::Global ().Dispatch (
+            Job::Priority::BACKGROUND,
+            [loadingState] ()
+            {
+                static CPU::Profiler::SectionDefinition loadingSection {*"ResourceObjectLoading"_us, 0xFF999900u};
+                CPU::Profiler::SectionInstance section {loadingSection};
+                Container::Vector<Resource::Object::LibraryLoadingTask> tasks;
 
-                                                 loadingState->library = loadingState->libraryLoader.Load (tasks);
-                                                 loadingState->loaded.test_and_set (std::memory_order::release);
-                                             });
+                for (Memory::UniqueString objectId : loadingState->requestedObjectList)
+                {
+                    tasks.emplace_back () = {objectId};
+                }
+
+                loadingState->library = loadingState->libraryLoader.Load (tasks);
+                loadingState->loaded.test_and_set (std::memory_order::release);
+            });
 
         _state->sharedStates.emplace_back (std::move (loadingState));
     }

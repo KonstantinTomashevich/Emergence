@@ -21,6 +21,8 @@
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/World.hpp>
 
+#include <CPU/Profiler.hpp>
+
 #include <Export/Graph.hpp>
 
 #include <Gameplay/Control.hpp>
@@ -244,6 +246,8 @@ void GameApplication::HandleUpdate (Urho3D::StringHash /*unused*/, Urho3D::Varia
     {
         memoryEventSerializer.SerializeEvent (*event);
     }
+
+    Emergence::CPU::Profiler::MarkFrameEnd ();
 }
 
 void GameApplication::HandleKeyDown (Urho3D::StringHash /*unused*/, Urho3D::VariantMap &_eventData) noexcept
