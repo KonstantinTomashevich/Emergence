@@ -34,6 +34,7 @@ sober_library_begin ("${GAME_NAME}Game" OBJECT)
     sober_library_use_service (PER_VARIANT PRIVATE Warehouse)
 
     sober_variant_begin (Original)
+        sober_variant_set_default_implementation (CPUProfiler Tracy)
     sober_variant_end ()
 sober_library_end ()
 

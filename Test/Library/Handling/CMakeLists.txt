@@ -7,7 +7,7 @@ add_dependencies (LibraryTests TestHandlingOriginal)
 target_include_directories (TestHandlingOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 sober_naming_implementation_target (Assert SDL2 ASSERT_IMPLEMENTATION_TARGET)
-sober_naming_implementation_target (CPUProfiler Tracy CPU_PROFILER_IMPLEMENTATION_TARGET)
+sober_naming_implementation_target (CPUProfiler None CPU_PROFILER_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (Log SPDLog LOG_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (Memory Original MEMORY_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (MemoryProfiler Original MEMORY_PROFILER_IMPLEMENTATION_TARGET)
