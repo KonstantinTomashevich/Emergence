@@ -106,7 +106,6 @@ void ExecutorImplementation::Execute () noexcept
 {
     EMERGENCE_ASSERT (!entryTaskIndices.empty ());
     static CPU::Profiler::SectionDefinition executeSection {*"ParallelTaskExecutor"_us, 0xFF009900u};
-    ;
     CPU::Profiler::SectionInstance section {executeSection};
 
     if (entryTaskIndices.empty ())
