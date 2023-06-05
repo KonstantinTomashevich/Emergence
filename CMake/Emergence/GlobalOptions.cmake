@@ -49,16 +49,16 @@ function (add_common_compile_options)
                         -pedantic
                         # Anonymous structs increase readability in some cases.
                         -Wno-gnu-anonymous-struct
-                        # Nested anonymous types are allowed, because they are useful with unions.
-                        -Wno-nested-anon-types
-                        # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
-                        -Wno-zero-length-array
                         # In some cases zero-arguments variadics are intentional and allows better customizations.
                         -Wno-gnu-zero-variadic-macro-arguments
                         # In most cases, using offsetof on non-POD types is safe nowadays, therefore we disable this warning.
                         -Wno-invalid-offsetof
+                        # Nested anonymous types are allowed, because they are useful with unions.
+                        -Wno-nested-anon-types
                         # Sometimes CLang 14 incorrectly parses directory names for some reason and false positives this warning.
-                        -Wno-nonportable-include-path)
+                        -Wno-nonportable-include-path
+                        # Zero length arrays greatly increase readability for classes and structs with dynamic sizes.
+                        -Wno-zero-length-array)
             else ()
                 # Exceptions in GCC format.
                 add_compile_options (
