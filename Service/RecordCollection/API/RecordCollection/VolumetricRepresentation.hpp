@@ -218,6 +218,6 @@ private:
 
     explicit VolumetricRepresentation (void *_handle) noexcept;
 
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ()
 };
 } // namespace Emergence::RecordCollection
