@@ -80,7 +80,9 @@ static Container::Vector<Warehouse::Dimension> GetDimensions (const Math::AxisAl
 
 Batching2dExecutor::Batching2dExecutor (TaskConstructor &_constructor,
                                         const Math::AxisAlignedBox2d &_worldBounds) noexcept
-    : modifyBatching (MODIFY_SINGLETON (Batching2dSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyBatching (MODIFY_SINGLETON (Batching2dSingleton)),
       fetchRenderPassesByNameAscending (FETCH_ASCENDING_RANGE (World2dRenderPass, name)),
       fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
       fetchCameraById (FETCH_VALUE_1F (Camera2dComponent, objectId)),

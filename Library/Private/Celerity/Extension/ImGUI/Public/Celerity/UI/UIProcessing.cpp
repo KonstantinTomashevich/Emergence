@@ -532,7 +532,9 @@ private:
 UIProcessor::UIProcessor (TaskConstructor &_constructor,
                           FrameInputAccumulator *_inputAccumulator,
                           const KeyCodeMapping &_keyCodeMapping) noexcept
-    : fetchTime (FETCH_SINGLETON (TimeSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchTime (FETCH_SINGLETON (TimeSingleton)),
       fetchUI (FETCH_SINGLETON (UISingleton)),
 
       editRenderPasses (EDIT_ASCENDING_RANGE (UIRenderPass, name)),

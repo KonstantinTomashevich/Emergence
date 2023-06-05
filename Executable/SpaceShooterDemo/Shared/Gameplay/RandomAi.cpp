@@ -38,7 +38,9 @@ private:
 };
 
 AttachmentCreator::AttachmentCreator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchPlayerInfo (FETCH_SINGLETON (PlayerInfoSingleton)),
       fetchAssemblyFinishedEvents (FETCH_SEQUENCE (Emergence::Celerity::AssemblyFinishedFixedEvent)),
       fetchAlignmentById (FETCH_VALUE_1F (AlignmentComponent, objectId)),
       insertRandomAi (INSERT_LONG_TERM (RandomAiComponent))
@@ -87,7 +89,9 @@ private:
 };
 
 InputGenerator::InputGenerator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
       fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       modifyRandom (MODIFY_SINGLETON (RandomSingleton)),
 

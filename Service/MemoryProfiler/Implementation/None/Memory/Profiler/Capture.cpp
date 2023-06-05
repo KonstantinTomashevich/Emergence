@@ -45,8 +45,6 @@ bool CapturedAllocationGroup::Iterator::operator!= (const CapturedAllocationGrou
 
 CapturedAllocationGroup::Iterator::Iterator (const std::array<std::uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
 {
-    // Suppress unused class field warning.
-    [[maybe_unused]] auto *stub = &data;
 }
 
 CapturedAllocationGroup::CapturedAllocationGroup (const CapturedAllocationGroup &_other) noexcept = default;
@@ -106,8 +104,6 @@ std::uint64_t CapturedAllocationGroup::GetCaptureTimeNs () const noexcept
 CapturedAllocationGroup::CapturedAllocationGroup (void *_handle) noexcept
     : handle (_handle)
 {
-    // Suppress unused class field warning.
-    [[maybe_unused]] auto *stub = &handle;
 }
 
 EventObserver::EventObserver (EventObserver &&_other) noexcept

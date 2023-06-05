@@ -21,7 +21,8 @@ private:
 };
 
 EventCleaner::EventCleaner (TaskConstructor &_constructor, const StandardLayout::Mapping &_eventType) noexcept
-    : modifyEvents (_constructor.ModifySequence (_eventType))
+    : TaskExecutorBase (_constructor),
+      modifyEvents (_constructor.ModifySequence (_eventType))
 {
 }
 
@@ -48,6 +49,11 @@ TaskConstructor::~TaskConstructor () noexcept
     {
         parent->FinishTaskRegistration (std::move (task));
     }
+}
+
+Memory::UniqueString TaskConstructor::GetName () const noexcept
+{
+    return task.name;
 }
 
 TaskConstructor &TaskConstructor::DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept

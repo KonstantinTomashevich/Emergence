@@ -53,7 +53,9 @@ private:
 template <typename TransformComponentType>
 TransformVisualSynchronizer<TransformComponentType>::TransformVisualSynchronizer (
     TaskConstructor &_constructor, const StandardLayout::Mapping &_addedEventType) noexcept
-    : fetchTime (FETCH_SINGLETON (TimeSingleton)),
+    : TaskExecutorBase<TransformVisualSynchronizer> (_constructor),
+
+      fetchTime (FETCH_SINGLETON (TimeSingleton)),
       fetchTransformAddedFromFixedEvents (_constructor.FetchSequence (_addedEventType)),
       editTransformById (EDIT_VALUE_1F (TransformComponentType, objectId)),
       editTransformsWithUpdateFlag (EDIT_SIGNAL (TransformComponentType, visualTransformSyncNeeded, true))

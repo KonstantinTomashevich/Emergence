@@ -36,7 +36,9 @@ private:
 
 Controller::Controller (Emergence::Celerity::TaskConstructor &_constructor,
                         const WorldStateRedirectionHandle &_redirectionHandle) noexcept
-    : fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
       modifyMainMenu (MODIFY_SINGLETON (MainMenuSingleton)),
       fetchLevelsConfiguration (FETCH_SINGLETON (LevelsConfigurationSingleton)),
 

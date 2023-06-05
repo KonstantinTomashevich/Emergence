@@ -33,7 +33,9 @@ private:
 };
 
 SpriteLayerInitializer::SpriteLayerInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchSpriteAddedEvents (FETCH_SEQUENCE (Emergence::Celerity::Sprite2dAddedNormalEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchSpriteAddedEvents (FETCH_SEQUENCE (Emergence::Celerity::Sprite2dAddedNormalEvent)),
       editSpriteById (EDIT_VALUE_1F (Emergence::Celerity::Sprite2dComponent, spriteId)),
       fetchTransformById (FETCH_VALUE_1F (Emergence::Celerity::Transform2dComponent, objectId)),
       fetchLayerSetupById (FETCH_VALUE_1F (LayerSetupComponent, objectId))

@@ -41,7 +41,9 @@ private:
 };
 
 ControlManager::ControlManager (TaskConstructor &_constructor, Container::Vector<Frame> _frames) noexcept
-    : insertViewport (INSERT_LONG_TERM (Viewport)),
+    : TaskExecutorBase (_constructor),
+
+      insertViewport (INSERT_LONG_TERM (Viewport)),
       insertPass (INSERT_LONG_TERM (UIRenderPass)),
 
       insertNode (INSERT_LONG_TERM (UINode)),

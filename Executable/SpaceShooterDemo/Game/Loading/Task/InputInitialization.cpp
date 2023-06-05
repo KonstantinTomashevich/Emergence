@@ -28,7 +28,9 @@ private:
 };
 
 InputInitializer::InputInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : insertKeyTrigger (INSERT_LONG_TERM (Emergence::Celerity::KeyTrigger)),
+    : TaskExecutorBase (_constructor),
+
+      insertKeyTrigger (INSERT_LONG_TERM (Emergence::Celerity::KeyTrigger)),
       fetchLoadingFinishedEvent (FETCH_SEQUENCE (LoadingFinishedEvent))
 {
     _constructor.DependOn (LoadingOrchestration::Checkpoint::FINISHED);

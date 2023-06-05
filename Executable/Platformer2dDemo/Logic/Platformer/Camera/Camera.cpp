@@ -31,7 +31,9 @@ private:
 };
 
 CameraManager::CameraManager (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchPlayerCameraContext (FETCH_SIGNAL (CameraContextComponent, target, CameraTarget::PLAYER)),
+    : TaskExecutorBase (_constructor),
+
+      fetchPlayerCameraContext (FETCH_SIGNAL (CameraContextComponent, target, CameraTarget::PLAYER)),
       fetchPlayerControllable (FETCH_SIGNAL (ControllableComponent, control, ControlType::PLAYER)),
       editTransformById (EDIT_VALUE_1F (Emergence::Celerity::Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor)

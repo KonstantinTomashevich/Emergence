@@ -25,6 +25,7 @@ sober_test_begin (CelerityUI OBJECT)
 
     sober_library_use_service (PER_VARIANT PRIVATE TestCelerityUIImplementationStrings)
     sober_library_use_service (SHARED PRIVATE Assert)
+    sober_library_use_service (SHARED PRIVATE CPUProfiler)
     sober_library_use_service (SHARED PRIVATE JobDispatcher)
     sober_library_use_service (SHARED PRIVATE Log)
     sober_library_use_service (SHARED PRIVATE Memory)

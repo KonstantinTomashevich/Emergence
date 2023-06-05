@@ -13,6 +13,8 @@
 
 namespace Emergence::Celerity::TextureManagement
 {
+using namespace Memory::Literals;
+
 class Manager : public TaskExecutorBase<Manager>, public StatefulAssetManagerBase<Manager>
 {
 public:
@@ -42,7 +44,9 @@ private:
 Manager::Manager (TaskConstructor &_constructor,
                   Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
-    : StatefulAssetManagerBase<Manager> (_constructor, _stateUpdateEvent),
+    : TaskExecutorBase (_constructor),
+      StatefulAssetManagerBase<Manager> (_constructor, _stateUpdateEvent),
+
       insertTexture (INSERT_LONG_TERM (Texture)),
       removeTextureById (REMOVE_VALUE_1F (Texture, assetId)),
 
@@ -57,6 +61,9 @@ AssetState Manager::StartLoading (TextureLoadingState *_loadingState) noexcept
         [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
          sharedState {_loadingState->sharedState}] ()
         {
+            static CPU::Profiler::SectionDefinition loadingSection {*"TextureLoading"_us, 0xFF999900u};
+            CPU::Profiler::SectionInstance section {loadingSection};
+
             switch (cachedResourceProvider->LoadObject (TextureAsset::Reflect ().mapping, assetId, &sharedState->asset))
             {
             case Resource::Provider::LoadingOperationResponse::SUCCESSFUL:
@@ -153,7 +160,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
     }
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("TextureManagement");
-    _pipelineBuilder.AddTask (Memory::UniqueString {"TextureManager"})
-        .SetExecutor<Manager> (_resourceProvider, iterator->second);
+    _pipelineBuilder.AddTask ("TextureManager"_us).SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::TextureManagement

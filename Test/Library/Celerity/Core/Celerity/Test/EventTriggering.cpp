@@ -223,7 +223,9 @@ private:
 bool Executor::checkEditionCursorIncrement = false;
 
 Executor::Executor (TaskConstructor &_constructor, Container::Vector<Task> _tasks) noexcept
-    : insertRecord (INSERT_LONG_TERM (TestRecord)),
+    : TaskExecutorBase (_constructor),
+
+      insertRecord (INSERT_LONG_TERM (TestRecord)),
       modifyRecordById (MODIFY_VALUE_1F (TestRecord, id)),
       tasks (std::move (_tasks))
 {
@@ -308,7 +310,9 @@ private:
 
 template <typename EventType>
 Validator<EventType>::Validator (TaskConstructor &_constructor, Container::Vector<EventType> _expected) noexcept
-    : fetch (FETCH_SEQUENCE (EventType)),
+    : TaskExecutorBase<Validator> (_constructor),
+
+      fetch (FETCH_SEQUENCE (EventType)),
       expected (std::move (_expected))
 {
 }

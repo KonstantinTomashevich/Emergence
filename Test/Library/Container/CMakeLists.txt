@@ -7,6 +7,7 @@ add_dependencies (LibraryTests TestContainerOriginal)
 target_include_directories (TestContainerOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 sober_naming_implementation_target (Assert SDL2 ASSERT_IMPLEMENTATION_TARGET)
+sober_naming_implementation_target (CPUProfiler None CPU_PROFILER_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (Log SPDLog LOG_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (Memory Original MEMORY_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (MemoryProfiler Original MEMORY_PROFILER_IMPLEMENTATION_TARGET)
@@ -17,7 +18,7 @@ sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_TA
 
 sober_target_link_libraries (
         TestContainerOriginal PRIVATE
-        ${ASSERT_IMPLEMENTATION_TARGET} ${LOG_IMPLEMENTATION_TARGET}
+        ${ASSERT_IMPLEMENTATION_TARGET} ${CPU_PROFILER_IMPLEMENTATION_TARGET} ${LOG_IMPLEMENTATION_TARGET}
         ${MEMORY_IMPLEMENTATION_TARGET} ${MEMORY_PROFILER_IMPLEMENTATION_TARGET}
         ${STANDARD_LAYOUT_MAPPING_IMPLEMENTATION_TARGET} ${TESTING_IMPLEMENTATION_TARGET}
         ${CONTAINER_LIBRARY_TARGET} ${MEMORY_PROFILER_STUB_TARGET})

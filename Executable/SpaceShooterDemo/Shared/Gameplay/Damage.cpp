@@ -35,7 +35,9 @@ private:
 };
 
 CollisionEventProcessor::CollisionEventProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Celerity::Contact3dFoundEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchContactFoundEvents (FETCH_SEQUENCE (Emergence::Celerity::Contact3dFoundEvent)),
       fetchTriggerEnteredEvents (FETCH_SEQUENCE (Emergence::Celerity::Trigger3dEnteredEvent)),
 
       editDamageDealerById (EDIT_VALUE_1F (DamageDealerComponent, objectId)),

@@ -81,7 +81,9 @@ private:
 };
 
 LifetimeProcessor::LifetimeProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : KillerBase (_constructor),
+    : TaskExecutorBase (_constructor),
+      KillerBase (_constructor),
+
       fetchMortalAddedEvents (FETCH_SEQUENCE (MortalComponentAddedEvent)),
       editMortalById (EDIT_VALUE_1F (MortalComponent, objectId)),
       editOldMortals (EDIT_ASCENDING_RANGE (MortalComponent, dieAfterNs))
@@ -130,7 +132,9 @@ private:
 };
 
 DamageProcessor::DamageProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : KillerBase (_constructor),
+    : TaskExecutorBase (_constructor),
+      KillerBase (_constructor),
+
       editMortalById (EDIT_VALUE_1F (MortalComponent, objectId)),
       fetchDamageEvents (FETCH_SEQUENCE (DamageEvent))
 {
@@ -172,7 +176,9 @@ private:
 };
 
 CorpseProcessor::CorpseProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchCorpsesByRemovalTimer (FETCH_ASCENDING_RANGE (MortalComponent, removeAfterNs)),
       removeTransformById (REMOVE_VALUE_1F (Emergence::Celerity::Transform3dComponent, objectId))
 {
@@ -208,7 +214,9 @@ private:
 };
 
 DeathEffectTrigger::DeathEffectTrigger (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : editParticleEffectByObjectId (EDIT_VALUE_1F (ParticleEffectComponent, objectId)),
+    : TaskExecutorBase (_constructor),
+
+      editParticleEffectByObjectId (EDIT_VALUE_1F (ParticleEffectComponent, objectId)),
       fetchDeathEvents (FETCH_SEQUENCE (DeathFixedToNormalEvent))
 {
     _constructor.DependOn (Checkpoint::STARTED);

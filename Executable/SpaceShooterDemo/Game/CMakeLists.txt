@@ -21,6 +21,7 @@ sober_library_begin ("${GAME_NAME}Game" OBJECT)
 
     sober_library_use_service (PER_VARIANT PRIVATE Assert)
     sober_library_use_service (PER_VARIANT PRIVATE CelerityPhysics3d)
+    sober_library_use_service (PER_VARIANT PRIVATE CPUProfiler)
     sober_library_use_service (PER_VARIANT PRIVATE ExportGraph)
     sober_library_use_service (PER_VARIANT PRIVATE JobDispatcher)
     sober_library_use_service (PER_VARIANT PRIVATE Log)

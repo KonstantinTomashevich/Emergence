@@ -26,7 +26,9 @@ private:
 
 TriggerInitializer::TriggerInitializer (TaskConstructor &_constructor,
                                         Container::Vector<KeyTriggerSetup> _keyTriggers) noexcept
-    : insertKeyTrigger (INSERT_LONG_TERM (KeyTrigger)),
+    : TaskExecutorBase (_constructor),
+
+      insertKeyTrigger (INSERT_LONG_TERM (KeyTrigger)),
       keyTriggers (std::move (_keyTriggers))
 {
     _constructor.MakeDependencyOf (Input::Checkpoint::ACTION_DISPATCH_STARTED);
@@ -66,7 +68,9 @@ private:
 
 ExternalActionInserter::ExternalActionInserter (
     TaskConstructor &_constructor, Container::Vector<Container::Vector<ExternalAction>> _actionsPerFrame) noexcept
-    : insertActionHolder (INSERT_SHORT_TERM (InputActionHolder)),
+    : TaskExecutorBase (_constructor),
+
+      insertActionHolder (INSERT_SHORT_TERM (InputActionHolder)),
       actionsPerFrame (std::move (_actionsPerFrame))
 {
     _constructor.MakeDependencyOf (Input::Checkpoint::ACTION_DISPATCH_STARTED);
@@ -109,7 +113,9 @@ SubscriptionManager::SubscriptionManager (
     TaskConstructor &_constructor,
     Container::Vector<Container::Vector<SubscriptionInfo>> _subscriptionsToAdd,
     Container::Vector<Container::Vector<SubscriptionInfo>> _subscriptionsToRemove) noexcept
-    : insertSubscription (INSERT_LONG_TERM (InputSubscriptionComponent)),
+    : TaskExecutorBase (_constructor),
+
+      insertSubscription (INSERT_LONG_TERM (InputSubscriptionComponent)),
       removeSubscriptionByObjectIdAndGroupId (REMOVE_VALUE_2F (InputSubscriptionComponent, objectId, group)),
 
       subscriptionsToAdd (std::move (_subscriptionsToAdd)),
@@ -160,7 +166,9 @@ private:
 
 ExpectationValidator::ExpectationValidator (
     TaskConstructor &_constructor, Container::Vector<Container::Vector<ActionExpectation>> _expectations) noexcept
-    : fetchInputActionByObjectId (FETCH_VALUE_1F (InputActionComponent, objectId)),
+    : TaskExecutorBase (_constructor),
+
+      fetchInputActionByObjectId (FETCH_VALUE_1F (InputActionComponent, objectId)),
       expectations (std::move (_expectations))
 {
     _constructor.DependOn (Input::Checkpoint::ACTION_COMPONENT_READ_ALLOWED);

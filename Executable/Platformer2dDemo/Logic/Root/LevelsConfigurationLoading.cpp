@@ -25,7 +25,9 @@ private:
 
 Loader::Loader (Emergence::Celerity::TaskConstructor &_constructor,
                 Emergence::Resource::Provider::ResourceProvider *_resourceProvider) noexcept
-    : modifyLevelsConfiguration (MODIFY_SINGLETON (LevelsConfigurationSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyLevelsConfiguration (MODIFY_SINGLETON (LevelsConfigurationSingleton)),
       resourceProvider (_resourceProvider)
 {
     _constructor.DependOn (Checkpoint::STARTED);

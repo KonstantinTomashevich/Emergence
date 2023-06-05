@@ -62,7 +62,9 @@ const TransformCleanedUpMarkerComponent::Reflection &TransformCleanedUpMarkerCom
                                                                                                                        \
     FixedCleanup##Dimensions##dScheduler::FixedCleanup##Dimensions##dScheduler (                                       \
         TaskConstructor &_constructor) noexcept                                                                        \
-        : fetchRemovalEvents (FETCH_SEQUENCE (Transform##Dimensions##dComponentRemovedFixedEvent)),                    \
+        : TaskExecutorBase (_constructor),                                                                             \
+                                                                                                                       \
+          fetchRemovalEvents (FETCH_SEQUENCE (Transform##Dimensions##dComponentRemovedFixedEvent)),                    \
           fetchComponentByParent (FETCH_VALUE_1F (Transform##Dimensions##dComponent, parentObjectId)),                 \
           removeTransformCleanedUpMarker (REMOVE_VALUE_1F (TransformCleanedUpMarkerComponent, objectId)),              \
           insertCleanupEvent (INSERT_SHORT_TERM (TransformNodeCleanupFixedEvent))                                      \
@@ -121,7 +123,9 @@ const TransformCleanedUpMarkerComponent::Reflection &TransformCleanedUpMarkerCom
                                                                                                                        \
     NormalCleanup##Dimensions##dScheduler::NormalCleanup##Dimensions##dScheduler (                                     \
         TaskConstructor &_constructor) noexcept                                                                        \
-        : fetchFixedRemovalEvents (FETCH_SEQUENCE (Transform##Dimensions##dComponentRemovedFixedToNormalEvent)),       \
+        : TaskExecutorBase (_constructor),                                                                             \
+                                                                                                                       \
+          fetchFixedRemovalEvents (FETCH_SEQUENCE (Transform##Dimensions##dComponentRemovedFixedToNormalEvent)),       \
           fetchNormalRemovalEvents (FETCH_SEQUENCE (Transform##Dimensions##dComponentRemovedNormalEvent)),             \
           fetchComponentByParent (FETCH_VALUE_1F (Transform##Dimensions##dComponent, parentObjectId)),                 \
           removeTransformCleanedUpMarker (REMOVE_VALUE_1F (TransformCleanedUpMarkerComponent, objectId)),              \
@@ -187,7 +191,9 @@ private:
 FixedTransformCleaner::FixedTransformCleaner (TaskConstructor &_constructor,
                                               const StandardLayout::Mapping &_componentMapping,
                                               StandardLayout::FieldId _idField) noexcept
-    : fetchCleanupEvents (FETCH_SEQUENCE (TransformNodeCleanupFixedEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchCleanupEvents (FETCH_SEQUENCE (TransformNodeCleanupFixedEvent)),
       removeComponentById (_constructor.RemoveValue (_componentMapping, {_idField})),
       insertTransformCleanedUpMarker (INSERT_LONG_TERM (TransformCleanedUpMarkerComponent))
 {
@@ -227,7 +233,9 @@ private:
 NormalTransformCleaner::NormalTransformCleaner (TaskConstructor &_constructor,
                                                 const StandardLayout::Mapping &_componentMapping,
                                                 StandardLayout::FieldId _idField) noexcept
-    : fetchCleanupEvents (FETCH_SEQUENCE (TransformNodeCleanupNormalEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchCleanupEvents (FETCH_SEQUENCE (TransformNodeCleanupNormalEvent)),
       removeComponentById (_constructor.RemoveValue (_componentMapping, {_idField})),
       insertTransformCleanedUpMarker (INSERT_LONG_TERM (TransformCleanedUpMarkerComponent))
 {

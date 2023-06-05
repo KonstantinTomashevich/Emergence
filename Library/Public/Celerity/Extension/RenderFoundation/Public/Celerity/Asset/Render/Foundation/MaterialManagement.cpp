@@ -14,6 +14,8 @@
 
 namespace Emergence::Celerity::MaterialManagement
 {
+using namespace Memory::Literals;
+
 class Manager final : public TaskExecutorBase<Manager>, public StatefulAssetManagerBase<Manager>
 {
 public:
@@ -48,7 +50,8 @@ private:
 Manager::Manager (TaskConstructor &_constructor,
                   Resource::Provider::ResourceProvider *_resourceProvider,
                   const StandardLayout::Mapping &_stateUpdateEvent) noexcept
-    : StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
+    : TaskExecutorBase (_constructor),
+      StatefulAssetManagerBase (_constructor, _stateUpdateEvent),
 
       insertMaterial (INSERT_LONG_TERM (Material)),
       insertUniform (INSERT_LONG_TERM (Uniform)),
@@ -69,6 +72,9 @@ AssetState Manager::StartLoading (MaterialLoadingState *_loadingState) noexcept
         [assetId {_loadingState->assetId}, cachedResourceProvider {resourceProvider},
          sharedState {_loadingState->sharedState}] ()
         {
+            static CPU::Profiler::SectionDefinition loadingSection {*"MaterialLoading"_us, 0xFF999900u};
+            CPU::Profiler::SectionInstance section {loadingSection};
+
             switch (
                 cachedResourceProvider->LoadObject (MaterialAsset::Reflect ().mapping, assetId, &sharedState->asset))
             {
@@ -227,7 +233,6 @@ void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
     }
 
     auto visualGroup = _pipelineBuilder.OpenVisualGroup ("MaterialManagement");
-    _pipelineBuilder.AddTask (Memory::UniqueString {"MaterialManager"})
-        .SetExecutor<Manager> (_resourceProvider, iterator->second);
+    _pipelineBuilder.AddTask ("MaterialManager"_us).SetExecutor<Manager> (_resourceProvider, iterator->second);
 }
 } // namespace Emergence::Celerity::MaterialManagement

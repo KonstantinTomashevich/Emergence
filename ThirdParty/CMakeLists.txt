@@ -75,6 +75,10 @@ add_compile_definitions (FMT_EXCEPTIONS=0)
 set (SPDLOG_NO_EXCEPTIONS ON)
 add_subdirectory (spdlog)
 
+# Tracy profiler
+set (TRACY_ON_DEMAND ON)
+add_subdirectory (tracy)
+
 # XXHash
 add_subdirectory (xxhash_cpp)
 

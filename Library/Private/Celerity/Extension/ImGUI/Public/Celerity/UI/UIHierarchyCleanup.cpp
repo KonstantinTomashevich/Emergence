@@ -61,7 +61,9 @@ private:
 };
 
 Detector::Detector (TaskConstructor &_constructor) noexcept
-    : fetchNodeRemovedEvents (FETCH_SEQUENCE (UINodeRemovedNormalEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchNodeRemovedEvents (FETCH_SEQUENCE (UINodeRemovedNormalEvent)),
       fetchNodeByParentId (FETCH_VALUE_1F (UINode, parentId)),
       insertCleanupMessage (INSERT_SHORT_TERM (UICleanupMessage))
 {
@@ -111,7 +113,9 @@ private:
 };
 
 Remover::Remover (TaskConstructor &_constructor) noexcept
-    : modifyCleanupMessages (MODIFY_SEQUENCE (UICleanupMessage)),
+    : TaskExecutorBase (_constructor),
+
+      modifyCleanupMessages (MODIFY_SEQUENCE (UICleanupMessage)),
       removeButtonByNodeId (REMOVE_VALUE_1F (ButtonControl, nodeId)),
       removeCheckboxByNodeId (REMOVE_VALUE_1F (CheckboxControl, nodeId)),
       removeContainerByNodeId (REMOVE_VALUE_1F (ContainerControl, nodeId)),

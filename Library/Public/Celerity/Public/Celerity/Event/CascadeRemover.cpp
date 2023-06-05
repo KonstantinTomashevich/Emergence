@@ -6,7 +6,9 @@ CascadeRemover::CascadeRemover (TaskConstructor &_constructor,
                                 const StandardLayout::Mapping &_eventMapping,
                                 const StandardLayout::Mapping &_objectMapping,
                                 const Container::Vector<StandardLayout::FieldId> &_objectKeyFields) noexcept
-    : fetchEvents (_constructor.FetchSequence (_eventMapping)),
+    : TaskExecutorBase (_constructor),
+
+      fetchEvents (_constructor.FetchSequence (_eventMapping)),
       removeObjects (_constructor.RemoveValue (_objectMapping, _objectKeyFields))
 {
 }

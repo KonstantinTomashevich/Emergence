@@ -44,7 +44,9 @@ private:
 };
 
 MovementUpdater::MovementUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       removeMovementByAscendingId (REMOVE_ASCENDING_RANGE (MovementComponent, objectId)),
       fetchInputActionById (FETCH_VALUE_1F (Emergence::Celerity::InputActionComponent, objectId)),
       editRigidBodyById (EDIT_VALUE_1F (Emergence::Celerity::RigidBody3dComponent, objectId)),

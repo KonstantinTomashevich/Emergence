@@ -85,7 +85,8 @@ WorldView::WorldView (World *_world,
           {EventSchemeInstance {Memory::Profiler::AllocationGroup {"NormalUpdateEventSchemeInstance"_us}},
            EventSchemeInstance {Memory::Profiler::AllocationGroup {"FixedUpdateEventSchemeInstance"_us}},
            EventSchemeInstance {Memory::Profiler::AllocationGroup {"CustomPipelinesEventSchemeInstance"_us}}}),
-      eventProductionForbiddenInChildren (Memory::Profiler::AllocationGroup::Top ())
+      eventProductionForbiddenInChildren (Memory::Profiler::AllocationGroup::Top ()),
+      pipelineExecutionSection (*_name, static_cast<std::uint32_t> (reinterpret_cast<std::uintptr_t> (*_name)))
 {
     for (const StandardLayout::Mapping &enforcedType : _config.enforcedTypes)
     {
@@ -199,6 +200,7 @@ Pipeline *WorldView::AddPipeline (Memory::UniqueString _id,
 
 void WorldView::ExecuteNormalPipeline () noexcept
 {
+    CPU::Profiler::SectionInstance section {pipelineExecutionSection};
     if (normalPipeline)
     {
         normalPipeline->Execute ();
@@ -212,6 +214,7 @@ void WorldView::ExecuteNormalPipeline () noexcept
 
 void WorldView::ExecuteFixedPipeline () noexcept
 {
+    CPU::Profiler::SectionInstance section {pipelineExecutionSection};
     if (fixedPipeline)
     {
         fixedPipeline->Execute ();
@@ -329,7 +332,8 @@ World::World (Memory::UniqueString _name, const WorldConfiguration &_configurati
           "Root"_us,
           _configuration.rootViewConfig)),
       modifyTime (rootView.localRegistry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
-      modifyWorld (rootView.localRegistry.ModifySingleton (WorldSingleton::Reflect ().mapping))
+      modifyWorld (rootView.localRegistry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
+      updateSection (*_name, static_cast<std::uint32_t> (reinterpret_cast<std::uintptr_t> (*_name)))
 {
     auto timeCursor = modifyTime.Execute ();
     auto *time = static_cast<TimeSingleton *> (*timeCursor);
@@ -381,6 +385,7 @@ void World::DropView (WorldView *_view) noexcept
 
 void World::Update () noexcept
 {
+    CPU::Profiler::SectionInstance section {updateSection};
     TimeSingleton *time = nullptr;
     WorldSingleton *world = nullptr;
 

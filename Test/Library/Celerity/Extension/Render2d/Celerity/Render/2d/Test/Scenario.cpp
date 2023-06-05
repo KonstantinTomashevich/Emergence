@@ -98,7 +98,9 @@ private:
 };
 
 ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _scenario, bool *_finishedOutput) noexcept
-    : fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
       modifyRender (MODIFY_SINGLETON (Render2dSingleton)),
 
       insertViewport (INSERT_LONG_TERM (Viewport)),

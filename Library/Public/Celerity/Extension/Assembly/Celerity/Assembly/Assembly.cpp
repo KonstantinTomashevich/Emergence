@@ -119,7 +119,9 @@ Assembler::Assembler (TaskConstructor &_constructor,
                       const TypeBindingVector &_types,
                       bool _isFixed,
                       std::uint64_t _assemblyTimeLimit) noexcept
-    : fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
+    : TaskExecutorBase (_constructor),
+
+      fetchPrototypeById (FETCH_VALUE_1F (PrototypeComponent, objectId)),
       fetchDescriptorById (FETCH_VALUE_1F (AssemblyDescriptor, id)),
 
       fetchFreshPrototypes (FETCH_SIGNAL (PrototypeComponent, assemblyStarted, false)),

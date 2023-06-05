@@ -62,6 +62,9 @@ public:
 
     ~TaskConstructor () noexcept;
 
+    /// \return Name of the task that is being constructed.
+    [[nodiscard]] Memory::UniqueString GetName () const noexcept;
+
     /// \brief Registers dependency on another task or checkpoint with given name.
     /// \details There is no registration order requirement: given task or checkpoint is allowed to be registered later.
     TaskConstructor &DependOn (Memory::UniqueString _taskOrCheckpoint) noexcept;
@@ -521,7 +524,11 @@ template <typename Successor>
 class TaskExecutorBase : public Handling::HandleableBase
 {
 public:
-    TaskExecutorBase () = default;
+    TaskExecutorBase (TaskConstructor &_constructor) noexcept
+        : section (*_constructor.GetName (),
+                   static_cast<std::uint32_t> (reinterpret_cast<std::uintptr_t> (*_constructor.GetName ())))
+    {
+    }
 
     TaskExecutorBase (const TaskExecutorBase &_other) = delete;
 
@@ -538,10 +545,17 @@ public:
         static_cast<Successor *> (this)->~Successor ();
     }
 
+    /// \return Profiling section for this task execution.
+    CPU::Profiler::SectionDefinition &GetExecutionCPUProfilerSectionDefinition ()
+    {
+        return section;
+    }
+
     EMERGENCE_DELETE_ASSIGNMENT (TaskExecutorBase);
 
 protected:
     Memory::Heap heap {Memory::Profiler::AllocationGroup::Top ()};
+    CPU::Profiler::SectionDefinition section;
 };
 
 template <typename Executor, typename... Args>
@@ -555,6 +569,7 @@ TaskConstructor &TaskConstructor::SetExecutor (Args... _args) noexcept
     return SetExecutor (
         [handle] ()
         {
+            CPU::Profiler::SectionInstance section {handle->GetExecutionCPUProfilerSectionDefinition ()};
             handle->Execute ();
         });
 }

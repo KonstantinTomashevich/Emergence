@@ -24,7 +24,9 @@ private:
 };
 
 PhysicsInitializer::PhysicsInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorld3dSingleton))
+    : TaskExecutorBase (_constructor),
+
+      modifyPhysicsWorld (MODIFY_SINGLETON (Emergence::Celerity::PhysicsWorld3dSingleton))
 {
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
 }

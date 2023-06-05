@@ -9,6 +9,8 @@
 
 namespace Emergence::Celerity::ResourceConfigLoading
 {
+using namespace Memory::Literals;
+
 const Memory::UniqueString Checkpoint::STARTED {"ResourceConfigLoadingStarted"};
 const Memory::UniqueString Checkpoint::FINISHED {"ResourceConfigLoadingFinished"};
 
@@ -48,7 +50,9 @@ private:
 Loader::Loader (TaskConstructor &_constructor,
                 Resource::Provider::ResourceProvider *_resourceProvider,
                 const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept
-    : modifyLoadingState (MODIFY_SINGLETON (ResourceConfigLoadingStateSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyLoadingState (MODIFY_SINGLETON (ResourceConfigLoadingStateSingleton)),
       modifyRequest (MODIFY_SEQUENCE (ResourceConfigRequest)),
       modifyResponse (MODIFY_SEQUENCE (ResourceConfigLoadedResponse)),
       insertResponse (INSERT_SHORT_TERM (ResourceConfigLoadedResponse)),
@@ -134,6 +138,10 @@ void Loader::ProcessRequests (ResourceConfigLoadingStateSingleton *_loadingState
                         [cachedResourceProvider {resourceProvider}, sharedState, mapping {data->type},
                          nameField {data->nameField}] ()
                         {
+                            static CPU::Profiler::SectionDefinition loadingSection {*"ResourceConfigLoading"_us,
+                                                                                    0xFF999900u};
+                            CPU::Profiler::SectionInstance section {loadingSection};
+
                             for (auto cursor = cachedResourceProvider->FindObjectsByType (sharedState->configType);
                                  **cursor; ++cursor)
                             {
@@ -239,7 +247,6 @@ void AddToLoadingPipeline (PipelineBuilder &_builder,
     auto visualGroup = _builder.OpenVisualGroup ("ResourceConfigLoading");
     _builder.AddCheckpoint (Checkpoint::STARTED);
     _builder.AddCheckpoint (Checkpoint::FINISHED);
-    _builder.AddTask (Memory::UniqueString {"ResourceConfigLoader"})
-        .SetExecutor<Loader> (_resourceProvider, _supportedTypes);
+    _builder.AddTask ("ResourceConfigLoader"_us).SetExecutor<Loader> (_resourceProvider, _supportedTypes);
 }
 } // namespace Emergence::Celerity::ResourceConfigLoading

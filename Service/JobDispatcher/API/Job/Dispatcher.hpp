@@ -34,6 +34,30 @@ public:
     /// \brief Type of a job, that can be executed by job dispatcher.
     using Job = std::function<void ()>;
 
+    /// \brief Utility class for optimized dispatching multiple jobs at once.
+    /// \details It is advised to use this class instead of calling dispatch multiple times if you have
+    ///          more than one job to dispatch as this class might provide better dispatch performance.
+    class Batch final
+    {
+    public:
+        /// \brief Creates batch for given dispatcher instance.
+        Batch (Dispatcher &_dispatcher) noexcept;
+
+        Batch (const Batch &_other) = delete;
+
+        Batch (Batch &&_other) = delete;
+
+        ~Batch () noexcept;
+
+        /// \brief The same as Dispatcher::Dispatch.
+        void Dispatch (Priority _jobPriority, Job _job) noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (Batch);
+
+    private:
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (uintptr_t) * 2u);
+    };
+
     /// \return Global instance with std::thread::hardware_concurrency number of threads.
     /// \details It is recommended to use global instance instead of creating local dispatchers.
     static Dispatcher &Global () noexcept;
@@ -64,6 +88,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (Dispatcher);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 17u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 18u);
 };
 } // namespace Emergence::Job

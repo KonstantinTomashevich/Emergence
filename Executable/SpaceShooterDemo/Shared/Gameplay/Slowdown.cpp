@@ -30,7 +30,9 @@ private:
 };
 
 SlowdownProcessor::SlowdownProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyTime (MODIFY_SINGLETON (Emergence::Celerity::TimeSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyTime (MODIFY_SINGLETON (Emergence::Celerity::TimeSingleton)),
       modifySlowdown (MODIFY_SINGLETON (SlowdownSingleton)),
 
       fetchControlledObject (FETCH_SIGNAL (ControllableComponent, controlledByLocalPlayer, true)),

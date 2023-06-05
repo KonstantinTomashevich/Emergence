@@ -49,7 +49,9 @@ private:
 LocalizationTester::LocalizationTester (TaskConstructor &_constructor,
                                         Container::Vector<LocalizationTestStage> _stages,
                                         bool *_finishedOutput) noexcept
-    : modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
       fetchLocalizedStringByAscendingKey (FETCH_ASCENDING_RANGE (LocalizedString, key)),
 
       stages (std::move (_stages)),

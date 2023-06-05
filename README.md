@@ -8,6 +8,7 @@ Emergence is a flexible set of libraries for gameplay development, which modular
 ## Services
 
 - [Assert](./Service/Assert/README.md): provides assertion mechanism with optional interactive mode.
+- [CPUProfiler](./Service/CPUProfiler/README.md): provides minimalistic interface for setting up CPU usage profiling.
 - [ExportGraph](./Service/ExportGraph/README.md): exports [VisualGraph](./Library/Public/VisualGraph/README.md)
   instances to well known formats, like DOT.
 - [Hashing](./Service/Hashing/README.md): provides byte sequence hashing.

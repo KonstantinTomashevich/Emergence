@@ -88,7 +88,9 @@ private:
 
 template <typename Transform>
 Executor<Transform>::Executor (TaskConstructor &_constructor, Container::Vector<RequestPacket> _requests) noexcept
-    : requests (std::move (_requests)),
+    : TaskExecutorBase<Executor> (_constructor),
+
+      requests (std::move (_requests)),
       insertTransform (INSERT_LONG_TERM (TransformComponent<Transform>)),
       fetchTransform (FETCH_VALUE_1F (TransformComponent<Transform>, objectId)),
       modifyTransform (MODIFY_VALUE_1F (TransformComponent<Transform>, objectId)),

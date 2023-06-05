@@ -1,6 +1,7 @@
 add_common_compile_options ()
 add_subdirectory (Assert)
 add_subdirectory (Celerity)
+add_subdirectory (CPUProfiler)
 add_subdirectory (ExportGraph)
 add_subdirectory (Hashing)
 add_subdirectory (JobDispatcher)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CPU/Profiler.hpp>
+
 #include <Memory/UniqueString.hpp>
 
 #include <Task/Executor.hpp>
@@ -26,7 +28,7 @@ enum class PipelineType
 };
 
 /// \return Human readable pipeline type value.
-const char *GetPipelineTypeName (PipelineType _type);
+const char *GetPipelineTypeName (PipelineType _type) noexcept;
 
 /// \brief Executable collection of interdependent tasks.
 /// \details To create pipelines for World, use PipelineBuilder.
@@ -60,5 +62,7 @@ private:
     const Memory::UniqueString beginMarker;
     const Memory::UniqueString endMarker;
     Task::Executor executor;
+
+    CPU::Profiler::SectionDefinition executionSection;
 };
 } // namespace Emergence::Celerity

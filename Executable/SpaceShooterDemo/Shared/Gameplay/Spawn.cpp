@@ -48,7 +48,9 @@ private:
 };
 
 SpawnProcessor::SpawnProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
       // We use transform cleanup instead of transform removal, because it makes easier to position task in graph.

@@ -10,6 +10,8 @@
 #include <Configuration/ResourceProviderTypes.hpp>
 #include <Configuration/WorldStates.hpp>
 
+#include <CPU/Profiler.hpp>
+
 #include <Log/Log.hpp>
 
 #include <Framework/GameState.hpp>
@@ -275,6 +277,7 @@ void Application::EventLoop () noexcept
         }
 
         running &= !gameState->IsTerminated ();
+        Emergence::CPU::Profiler::MarkFrameEnd ();
     }
 }
 

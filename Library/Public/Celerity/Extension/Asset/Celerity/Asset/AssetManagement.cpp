@@ -63,7 +63,9 @@ private:
 AssetManager::AssetManager (TaskConstructor &_constructor,
                             const AssetReferenceBindingList &_bindingList,
                             const AssetReferenceBindingEventMap &_bindingEvents) noexcept
-    : modifyAssetManager (MODIFY_SINGLETON (AssetManagerSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyAssetManager (MODIFY_SINGLETON (AssetManagerSingleton)),
       insertAsset (INSERT_LONG_TERM (Asset)),
       modifyAssetById (MODIFY_VALUE_1F (Asset, id)),
       removeUnusedAssets (REMOVE_SIGNAL (Asset, usages, 0u))
@@ -269,7 +271,9 @@ private:
 
 AssetStateUpdater::AssetStateUpdater (TaskConstructor &_constructor,
                                       const AssetReferenceBindingEventMap &_bindingEvents) noexcept
-    : modifyAssetManager (MODIFY_SINGLETON (AssetManagerSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyAssetManager (MODIFY_SINGLETON (AssetManagerSingleton)),
       editAssetById (EDIT_VALUE_1F (Asset, id))
 {
     _constructor.DependOn (Checkpoint::ASSET_LOADING_FINISHED);

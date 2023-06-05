@@ -70,7 +70,9 @@ private:
 ScreenshotTester::ScreenshotTester (TaskConstructor &_constructor,
                                     Container::String _passName,
                                     bool *_isFinishedOutput) noexcept
-    : fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchAssetManager (FETCH_SINGLETON (AssetManagerSingleton)),
       modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
 
       passName (std::move (_passName)),

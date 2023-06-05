@@ -153,7 +153,7 @@ private:
     /// \brief Allows construction from handle for implementation internal purposes.
     friend class ImplementationUtils;
 
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ()
 
     explicit AllocationGroup (void *_handle) noexcept;
 };

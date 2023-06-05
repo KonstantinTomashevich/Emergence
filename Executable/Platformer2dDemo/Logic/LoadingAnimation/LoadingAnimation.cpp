@@ -68,7 +68,9 @@ private:
 };
 
 Manager::Manager (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
       modifyLoadingAnimation (MODIFY_SINGLETON (LoadingAnimationSingleton)),
 

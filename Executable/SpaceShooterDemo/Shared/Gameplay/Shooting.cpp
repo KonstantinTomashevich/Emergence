@@ -49,7 +49,9 @@ private:
 };
 
 ShootingProcessor::ShootingProcessor (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
       modifyShootersByCoolingDownUntil (MODIFY_ASCENDING_RANGE (ShooterComponent, coolingDownUntilNs)),

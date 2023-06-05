@@ -79,7 +79,9 @@ private:
 };
 
 BoundsCalculator::BoundsCalculator (TaskConstructor &_constructor) noexcept
-    : fetchSpriteAddedEvents (FETCH_SEQUENCE (Sprite2dAddedNormalEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchSpriteAddedEvents (FETCH_SEQUENCE (Sprite2dAddedNormalEvent)),
       fetchSpriteSizeChangedEvents (FETCH_SEQUENCE (Sprite2dSizeChangedNormalEvent)),
       fetchSpriteRemovedEvents (FETCH_SEQUENCE (Sprite2dRemovedNormalEvent)),
 

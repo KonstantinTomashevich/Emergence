@@ -1,5 +1,7 @@
 #include <Container/Vector.hpp>
 
+#include <CPU/Profiler.hpp>
+
 #include <Job/Dispatcher.hpp>
 
 #include <SyntaxSugar/AtomicFlagGuard.hpp>
@@ -12,6 +14,26 @@ using namespace Memory::Literals;
 class DispatcherImplementation final
 {
 public:
+    class Batch final
+    {
+    public:
+        Batch (DispatcherImplementation *_owner) noexcept;
+
+        Batch (const Batch &_other) = delete;
+
+        Batch (Batch &&_other) = delete;
+
+        ~Batch () noexcept = default;
+
+        void Dispatch (Priority _jobPriority, Dispatcher::Job _job) noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (Batch);
+
+    private:
+        DispatcherImplementation *owner;
+        AtomicFlagGuard poolModificationGuard;
+    };
+
     DispatcherImplementation (std::size_t _threadCount) noexcept;
 
     DispatcherImplementation (const DispatcherImplementation &_other) = delete;
@@ -29,6 +51,10 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (DispatcherImplementation);
 
 private:
+    friend class Batch;
+
+    void DispatchInternal (Priority _jobPriority, Dispatcher::Job _job) noexcept;
+
     Dispatcher::Job Pop (bool &_wasBackground) noexcept;
 
     Container::Vector<std::jthread> threads {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
@@ -38,7 +64,7 @@ private:
     Container::Vector<Dispatcher::Job> backgroundJobPool {Memory::Profiler::AllocationGroup {"JobDispatcher"_us}};
 
     std::atomic_flag modifyingPool;
-    std::atomic_flag hasJobs;
+    std::atomic_uintptr_t jobCounter;
 
     std::atomic_flag terminating;
 
@@ -46,17 +72,33 @@ private:
     std::atomic_uintptr_t backgroundThreadCount = 0u;
 };
 
+DispatcherImplementation::Batch::Batch (DispatcherImplementation *_owner) noexcept
+    : owner (_owner),
+      poolModificationGuard (owner->modifyingPool)
+{
+}
+
+void DispatcherImplementation::Batch::Dispatch (Priority _jobPriority, Dispatcher::Job _job) noexcept
+{
+    owner->DispatchInternal (_jobPriority, std::move (_job));
+}
+
 DispatcherImplementation::DispatcherImplementation (std::size_t _threadCount) noexcept
     : maxBackgroundThreadCount (_threadCount / 2u)
 {
     foregroundJobPool.reserve (32u);
     backgroundJobPool.reserve (32u);
 
+    static const Memory::UniqueString threadName {"JobDispatcherThread"};
+    static CPU::Profiler::SectionDefinition foregroundJobSection {*"ForegroundJob"_us, 0xFF999900u};
+    static CPU::Profiler::SectionDefinition backgroundJobSection {*"BackgroundJob"_us, 0xFF999900u};
+
     for (std::size_t threadIndex = 0u; threadIndex < _threadCount; ++threadIndex)
     {
         threads.emplace_back (
             [this] ()
             {
+                CPU::Profiler::SetThreadName (*threadName);
                 while (true)
                 {
                     ++availableThreadsCount;
@@ -68,7 +110,12 @@ DispatcherImplementation::DispatcherImplementation (std::size_t _threadCount) no
                     bool wasBackground;
                     Dispatcher::Job job = Pop (wasBackground);
                     --availableThreadsCount;
-                    job ();
+
+                    {
+                        CPU::Profiler::SectionInstance section {wasBackground ? backgroundJobSection :
+                                                                                foregroundJobSection};
+                        job ();
+                    }
 
                     if (wasBackground)
                     {
@@ -82,8 +129,8 @@ DispatcherImplementation::DispatcherImplementation (std::size_t _threadCount) no
 DispatcherImplementation::~DispatcherImplementation () noexcept
 {
     terminating.test_and_set (std::memory_order_acquire);
-    hasJobs.test_and_set (std::memory_order_release);
-    hasJobs.notify_all ();
+    jobCounter.store (1u, std::memory_order_release);
+    jobCounter.notify_all ();
 
     for (std::jthread &thread : threads)
     {
@@ -93,20 +140,11 @@ DispatcherImplementation::~DispatcherImplementation () noexcept
 
 void DispatcherImplementation::Dispatch (Priority _jobPriority, Dispatcher::Job _job) noexcept
 {
+    static CPU::Profiler::SectionDefinition dispatchSection {*"JobDispatcherDispatch"_us, 0xFF990000u};
+    CPU::Profiler::SectionInstance section {dispatchSection};
+
     AtomicFlagGuard guard {modifyingPool};
-    switch (_jobPriority)
-    {
-    case Priority::FOREGROUND:
-        foregroundJobPool.emplace_back (std::move (_job));
-        break;
-
-    case Priority::BACKGROUND:
-        backgroundJobPool.emplace_back (std::move (_job));
-        break;
-    }
-
-    hasJobs.test_and_set (std::memory_order_release);
-    hasJobs.notify_one ();
+    DispatchInternal (_jobPriority, std::move (_job));
 }
 
 std::size_t DispatcherImplementation::GetAvailableThreadsCount () const noexcept
@@ -119,11 +157,34 @@ void DispatcherImplementation::SetMaximumThreadsForBackgroundExecution (std::siz
     maxBackgroundThreadCount = _maxBackgroundThreadCount;
 }
 
+void DispatcherImplementation::DispatchInternal (Priority _jobPriority, Dispatcher::Job _job) noexcept
+{
+    static CPU::Profiler::SectionDefinition dispatchInternalSection {*"JobDispatcherDispatchInternal"_us, 0xFF000099u};
+    CPU::Profiler::SectionInstance section {dispatchInternalSection};
+
+    switch (_jobPriority)
+    {
+    case Priority::FOREGROUND:
+        foregroundJobPool.emplace_back (std::move (_job));
+        break;
+
+    case Priority::BACKGROUND:
+        backgroundJobPool.emplace_back (std::move (_job));
+        break;
+    }
+
+    jobCounter.fetch_add (1u, std::memory_order_release);
+    jobCounter.notify_one ();
+}
+
 Dispatcher::Job DispatcherImplementation::Pop (bool &_wasBackground) noexcept
 {
+    static CPU::Profiler::SectionDefinition popSection {*"JobDispatcherPop"_us, 0xFF990000u};
+    CPU::Profiler::SectionInstance section {popSection};
+
     while (true)
     {
-        hasJobs.wait (false, std::memory_order_acquire);
+        jobCounter.wait (0u, std::memory_order_acquire);
         AtomicFlagGuard guard {modifyingPool};
 
         if (terminating.test (std::memory_order_acquire))
@@ -159,13 +220,24 @@ Dispatcher::Job DispatcherImplementation::Pop (bool &_wasBackground) noexcept
             _wasBackground = false;
         }
 
-        if (foregroundJobPool.empty () && backgroundJobPool.empty ())
-        {
-            hasJobs.clear (std::memory_order_release);
-        }
-
+        jobCounter.fetch_sub (1u, std::memory_order_release);
         return job;
     }
+}
+
+Dispatcher::Batch::Batch (Dispatcher &_dispatcher) noexcept
+{
+    new (&data) DispatcherImplementation::Batch (&block_cast<DispatcherImplementation> (_dispatcher.data));
+}
+
+Dispatcher::Batch::~Batch () noexcept
+{
+    block_cast<DispatcherImplementation::Batch> (data).~Batch ();
+}
+
+void Dispatcher::Batch::Dispatch (Priority _jobPriority, Dispatcher::Job _job) noexcept
+{
+    block_cast<DispatcherImplementation::Batch> (data).Dispatch (_jobPriority, std::move (_job));
 }
 
 Dispatcher &Dispatcher::Global () noexcept

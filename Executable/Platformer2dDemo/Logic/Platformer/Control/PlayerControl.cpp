@@ -37,7 +37,9 @@ private:
 };
 
 PlayerControlClaimer::PlayerControlClaimer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchTeamConfigurationSingleton (FETCH_SINGLETON (TeamConfigurationSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchTeamConfigurationSingleton (FETCH_SINGLETON (TeamConfigurationSingleton)),
       fetchControllableAddedEvents (FETCH_SEQUENCE (ControllableComponentAddedFixedEvent)),
       fetchTeamByObjectId (FETCH_VALUE_1F (TeamComponent, objectId)),
       editControllableByObjectId (EDIT_VALUE_1F (ControllableComponent, objectId))
@@ -92,7 +94,9 @@ private:
 };
 
 PlayerControlManager::PlayerControlManager (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : fetchControllableAddedEvents (FETCH_SEQUENCE (ControllableComponentAddedFixedEvent)),
+    : TaskExecutorBase (_constructor),
+
+      fetchControllableAddedEvents (FETCH_SEQUENCE (ControllableComponentAddedFixedEvent)),
       fetchControllableChangedEvents (FETCH_SEQUENCE (ControllableComponentChangedFixedEvent)),
       fetchControllableRemovedEvents (FETCH_SEQUENCE (ControllableComponentRemovedFixedEvent)),
       insertInputSubscription (INSERT_LONG_TERM (Emergence::Celerity::InputSubscriptionComponent)),

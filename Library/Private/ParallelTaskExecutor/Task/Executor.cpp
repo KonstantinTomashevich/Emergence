@@ -1,9 +1,10 @@
 #include <atomic>
-#include <thread>
 
 #include <Assert/Assert.hpp>
 
 #include <Container/Vector.hpp>
+
+#include <CPU/Profiler.hpp>
 
 #include <Job/Dispatcher.hpp>
 
@@ -14,6 +15,8 @@
 
 namespace Emergence::Task
 {
+using namespace Memory::Literals;
+
 class ExecutorImplementation final
 {
 public:
@@ -102,6 +105,9 @@ ExecutorImplementation::ExecutorImplementation (const Collection &_collection) n
 void ExecutorImplementation::Execute () noexcept
 {
     EMERGENCE_ASSERT (!entryTaskIndices.empty ());
+    static CPU::Profiler::SectionDefinition executeSection {*"ParallelTaskExecutor"_us, 0xFF009900u};
+    CPU::Profiler::SectionInstance section {executeSection};
+
     if (entryTaskIndices.empty ())
     {
         return;
@@ -110,13 +116,16 @@ void ExecutorImplementation::Execute () noexcept
     tasksExecuting.test_and_set (std::memory_order_acquire);
     tasksLeftToExecute = tasks.size ();
 
-    for (std::size_t taskIndex : entryTaskIndices)
     {
-        Job::Dispatcher::Global ().Dispatch (Job::Priority::FOREGROUND,
-                                             [this, taskIndex] ()
-                                             {
-                                                 TaskFunction (taskIndex);
-                                             });
+        Job::Dispatcher::Batch batch {Job::Dispatcher::Global ()};
+        for (std::size_t taskIndex : entryTaskIndices)
+        {
+            batch.Dispatch (Job::Priority::FOREGROUND,
+                            [this, taskIndex] ()
+                            {
+                                TaskFunction (taskIndex);
+                            });
+        }
     }
 
     tasksExecuting.wait (true, std::memory_order_acquire);
@@ -126,26 +135,46 @@ void ExecutorImplementation::TaskFunction (std::size_t _taskIndex) noexcept
 {
     Task &task = tasks[_taskIndex];
     EMERGENCE_ASSERT (task.dependenciesLeftThisRun == 0u);
-    task.executor ();
+
+    {
+        static CPU::Profiler::SectionDefinition taskExecutionSection {*"TaskExecution"_us, 0xFF009900u};
+        CPU::Profiler::SectionInstance section {taskExecutionSection};
+        task.executor ();
+    }
+
+    static CPU::Profiler::SectionDefinition synchronizationSection {*"Synchronization"_us, 0xFF990000u};
+    CPU::Profiler::SectionInstance section {synchronizationSection};
     task.dependenciesLeftThisRun = task.dependencyCount;
 
-    LockAtomicFlag (modifyingTasks);
-    for (std::size_t dependantIndex : task.dependantTasksIndices)
     {
-        if (--tasks[dependantIndex].dependenciesLeftThisRun == 0u)
-        {
-            UnlockAtomicFlag (modifyingTasks);
-            Job::Dispatcher::Global ().Dispatch (Job::Priority::FOREGROUND,
-                                                 [this, dependantIndex] ()
-                                                 {
-                                                     TaskFunction (dependantIndex);
-                                                 });
+        AtomicFlagGuard guard {modifyingTasks};
+        std::size_t dependenciesUnlocked = 0u;
 
-            LockAtomicFlag (modifyingTasks);
+        for (std::size_t dependantIndex : task.dependantTasksIndices)
+        {
+            if (--tasks[dependantIndex].dependenciesLeftThisRun == 0u)
+            {
+                ++dependenciesUnlocked;
+            }
+        }
+
+        if (dependenciesUnlocked > 0u)
+        {
+            Job::Dispatcher::Batch batch {Job::Dispatcher::Global ()};
+            for (std::size_t dependantIndex : task.dependantTasksIndices)
+            {
+                if (tasks[dependantIndex].dependenciesLeftThisRun == 0u)
+                {
+                    batch.Dispatch (Job::Priority::FOREGROUND,
+                                    [this, dependantIndex] ()
+                                    {
+                                        TaskFunction (dependantIndex);
+                                    });
+                }
+            }
         }
     }
 
-    UnlockAtomicFlag (modifyingTasks);
     if (--tasksLeftToExecute == 0u)
     {
         tasksExecuting.clear (std::memory_order_release);

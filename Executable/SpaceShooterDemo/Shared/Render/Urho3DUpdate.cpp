@@ -146,7 +146,9 @@ private:
 
 SceneInitializer::SceneInitializer (Emergence::Celerity::TaskConstructor &_constructor,
                                     Urho3D::Context *_context) noexcept
-    : context (_context),
+    : TaskExecutorBase (_constructor),
+
+      context (_context),
       modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       modifyUrho3DScene (MODIFY_SINGLETON (Urho3DSceneSingleton))
 {
@@ -204,7 +206,9 @@ private:
 };
 
 ComponentInitializer::ComponentInitializer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       nodeAccessor (_constructor),
 
       editCameraByObjectId (EDIT_VALUE_1F (CameraComponent, objectId)),
@@ -378,7 +382,9 @@ private:
 };
 
 ComponentSynchronizer::ComponentSynchronizer (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
 
       fetchCameraByObjectId (FETCH_VALUE_1F (CameraComponent, objectId)),
       fetchCameraChangedEvents (FETCH_SEQUENCE (CameraComponentChangedEvent)),
@@ -475,7 +481,9 @@ private:
 };
 
 ComponentDeleter::ComponentDeleter (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       modifyRenderScene (MODIFY_SINGLETON (RenderSceneSingleton)),
       nodeAccessor (_constructor),
 
@@ -551,7 +559,9 @@ private:
 };
 
 Urho3DNodeCleaner::Urho3DNodeCleaner (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       removeUnusedNodes (REMOVE_SIGNAL (Urho3DNodeComponent, usages, 0u))
 {
     _constructor.DependOn (TaskNames::APPLY_COMPONENT_DELETION);
@@ -610,7 +620,9 @@ private:
 };
 
 SceneUpdater::SceneUpdater (Emergence::Celerity::TaskConstructor &_constructor) noexcept
-    : modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      modifyUrho3D (MODIFY_SINGLETON (Urho3DAccessSingleton)),
       fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
       fetchUrho3DScene (FETCH_SINGLETON (Urho3DSceneSingleton)),
       fetchRenderScene (FETCH_SINGLETON (RenderSceneSingleton)),

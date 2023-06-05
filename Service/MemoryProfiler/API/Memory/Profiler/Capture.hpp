@@ -110,7 +110,7 @@ public:
 private:
     friend class Capture;
 
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ();
+    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ()
 
     explicit CapturedAllocationGroup (void *_handle) noexcept;
 };

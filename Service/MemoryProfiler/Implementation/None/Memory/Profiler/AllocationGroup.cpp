@@ -40,8 +40,6 @@ bool AllocationGroup::Iterator::operator!= (const AllocationGroup::Iterator & /*
 
 AllocationGroup::Iterator::Iterator (const std::array<std::uint8_t, DATA_MAX_SIZE> & /*unused*/) noexcept
 {
-    // Suppress unused class field warning.
-    [[maybe_unused]] auto *stub = &data;
 }
 
 AllocationGroup::PlacedOnStack::~PlacedOnStack () = default;

@@ -64,7 +64,9 @@ private:
 };
 
 UIRenderer::UIRenderer (TaskConstructor &_constructor) noexcept
-    : fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
+    : TaskExecutorBase (_constructor),
+
+      fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
       fetchAssetPin (FETCH_ASCENDING_RANGE (UIAssetPin, materialId)),
       insertAssetPin (INSERT_LONG_TERM (UIAssetPin)),
 
