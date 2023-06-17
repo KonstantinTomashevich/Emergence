@@ -9,6 +9,8 @@
 
 namespace Emergence::VirtualFileSystem
 {
+constexpr const char PATH_SEPARATOR = '/';
+
 class Context final
 {
 public:
@@ -22,15 +24,24 @@ public:
 
     EMERGENCE_DELETE_ASSIGNMENT (Context);
 
-    Entry GetRoot () noexcept;
+    [[nodiscard]] Entry GetRoot () const noexcept;
 
-    Entry Create (const Container::Utf8String &_fullPath, EntryType _type) noexcept;
+    Entry CreateFile (Entry _parent, const std::string_view &_fileName) noexcept;
+
+    Entry CreateDirectory (Entry _parent, const std::string_view &_directoryName) noexcept;
+
+    Entry MakeDirectories (const std::string_view &_absolutePath) noexcept;
+
+    Entry MakeDirectories (Entry _parent, const std::string_view &_relativePath) noexcept;
+
+    bool Delete (const Entry &_entry, bool _recursive, bool _includingFileSystem) noexcept;
 
     bool Mount (const Entry &_at, const MountConfiguration &_configuration) noexcept;
 
-    bool Delete (const Entry &_entry) noexcept;
-
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ()
+    friend class Entry;
+    friend class PackageBuilder;
+
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 2u);
 };
 } // namespace Emergence::VirtualFileSystem

@@ -1,10 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
+#include <VirtualFileSystem/Entry.hpp>
 #include <VirtualFileSystem/FilePivot.hpp>
 #include <VirtualFileSystem/OpenMode.hpp>
 
@@ -15,21 +17,24 @@ class Writer final
 public:
     Writer (const Entry &_entry, OpenMode _openMode) noexcept;
 
-    Writer (const Writer &_reader) = delete;
+    Writer (const Writer &_other) = delete;
 
-    Writer (Writer &&_reader) noexcept;
+    Writer (Writer &&_other) = delete;
 
     ~Writer () noexcept;
 
     [[nodiscard]] bool IsValid () const noexcept;
 
-    void WriteOne (std::uint8_t _byte) noexcept;
+    std::ostream &OutputStream () noexcept;
 
-    void Write (std::uint8_t *_data, std::uint64_t _count) noexcept;
+    inline explicit operator bool () const noexcept
+    {
+        return IsValid ();
+    }
 
     EMERGENCE_DELETE_ASSIGNMENT (Writer);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 33u);
 };
 } // namespace Emergence::VirtualFileSystem

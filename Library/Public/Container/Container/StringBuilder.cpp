@@ -52,7 +52,12 @@ StringBuilder &StringBuilder::Append (const String &_value) noexcept
 
 StringBuilder &StringBuilder::Append (const std::string_view &_value) noexcept
 {
-    return Append (_value.data ());
+    for (char symbol : _value)
+    {
+        Append (symbol);
+    }
+
+    return *this;
 }
 
 StringBuilder &StringBuilder::Append (bool _value) noexcept

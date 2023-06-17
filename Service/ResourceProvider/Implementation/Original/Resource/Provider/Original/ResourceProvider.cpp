@@ -109,7 +109,6 @@ ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (
       cursor (_other.cursor)
 {
     EMERGENCE_ASSERT (owner);
-    ++owner->dataReadersCount;
 }
 
 ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (ResourceProvider::ObjectRegistryCursor &&_other) noexcept
@@ -117,14 +116,6 @@ ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (ResourceProvider::
       cursor (std::move (_other.cursor))
 {
     _other.owner = nullptr;
-}
-
-ResourceProvider::ObjectRegistryCursor::~ObjectRegistryCursor () noexcept
-{
-    if (owner)
-    {
-        --owner->dataReadersCount;
-    }
 }
 
 Memory::UniqueString ResourceProvider::ObjectRegistryCursor::operator* () const noexcept
@@ -149,7 +140,6 @@ ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (
       cursor (std::move (_cursor))
 {
     EMERGENCE_ASSERT (owner);
-    ++owner->dataReadersCount;
 }
 
 ResourceProvider::ResourceProvider (Container::MappingRegistry _objectTypesRegistry,
@@ -169,12 +159,6 @@ ResourceProvider::ResourceProvider (Container::MappingRegistry _objectTypesRegis
 {
 }
 
-ResourceProvider::~ResourceProvider () noexcept
-{
-    EMERGENCE_ASSERT (dataWritersCount == 0u);
-    EMERGENCE_ASSERT (dataReadersCount == 0u);
-}
-
 const Container::MappingRegistry &ResourceProvider::GetObjectTypesRegistry () const noexcept
 {
     return objectTypesRegistry;
@@ -187,41 +171,28 @@ const Container::MappingRegistry &ResourceProvider::GetPatchableTypesRegistry ()
 
 SourceOperationResponse ResourceProvider::AddSource ([[maybe_unused]] Memory::UniqueString _path) noexcept
 {
-    EMERGENCE_ASSERT (dataWritersCount == 0u);
-    EMERGENCE_ASSERT (dataReadersCount == 0u);
-    ++dataWritersCount;
-
     if (auto cursor = objectsBySource.ReadPoint (&_path); *cursor)
     {
-        --dataWritersCount;
         return SourceOperationResponse::ALREADY_EXIST;
     }
 
     if (auto cursor = thirdPartyResourcesBySource.ReadPoint (&_path); *cursor)
     {
-        --dataWritersCount;
         return SourceOperationResponse::ALREADY_EXIST;
     }
 
     if (std::filesystem::exists (EMERGENCE_BUILD_STRING (_path, "/", IndexFile::INDEX_FILE_NAME)))
     {
-        const SourceOperationResponse response = AddSourceFromIndex (_path);
-        --dataWritersCount;
-        return response;
+        return AddSourceFromIndex (_path);
     }
 
     EMERGENCE_LOG (WARNING, "ResourceProvider: No index for source \"", _path, "\", scanning file system!");
-    const SourceOperationResponse response = AddSourceThroughScan (_path);
-    --dataWritersCount;
-    return response;
+    return AddSourceThroughScan (_path);
 }
 
 SourceOperationResponse ResourceProvider::SaveSourceIndex (
     [[maybe_unused]] Memory::UniqueString _sourcePath) const noexcept
 {
-    EMERGENCE_ASSERT (dataWritersCount == 0u);
-    ++dataReadersCount;
-
     IndexFile content;
     for (auto cursor = objectsBySource.ReadPoint (&_sourcePath);
          const auto *objectData = static_cast<const ObjectResourceData *> (*cursor); ++cursor)
@@ -243,23 +214,16 @@ SourceOperationResponse ResourceProvider::SaveSourceIndex (
     std::ofstream output (EMERGENCE_BUILD_STRING (_sourcePath, "/", IndexFile::INDEX_FILE_NAME), std::ios::binary);
     if (!output)
     {
-        --dataReadersCount;
         return SourceOperationResponse::IO_ERROR;
     }
 
     Serialization::Binary::SerializeObject (output, &content, IndexFile::Reflect ().mapping);
-    --dataReadersCount;
     return SourceOperationResponse::SUCCESSFUL;
 }
 
 SourceOperationResponse ResourceProvider::RemoveSource (Memory::UniqueString _path) noexcept
 {
-    EMERGENCE_ASSERT (dataWritersCount == 0u);
-    EMERGENCE_ASSERT (dataReadersCount == 0u);
-
-    ++dataWritersCount;
     const bool foundAny = ClearSource (_path);
-    --dataWritersCount;
     return foundAny ? SourceOperationResponse::SUCCESSFUL : SourceOperationResponse::NOT_FOUND;
 }
 
@@ -267,39 +231,24 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
                                                        Memory::UniqueString _id,
                                                        void *_output) const noexcept
 {
-    EMERGENCE_ASSERT (dataWritersCount == 0u);
-    ++dataReadersCount;
-
     auto cursor = objectsById.ReadPoint (&_id);
     const auto *object = static_cast<const ObjectResourceData *> (*cursor);
 
     if (!object)
     {
-        --dataReadersCount;
         return LoadingOperationResponse::NOT_FOUND;
     }
 
     if (object->type != _type)
     {
-        --dataReadersCount;
         return LoadingOperationResponse::WRONG_TYPE;
     }
 
-    std::ios_base::openmode openMode = std::ios::in;
-    switch (object->format)
-    {
-    case ObjectResourceFormat::BINARY:
-        openMode = std::ios::binary;
-        break;
+    // We always open in binary mode as VFS packages do not support text mode.
+    std::ifstream input (EMERGENCE_BUILD_STRING (object->source, "/", object->relativePath), std::ios::binary);
 
-    case ObjectResourceFormat::YAML:
-        break;
-    }
-
-    std::ifstream input (EMERGENCE_BUILD_STRING (object->source, "/", object->relativePath), openMode);
     if (!input)
     {
-        --dataReadersCount;
         return LoadingOperationResponse::NOT_FOUND;
     }
 
@@ -312,7 +261,6 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 
         if (!Serialization::Binary::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
-            --dataReadersCount;
             return LoadingOperationResponse::IO_ERROR;
         }
 
@@ -324,7 +272,6 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         // We skip type name deserialization here as it is just a comment.
         if (!Serialization::Yaml::DeserializeObject (input, _output, _type, patchableTypesRegistry))
         {
-            --dataReadersCount;
             return LoadingOperationResponse::IO_ERROR;
         }
 
@@ -332,7 +279,6 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     }
     }
 
-    --dataReadersCount;
     return LoadingOperationResponse::SUCCESSFUL;
 }
 
@@ -341,22 +287,17 @@ LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::Uniqu
                                                                    std::uint64_t &_sizeOutput,
                                                                    std::uint8_t *&_dataOutput) const noexcept
 {
-    EMERGENCE_ASSERT (dataWritersCount == 0u);
-    ++dataReadersCount;
-
     auto cursor = thirdPartyResourcesById.ReadPoint (&_id);
     const auto *resource = static_cast<const ThirdPartyResourceData *> (*cursor);
 
     if (!resource)
     {
-        --dataReadersCount;
         return LoadingOperationResponse::NOT_FOUND;
     }
 
     FILE *file = std::fopen (EMERGENCE_BUILD_STRING (resource->source, "/", resource->relativePath), "rb");
     if (!file)
     {
-        --dataReadersCount;
         return LoadingOperationResponse::NOT_FOUND;
     }
 
@@ -367,12 +308,10 @@ LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::Uniqu
 
     if (fread (_dataOutput, 1u, _sizeOutput, file) != _sizeOutput)
     {
-        --dataReadersCount;
         return LoadingOperationResponse::IO_ERROR;
     }
 
     fclose (file);
-    --dataReadersCount;
     return LoadingOperationResponse::SUCCESSFUL;
 }
 

@@ -20,7 +20,7 @@ public:
 
         ObjectRegistryCursor (ObjectRegistryCursor &&_other) noexcept;
 
-        ~ObjectRegistryCursor () noexcept;
+        ~ObjectRegistryCursor () noexcept = default;
 
         [[nodiscard]] Memory::UniqueString operator* () const noexcept;
 
@@ -45,7 +45,7 @@ public:
 
     ResourceProvider (ResourceProvider &&_other) = delete;
 
-    ~ResourceProvider () noexcept;
+    ~ResourceProvider () noexcept = default;
 
     EMERGENCE_DELETE_ASSIGNMENT (ResourceProvider);
 
@@ -87,9 +87,6 @@ private:
                                                    const Container::Utf8String &_relativePath) noexcept;
 
     bool ClearSource (Memory::UniqueString _path) noexcept;
-
-    mutable std::atomic_uintptr_t dataWritersCount = 0u;
-    mutable std::atomic_uintptr_t dataReadersCount = 0u;
 
     RecordCollection::Collection objects;
     mutable RecordCollection::PointRepresentation objectsById;

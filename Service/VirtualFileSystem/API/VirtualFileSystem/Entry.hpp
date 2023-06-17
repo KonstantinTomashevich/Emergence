@@ -2,8 +2,8 @@
 
 #include <cstdint>
 
+#include <API/Common/Cursor.hpp>
 #include <API/Common/ImplementationBinding.hpp>
-#include <API/Common/Iterator.hpp>
 
 #include <Container/String.hpp>
 
@@ -21,22 +21,34 @@ enum class EntryType
 class Entry final
 {
 public:
-    class Iterator final
+    class Cursor final
     {
     public:
-        EMERGENCE_FORWARD_ITERATOR_OPERATIONS (Iterator, Entry);
+        Cursor (const Cursor &_other) noexcept;
+
+        Cursor (Cursor &&_other) noexcept;
+
+        ~Cursor () noexcept;
+
+        [[nodiscard]] Entry operator* () const noexcept;
+
+        Cursor &operator++ () noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (Cursor);
 
     private:
         friend class Entry;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 4u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 9u);
 
-        explicit Iterator (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+        explicit Cursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
-    Entry (const Context &_context, const char *_absolutePath) noexcept;
+    Entry () noexcept;
 
-    Entry (const Entry &_parent, const char *_relativePath) noexcept;
+    Entry (const Context &_context, const std::string_view &_absolutePath) noexcept;
+
+    Entry (const Entry &_parent, const std::string_view &_relativePath) noexcept;
 
     Entry (const Entry &_entry) noexcept;
 
@@ -54,13 +66,24 @@ public:
 
     [[nodiscard]] Container::Utf8String GetFullPath () const noexcept;
 
-    [[nodiscard]] Iterator IterateOverChildren () const noexcept;
+    [[nodiscard]] Cursor ReadChildren () const noexcept;
 
-    Entry &operator= (const Entry &_entry) noexcept;
+    inline explicit operator bool () const noexcept
+    {
+        return GetType () != EntryType::INVALID;
+    }
 
-    Entry &operator= (Entry &&_entry) noexcept;
+    Entry &operator= (const Entry &_other) noexcept;
+
+    Entry &operator= (Entry &&_other) noexcept;
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t));
+    friend class Context;
+    friend class Reader;
+    friend class Writer;
+
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 7u);
+
+    Entry (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::VirtualFileSystem

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <iostream>
 
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
@@ -15,25 +16,24 @@ class Reader final
 public:
     Reader (const Entry &_entry, OpenMode _openMode) noexcept;
 
-    Reader (const Reader &_reader) = delete;
+    Reader (const Reader &_other) = delete;
 
-    Reader (Reader &&_reader) noexcept;
+    Reader (Reader &&_other) = delete;
 
     ~Reader () noexcept;
 
     [[nodiscard]] bool IsValid () const noexcept;
 
-    bool SeekPosition (FilePivot _pivot, std::uint64_t _position) noexcept;
+    std::istream &InputStream () noexcept;
 
-    [[nodiscard]] std::uint64_t TellPosition () const noexcept;
-
-    bool ReadOne (std::uint8_t &_output) noexcept;
-
-    bool Read (std::uint8_t *_output, std::uint64_t _count) noexcept;
+    inline explicit operator bool () const noexcept
+    {
+        return IsValid ();
+    }
 
     EMERGENCE_DELETE_ASSIGNMENT (Reader);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 158u);
 };
 } // namespace Emergence::VirtualFileSystem

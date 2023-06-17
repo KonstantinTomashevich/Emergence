@@ -13,21 +13,21 @@ class PackageBuilder final
 public:
     PackageBuilder () noexcept;
 
-    PackageBuilder (const PackageBuilder &_builder) = delete;
+    PackageBuilder (const PackageBuilder &_other) = delete;
 
-    PackageBuilder (PackageBuilder &&_builder) noexcept;
+    PackageBuilder (PackageBuilder &&_other) noexcept;
 
     ~PackageBuilder () noexcept;
 
-    bool Begin (const Container::Utf8String &_outputFullPath) noexcept;
+    bool Begin (const Context &_context, const Entry &_output) noexcept;
 
-    bool Add (const Container::Utf8String &_pathInPackage, const Entry &_entry) noexcept;
+    bool Add (const Entry &_entry, const Container::Utf8String &_pathInPackage) noexcept;
 
     bool End () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PackageBuilder);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_HANDLE ()
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 21u);
 };
 } // namespace Emergence::VirtualFileSystem
