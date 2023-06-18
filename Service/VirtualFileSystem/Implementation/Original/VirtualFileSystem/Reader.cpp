@@ -21,6 +21,25 @@ public:
         seekoff (0, std::ios::beg);
     }
 
+    BoundedFileReadBuffer (const BoundedFileReadBuffer &_other) = delete;
+
+    BoundedFileReadBuffer (BoundedFileReadBuffer &&_other) = delete;
+
+    ~BoundedFileReadBuffer () noexcept
+    {
+        if (file)
+        {
+            fclose (file);
+        }
+    }
+
+    bool IsOpen () const noexcept
+    {
+        return file;
+    }
+
+    EMERGENCE_DELETE_ASSIGNMENT (BoundedFileReadBuffer);
+
 protected:
     int_type underflow () override
     {
@@ -207,12 +226,13 @@ Reader::Reader (const Entry &_entry, OpenMode _openMode) noexcept
 
 Reader::~Reader () noexcept
 {
-    block_cast<std::ofstream> (data).~basic_ofstream ();
+    block_cast<ReaderImplementationData> (data).~ReaderImplementationData ();
 }
 
 bool Reader::IsValid () const noexcept
 {
-    return !block_cast<std::ofstream> (data).fail ();
+    return block_cast<ReaderImplementationData> (data).buffer.IsOpen () &&
+           !block_cast<ReaderImplementationData> (data).input.fail ();
 }
 
 std::istream &Reader::InputStream () noexcept

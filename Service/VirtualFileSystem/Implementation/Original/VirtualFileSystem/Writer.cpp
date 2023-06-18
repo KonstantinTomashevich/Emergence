@@ -17,12 +17,18 @@ Writer::Writer (const Entry &_entry, OpenMode _openMode) noexcept
 
 Writer::~Writer () noexcept
 {
-    block_cast<std::ofstream> (data).~basic_ofstream ();
+    auto &stream = block_cast<std::ofstream> (data);
+    if (stream.is_open ())
+    {
+        stream.close ();
+    }
+
+    stream.~basic_ofstream ();
 }
 
 bool Writer::IsValid () const noexcept
 {
-    return !block_cast<std::ofstream> (data).fail ();
+    return block_cast<std::ofstream> (data).is_open () && !block_cast<std::ofstream> (data).fail ();
 }
 
 std::ostream &Writer::OutputStream () noexcept

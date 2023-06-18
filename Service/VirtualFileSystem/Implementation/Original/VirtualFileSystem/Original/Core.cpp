@@ -68,7 +68,7 @@ Object::Object (const Object &_other) noexcept
         break;
 
     case ObjectType::PATH:
-        path = _other.path;
+        new (&path) Container::Utf8String {_other.path};
         break;
     }
 }
@@ -86,8 +86,8 @@ Object::Object (Object &&_other) noexcept
         break;
 
     case ObjectType::PATH:
-        path = std::move (_other.path);
-        _other.path.~basic_string ();
+        new (&path) Container::Utf8String {std::move (_other.path)};
+        _other.path.clear ();
         break;
     }
 
@@ -139,10 +139,31 @@ VirtualFileSystem::Cursor::Cursor (VirtualFileSystem *_owner, const Object &_sou
         break;
 
     case ObjectType::ENTRY:
-        type = Type::VIRTUAL;
-        new (&virtualCursor)
-            RecordCollection::PointRepresentation::ReadCursor {_owner->entriesByParentId.ReadPoint (&_source.entryId)};
+    {
+        auto entryCursor = _owner->entriesById.ReadPoint (&_source.entryId);
+        const auto *entry = static_cast<const Entry *> (*entryCursor);
+        EMERGENCE_ASSERT (entry);
+
+        switch (entry->type)
+        {
+        case EntryType::VIRTUAL_DIRECTORY:
+            type = Type::VIRTUAL;
+            new (&virtualCursor) RecordCollection::PointRepresentation::ReadCursor {
+                _owner->entriesByParentId.ReadPoint (&_source.entryId)};
+            break;
+
+        case EntryType::PACKAGE_FILE:
+            EMERGENCE_ASSERT (false);
+            break;
+
+        case EntryType::FILE_SYSTEM_LINK:
+            type = Type::REAL;
+            new (&realIterator) std::filesystem::directory_iterator {entry->filesystemLink};
+            break;
+        }
+
         break;
+    }
 
     case ObjectType::PATH:
         type = Type::REAL;
@@ -249,6 +270,7 @@ VirtualFileSystem::VirtualFileSystem () noexcept
     auto *root = static_cast<Entry *> (inserter.Allocate ());
     root->id = ROOT_ID;
     root->parentId = INVALID_ID;
+    root->name = "~"_us;
     root->type = EntryType::VIRTUAL_DIRECTORY;
 }
 
@@ -272,39 +294,49 @@ Object VirtualFileSystem::Resolve (const Object &_relativeTo, const std::string_
     auto currentStart = _path.begin ();
     auto iterator = _path.begin ();
 
+    auto processPathStep = [this, &current, &currentStart, &iterator] ()
+    {
+        const std::string_view partition {currentStart, iterator};
+        if (partition == ".")
+        {
+            // Do nothing.
+        }
+        else if (partition == "..")
+        {
+            current = FindParent (current);
+        }
+        else
+        {
+            current = FindChild (current, partition);
+        }
+    };
+
     while (iterator != _path.end ())
     {
         if (*iterator == PATH_SEPARATOR)
         {
             if (currentStart != iterator)
             {
-                const std::string_view partition {currentStart, iterator};
-                if (partition == ".")
+                processPathStep ();
+                if (current.type == ObjectType::INVALID)
                 {
-                    // Do nothing.
-                }
-                else if (partition == "..")
-                {
-                    current = FindParent (current);
-                    if (current.type == ObjectType::INVALID)
-                    {
-                        return current;
-                    }
-                }
-                else
-                {
-                    current = FindChild (current, partition);
-                    if (current.type == ObjectType::INVALID)
-                    {
-                        return current;
-                    }
+                    return current;
                 }
             }
 
-            currentStart = iterator;
+            currentStart = iterator + 1u;
         }
 
         ++iterator;
+    }
+
+    if (currentStart != iterator)
+    {
+        processPathStep ();
+        if (current.type == ObjectType::INVALID)
+        {
+            return current;
+        }
     }
 
     return current;
@@ -340,21 +372,18 @@ Object VirtualFileSystem::FindParent (const Object &_object) const noexcept
     case ObjectType::PATH:
     {
         const std::filesystem::path path {_object.path};
+        const std::filesystem::path parentPath = path.parent_path ();
 
         // Check if current path is mount point and jump back to virtual file system if it is.
-        if (std::filesystem::is_directory (path))
+        for (auto cursor = fileSystemLinkEntries.ReadSignaled ();
+             const auto *entry = static_cast<const Entry *> (*cursor); ++cursor)
         {
-            for (auto cursor = fileSystemLinkEntries.ReadSignaled ();
-                 const auto *entry = static_cast<const Entry *> (*cursor); ++cursor)
+            if (entry->filesystemLink == parentPath)
             {
-                if (entry->filesystemLink == _object.path)
-                {
-                    return {entry->id};
-                }
+                return {entry->id};
             }
         }
 
-        const std::filesystem::path parentPath = path.parent_path ();
         return {parentPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ()};
     }
     }
@@ -392,13 +421,13 @@ Object VirtualFileSystem::FindChild (const Object &_object, const std::string_vi
                     return {childEntry->id};
                 }
 
-                EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to find child \"", _name, "\" of path \"",
+                EMERGENCE_LOG (WARNING, "VirtualFileSystem: Unable to find child \"", _name, "\" of path \"",
                                ExtractFullVirtualPath (_object), "\".");
                 return {};
             }
 
             case EntryType::PACKAGE_FILE:
-                EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to get child \"", _name, "\" because path \"",
+                EMERGENCE_LOG (WARNING, "VirtualFileSystem: Unable to get child \"", _name, "\" because path \"",
                                ExtractFullVirtualPath (_object),
                                "\" points to package file that cannot have children.");
                 return {};
@@ -408,7 +437,7 @@ Object VirtualFileSystem::FindChild (const Object &_object, const std::string_vi
                 const std::filesystem::path childPath = std::filesystem::path (entry->filesystemLink).append (_name);
                 if (!std::filesystem::exists (childPath))
                 {
-                    EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to find child \"", _name, "\" of path \"",
+                    EMERGENCE_LOG (WARNING, "VirtualFileSystem: Unable to find child \"", _name, "\" of path \"",
                                    ExtractFullVirtualPath (_object), "\".");
                     return {};
                 }
@@ -431,7 +460,7 @@ Object VirtualFileSystem::FindChild (const Object &_object, const std::string_vi
         const std::filesystem::path childPath = std::filesystem::path (_object.path).append (_name);
         if (!std::filesystem::exists (childPath))
         {
-            EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to find child \"", _name, "\" of path \"",
+            EMERGENCE_LOG (WARNING, "VirtualFileSystem: Unable to find child \"", _name, "\" of path \"",
                            ExtractFullVirtualPath (_object), "\".");
             return {};
         }
@@ -570,7 +599,7 @@ Object VirtualFileSystem::CreateDirectory (const Object &_parent, const std::str
                     const std::filesystem::path resultPath =
                         std::filesystem::path (entry->filesystemLink).append (_directoryName);
 
-                    if (!std::filesystem::create_directory (_parent.path))
+                    if (!std::filesystem::create_directory (resultPath))
                     {
                         EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to create child directory \"", _directoryName,
                                        "\" for \"", ExtractFullVirtualPath (_parent), "\".");
@@ -600,7 +629,7 @@ Object VirtualFileSystem::CreateDirectory (const Object &_parent, const std::str
     case ObjectType::PATH:
     {
         const std::filesystem::path resultPath = std::filesystem::path (_parent.path).append (_directoryName);
-        if (!std::filesystem::create_directory (_parent.path))
+        if (!std::filesystem::create_directory (resultPath))
         {
             EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to create child directory \"", _directoryName, "\" for \"",
                            ExtractFullVirtualPath (_parent), "\".");
@@ -626,77 +655,84 @@ Object VirtualFileSystem::MakeDirectories (const Object &_parent, const std::str
     auto currentStart = _relativePath.begin ();
     auto iterator = _relativePath.begin ();
 
+    auto processPathStep = [this, &current, &currentStart, &iterator] ()
+    {
+        const std::string_view partition {currentStart, iterator};
+        if (partition == ".")
+        {
+            // Do nothing.
+        }
+        else if (partition == "..")
+        {
+            current = FindParent (current);
+        }
+        else
+        {
+            Object previous = current;
+            current = FindChild (current, partition);
+
+            switch (current.type)
+            {
+            case ObjectType::INVALID:
+                current = CreateDirectory (previous, partition);
+                break;
+
+            case ObjectType::ENTRY:
+            {
+                auto entryCursor = entriesById.ReadPoint (&current.entryId);
+                const auto *entry = static_cast<const Entry *> (*entryCursor);
+                EMERGENCE_ASSERT (entry);
+
+                switch (entry->type)
+                {
+                case EntryType::VIRTUAL_DIRECTORY:
+                case EntryType::FILE_SYSTEM_LINK:
+                    break;
+
+                case EntryType::PACKAGE_FILE:
+                    EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to serve make directories request as \"",
+                                   ExtractFullVirtualPath (current), "\" is file!");
+                    current = {};
+                }
+
+                break;
+            }
+
+            case ObjectType::PATH:
+                if (!std::filesystem::is_directory (current.path))
+                {
+                    EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to serve make directories request as \"",
+                                   current.path, "\" is not a directory!");
+                    current = {};
+                }
+
+                break;
+            }
+        }
+    };
+
     while (iterator != _relativePath.end ())
     {
         if (*iterator == PATH_SEPARATOR)
         {
             if (currentStart != iterator)
             {
-                const std::string_view partition {currentStart, iterator};
-                if (partition == ".")
+                processPathStep ();
+                if (current.type == ObjectType::INVALID)
                 {
-                    // Do nothing.
-                }
-                else if (partition == "..")
-                {
-                    current = FindParent (current);
-                    if (current.type == ObjectType::INVALID)
-                    {
-                        return current;
-                    }
-                }
-                else
-                {
-                    current = FindChild (current, partition);
-                    switch (current.type)
-                    {
-                    case ObjectType::INVALID:
-                        current = CreateDirectory (current, partition);
-                        if (current.type == ObjectType::INVALID)
-                        {
-                            return current;
-                        }
-
-                        break;
-
-                    case ObjectType::ENTRY:
-                    {
-                        auto entryCursor = entriesById.ReadPoint (&current.entryId);
-                        const auto *entry = static_cast<const Entry *> (*entryCursor);
-                        EMERGENCE_ASSERT (entry);
-
-                        switch (entry->type)
-                        {
-                        case EntryType::VIRTUAL_DIRECTORY:
-                        case EntryType::FILE_SYSTEM_LINK:
-                            break;
-
-                        case EntryType::PACKAGE_FILE:
-                            EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to serve make directories request as \"",
-                                           ExtractFullVirtualPath (current), "\" is file!");
-                            return {};
-                        }
-
-                        break;
-                    }
-
-                    case ObjectType::PATH:
-                        if (!std::filesystem::is_directory (current.path))
-                        {
-                            EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to serve make directories request as \"",
-                                           current.path, "\" is not a directory!");
-                            return {};
-                        }
-
-                        break;
-                    }
+                    return current;
                 }
             }
 
-            currentStart = iterator;
+            currentStart = iterator + 1u;
         }
 
         ++iterator;
+    }
+
+    if (currentStart != iterator)
+    {
+        processPathStep ();
     }
 
     return current;
@@ -707,7 +743,6 @@ bool VirtualFileSystem::Delete (const Object &_entry, bool _recursive, bool _inc
     switch (_entry.type)
     {
     case ObjectType::INVALID:
-        EMERGENCE_ASSERT (false);
         return false;
 
     case ObjectType::ENTRY:
@@ -718,7 +753,7 @@ bool VirtualFileSystem::Delete (const Object &_entry, bool _recursive, bool _inc
         for (auto cursor = entriesByParentId.ReadPoint (&_entry.entryId);
              const auto *entry = static_cast<const Entry *> (*cursor); ++cursor)
         {
-            if (_recursive)
+            if (!_recursive)
             {
                 // Found children: cannot delete unless recursive deletion is requested.
                 return false;
@@ -741,7 +776,7 @@ bool VirtualFileSystem::Delete (const Object &_entry, bool _recursive, bool _inc
         {
             if (_includingFileSystem && entry->type == EntryType::FILE_SYSTEM_LINK && _recursive)
             {
-                deletedSuccessfully &= std::filesystem::remove_all (entry->filesystemLink);
+                deletedSuccessfully &= std::filesystem::remove_all (entry->filesystemLink) > 0u;
             }
 
             ~cursor;
@@ -907,9 +942,9 @@ bool VirtualFileSystem::Mount (const Object &_at, const MountConfiguration &_con
             entry->id = nextEntryId++;
             entry->parentId = entryNearestParent.entryId;
 
-            entry->name = Memory::UniqueString {lastSeparatorPosition == std::string::npos ?
+            entry->name = Memory::UniqueString {entryLastSeparatorPosition == std::string::npos ?
                                                     headerEntry.relativePath.c_str () :
-                                                    &headerEntry.relativePath[lastSeparatorPosition + 1u]};
+                                                    &headerEntry.relativePath[entryLastSeparatorPosition + 1u]};
 
             entry->type = EntryType::PACKAGE_FILE;
             entry->filesystemLink = _configuration.sourcePath;
@@ -980,7 +1015,8 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenM
             break;
         }
 
-        return {fopen (_object.path.c_str (), mode)};
+        return {fopen (_object.path.c_str (), mode), 0u,
+                static_cast<std::uint64_t> (std::filesystem::file_size (_object.path))};
     }
     }
 
