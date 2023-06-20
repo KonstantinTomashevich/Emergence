@@ -53,7 +53,9 @@ private:
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
+    Emergence::VirtualFileSystem::Context virtualFileSystem;
     Emergence::Resource::Provider::ResourceProvider resourceProvider;
+
     std::uint64_t sdlInitTimeNs = 0u;
     std::uint64_t sdlTicksAfterInit = 0u;
 };

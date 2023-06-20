@@ -113,8 +113,10 @@ private:
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
 
-    Emergence::Resource::Provider::ResourceProvider resourceProvider {PrepareResourceTypesRegistry (),
-                                                                      PreparePatchableTypesRegistry ()};
+    Emergence::VirtualFileSystem::Context virtualFileSystem;
+    Emergence::Resource::Provider::ResourceProvider resourceProvider {
+        &virtualFileSystem, PrepareResourceTypesRegistry (), PreparePatchableTypesRegistry ()};
+
     Emergence::Celerity::FrameInputAccumulator inputAccumulator;
     Emergence::Celerity::World world {"TestWorld"_us, {{1.0f / 60.0f}}};
 
@@ -145,8 +147,15 @@ void GameApplication::Setup ()
     engineParameters_[Urho3D::EP_RESOURCE_PATHS] = "Urho3DCoreResources;GameResources";
     engineParameters_[Urho3D::EP_RESOURCE_PREFIX_PATHS] = "../Resources";
 
+    if (!virtualFileSystem.Mount (virtualFileSystem.GetRoot (), {Emergence::VirtualFileSystem::MountSource::FILE_SYSTEM,
+                                                                 "../Resources/GameResources", "Resources"}))
+    {
+        Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Unable to mount resources directory into VFS!"),
+                                        __FILE__, __LINE__);
+    }
+
     Emergence::Resource::Provider::SourceOperationResponse response =
-        resourceProvider.AddSource (Emergence::Memory::UniqueString {"../Resources/GameResources"});
+        resourceProvider.AddSource (Emergence::Memory::UniqueString {"Resources"});
 
     if (response != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
     {

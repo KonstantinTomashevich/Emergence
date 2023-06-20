@@ -49,7 +49,7 @@ static Emergence::Memory::Profiler::EventObserver StartMemoryRecording (
 Application::Application () noexcept
     : memoryEventOutput ("MemoryRecording.track", std::ios::binary),
       memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput)),
-      resourceProvider (GetResourceTypesRegistry (), GetPatchableTypesRegistry ())
+      resourceProvider (&virtualFileSystem, GetResourceTypesRegistry (), GetPatchableTypesRegistry ())
 {
     Emergence::Log::GlobalLogger::Init (Emergence::Log::Level::ERROR,
                                         {Emergence::Log::Sinks::StandardOut {{Emergence::Log::Level::INFO}}});
@@ -62,7 +62,14 @@ Application::Application () noexcept
         Emergence::ReportCriticalError ("SDL initialization", __FILE__, __LINE__);
     }
 
-    if (Emergence::Resource::Provider::SourceOperationResponse result = resourceProvider.AddSource ("../Resources"_us);
+    if (!virtualFileSystem.Mount (virtualFileSystem.GetRoot (), {Emergence::VirtualFileSystem::MountSource::FILE_SYSTEM,
+                                                                 "../Resources", "Resources"}))
+    {
+        Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Unable to mount resources directory into VFS!"),
+                                        __FILE__, __LINE__);
+    }
+
+    if (Emergence::Resource::Provider::SourceOperationResponse result = resourceProvider.AddSource ("Resources"_us);
         result != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
     {
         Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Resource provider initialization error code ",

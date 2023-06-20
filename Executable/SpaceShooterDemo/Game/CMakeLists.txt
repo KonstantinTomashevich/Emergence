@@ -31,6 +31,7 @@ sober_library_begin ("${GAME_NAME}Game" OBJECT)
     sober_library_use_service (PER_VARIANT PRIVATE ResourceProvider)
     sober_library_use_service (PER_VARIANT PRIVATE StandardLayoutMapping)
     sober_library_use_service (PER_VARIANT PRIVATE TaskExecutor)
+    sober_library_use_service (PER_VARIANT PRIVATE VirtualFileSystem)
     sober_library_use_service (PER_VARIANT PRIVATE Warehouse)
 
     sober_variant_begin (Original)
