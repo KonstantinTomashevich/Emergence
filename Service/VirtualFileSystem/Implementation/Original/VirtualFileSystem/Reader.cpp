@@ -155,7 +155,7 @@ protected:
 
         if (_offset != 0 || _direction != std::ios::cur)
         {
-            sync ();
+            setg (buffer, buffer, buffer);
         }
 
         return ftell (file) - offset + (gptr () - eback ());

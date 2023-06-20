@@ -1,8 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <filesystem>
-#include <fstream>
-
 #include <Log/Log.hpp>
 
 #include <Resource/Provider/IndexFile.hpp>
@@ -12,6 +9,9 @@
 #include <Serialization/Yaml.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
+
+#include <VirtualFileSystem/Reader.hpp>
+#include <VirtualFileSystem/Writer.hpp>
 
 namespace Emergence::Resource::Provider::Original
 {
@@ -26,7 +26,7 @@ struct ObjectResourceData final
     Memory::UniqueString id;
     StandardLayout::Mapping type;
     Memory::UniqueString source;
-    Container::Utf8String relativePath;
+    VirtualFileSystem::Entry entry;
     ObjectResourceFormat format = ObjectResourceFormat::BINARY;
 
     struct Reflection final
@@ -64,7 +64,6 @@ const ObjectResourceData::Reflection &ObjectResourceData::Reflect () noexcept
         }
 
         EMERGENCE_MAPPING_REGISTER_REGULAR (source);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (relativePath);
         EMERGENCE_MAPPING_REGISTER_REGULAR (format);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
@@ -76,7 +75,7 @@ struct ThirdPartyResourceData final
 {
     Memory::UniqueString id;
     Memory::UniqueString source;
-    Container::Utf8String relativePath;
+    VirtualFileSystem::Entry entry;
 
     struct Reflection final
     {
@@ -96,7 +95,6 @@ const ThirdPartyResourceData::Reflection &ThirdPartyResourceData::Reflect () noe
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (ThirdPartyResourceData);
         EMERGENCE_MAPPING_REGISTER_REGULAR (id);
         EMERGENCE_MAPPING_REGISTER_REGULAR (source);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (relativePath);
         EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
@@ -142,9 +140,12 @@ ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (
     EMERGENCE_ASSERT (owner);
 }
 
-ResourceProvider::ResourceProvider (Container::MappingRegistry _objectTypesRegistry,
+ResourceProvider::ResourceProvider (VirtualFileSystem::Context *_virtualFileSystemContext,
+                                    Container::MappingRegistry _objectTypesRegistry,
                                     Container::MappingRegistry _patchableTypesRegistry) noexcept
-    : objects (ObjectResourceData::Reflect ().mapping),
+    : virtualFileSystemContext (_virtualFileSystemContext),
+
+      objects (ObjectResourceData::Reflect ().mapping),
       objectsById (objects.CreatePointRepresentation ({ObjectResourceData::Reflect ().id})),
       objectsByType (objects.CreatePointRepresentation ({ObjectResourceData::Reflect ().typeNumber})),
       objectsBySource (objects.CreatePointRepresentation ({ObjectResourceData::Reflect ().source})),
@@ -181,9 +182,12 @@ SourceOperationResponse ResourceProvider::AddSource ([[maybe_unused]] Memory::Un
         return SourceOperationResponse::ALREADY_EXIST;
     }
 
-    if (std::filesystem::exists (EMERGENCE_BUILD_STRING (_path, "/", IndexFile::INDEX_FILE_NAME)))
+    const VirtualFileSystem::Entry indexFileEntry {*virtualFileSystemContext,
+                                                   EMERGENCE_BUILD_STRING (_path, "/", IndexFile::INDEX_FILE_NAME)};
+
+    if (indexFileEntry.GetType () == VirtualFileSystem::EntryType::FILE)
     {
-        return AddSourceFromIndex (_path);
+        return AddSourceFromIndex (indexFileEntry, _path);
     }
 
     EMERGENCE_LOG (WARNING, "ResourceProvider: No index for source \"", _path, "\", scanning file system!");
@@ -193,14 +197,27 @@ SourceOperationResponse ResourceProvider::AddSource ([[maybe_unused]] Memory::Un
 SourceOperationResponse ResourceProvider::SaveSourceIndex (
     [[maybe_unused]] Memory::UniqueString _sourcePath) const noexcept
 {
+    const VirtualFileSystem::Entry sourceEntry {*virtualFileSystemContext, *_sourcePath};
+    if (sourceEntry.GetType () != VirtualFileSystem::EntryType::DIRECTORY)
+    {
+        return SourceOperationResponse::NOT_FOUND;
+    }
+
+    const Container::Utf8String sourceFullPath = sourceEntry.GetFullPath ();
     IndexFile content;
+
     for (auto cursor = objectsBySource.ReadPoint (&_sourcePath);
          const auto *objectData = static_cast<const ObjectResourceData *> (*cursor); ++cursor)
     {
         IndexFileObjectItem &objectItem = content.objects.emplace_back ();
         objectItem.id = objectData->id;
         objectItem.typeName = objectData->type.GetName ();
-        objectItem.relativePath = objectData->relativePath;
+
+        const Container::Utf8String objectFullPath = objectData->entry.GetFullPath ();
+        EMERGENCE_ASSERT (objectFullPath.starts_with (sourceFullPath));
+        EMERGENCE_ASSERT (objectFullPath[sourceFullPath.size ()] == VirtualFileSystem::PATH_SEPARATOR);
+        EMERGENCE_ASSERT (objectFullPath.size () > sourceFullPath.size () + 1u);
+        objectItem.relativePath = objectFullPath.substr (sourceFullPath.size () + 1u);
     }
 
     for (auto cursor = thirdPartyResourcesBySource.ReadPoint (&_sourcePath);
@@ -208,16 +225,29 @@ SourceOperationResponse ResourceProvider::SaveSourceIndex (
     {
         IndexFileThirdPartyItem &resourceItem = content.thirdParty.emplace_back ();
         resourceItem.id = resourceData->id;
-        resourceItem.relativePath = resourceData->relativePath;
+
+        const Container::Utf8String resourceFullPath = resourceData->entry.GetFullPath ();
+        EMERGENCE_ASSERT (resourceFullPath.starts_with (sourceFullPath));
+        EMERGENCE_ASSERT (resourceFullPath[sourceFullPath.size ()] == VirtualFileSystem::PATH_SEPARATOR);
+        EMERGENCE_ASSERT (resourceFullPath.size () > sourceFullPath.size () + 1u);
+        resourceItem.relativePath = resourceFullPath.substr (sourceFullPath.size () + 1u);
     }
 
-    std::ofstream output (EMERGENCE_BUILD_STRING (_sourcePath, "/", IndexFile::INDEX_FILE_NAME), std::ios::binary);
-    if (!output)
+    const VirtualFileSystem::Entry indexFile =
+        virtualFileSystemContext->CreateFile ({*virtualFileSystemContext, *_sourcePath}, IndexFile::INDEX_FILE_NAME);
+
+    if (!indexFile)
     {
         return SourceOperationResponse::IO_ERROR;
     }
 
-    Serialization::Binary::SerializeObject (output, &content, IndexFile::Reflect ().mapping);
+    VirtualFileSystem::Writer writer {indexFile, VirtualFileSystem::OpenMode::BINARY};
+    if (!writer)
+    {
+        return SourceOperationResponse::IO_ERROR;
+    }
+
+    Serialization::Binary::SerializeObject (writer.OutputStream (), &content, IndexFile::Reflect ().mapping);
     return SourceOperationResponse::SUCCESSFUL;
 }
 
@@ -244,10 +274,15 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         return LoadingOperationResponse::WRONG_TYPE;
     }
 
-    // We always open in binary mode as VFS packages do not support text mode.
-    std::ifstream input (EMERGENCE_BUILD_STRING (object->source, "/", object->relativePath), std::ios::binary);
+    if (!object->entry)
+    {
+        return LoadingOperationResponse::NOT_FOUND;
+    }
 
-    if (!input)
+    // We always open in binary mode as VFS packages do not support text mode.
+    VirtualFileSystem::Reader reader {object->entry, VirtualFileSystem::OpenMode::BINARY};
+
+    if (!reader)
     {
         return LoadingOperationResponse::NOT_FOUND;
     }
@@ -256,10 +291,11 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     {
     case ObjectResourceFormat::BINARY:
     {
-        [[maybe_unused]] const Memory::UniqueString typeName = Serialization::Binary::DeserializeTypeName (input);
+        [[maybe_unused]] const Memory::UniqueString typeName =
+            Serialization::Binary::DeserializeTypeName (reader.InputStream ());
         EMERGENCE_ASSERT (typeName == _type.GetName ());
 
-        if (!Serialization::Binary::DeserializeObject (input, _output, _type, patchableTypesRegistry))
+        if (!Serialization::Binary::DeserializeObject (reader.InputStream (), _output, _type, patchableTypesRegistry))
         {
             return LoadingOperationResponse::IO_ERROR;
         }
@@ -270,7 +306,7 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     case ObjectResourceFormat::YAML:
     {
         // We skip type name deserialization here as it is just a comment.
-        if (!Serialization::Yaml::DeserializeObject (input, _output, _type, patchableTypesRegistry))
+        if (!Serialization::Yaml::DeserializeObject (reader.InputStream (), _output, _type, patchableTypesRegistry))
         {
             return LoadingOperationResponse::IO_ERROR;
         }
@@ -295,23 +331,27 @@ LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::Uniqu
         return LoadingOperationResponse::NOT_FOUND;
     }
 
-    FILE *file = std::fopen (EMERGENCE_BUILD_STRING (resource->source, "/", resource->relativePath), "rb");
-    if (!file)
+    if (!resource->entry)
     {
         return LoadingOperationResponse::NOT_FOUND;
     }
 
-    fseek (file, 0u, SEEK_END);
-    _sizeOutput = static_cast<std::uint64_t> (ftell (file));
-    fseek (file, 0u, SEEK_SET);
+    VirtualFileSystem::Reader reader {resource->entry, VirtualFileSystem::OpenMode::BINARY};
+    if (!reader)
+    {
+        return LoadingOperationResponse::NOT_FOUND;
+    }
+
+    reader.InputStream ().seekg (0u, std::ios::end);
+    _sizeOutput = static_cast<std::uint64_t> (reader.InputStream ().tellg ());
+    reader.InputStream ().seekg (0u, std::ios::beg);
     _dataOutput = static_cast<std::uint8_t *> (_allocator.Acquire (_sizeOutput, alignof (std::uint64_t)));
 
-    if (fread (_dataOutput, 1u, _sizeOutput, file) != _sizeOutput)
+    if (!reader.InputStream ().read (reinterpret_cast<char *> (_dataOutput), static_cast<std::streamsize> (_sizeOutput)))
     {
         return LoadingOperationResponse::IO_ERROR;
     }
 
-    fclose (file);
     return LoadingOperationResponse::SUCCESSFUL;
 }
 
@@ -321,16 +361,17 @@ ResourceProvider::ObjectRegistryCursor ResourceProvider::FindObjectsByType (
     return {this, objectsByType.ReadPoint (&_type)};
 }
 
-SourceOperationResponse ResourceProvider::AddSourceFromIndex (Memory::UniqueString _path) noexcept
+SourceOperationResponse ResourceProvider::AddSourceFromIndex (const VirtualFileSystem::Entry &_indexFile,
+                                                              Memory::UniqueString _path) noexcept
 {
-    std::ifstream input (EMERGENCE_BUILD_STRING (_path, "/", IndexFile::INDEX_FILE_NAME), std::ios::binary);
-    if (!input)
+    VirtualFileSystem::Reader reader {_indexFile, VirtualFileSystem::OpenMode::BINARY};
+    if (!reader)
     {
         return SourceOperationResponse::IO_ERROR;
     }
 
     IndexFile content;
-    if (!Serialization::Binary::DeserializeObject (input, &content, IndexFile::Reflect ().mapping,
+    if (!Serialization::Binary::DeserializeObject (reader.InputStream (), &content, IndexFile::Reflect ().mapping,
                                                    patchableTypesRegistry))
     {
         return SourceOperationResponse::IO_ERROR;
@@ -363,74 +404,93 @@ SourceOperationResponse ResourceProvider::AddSourceFromIndex (Memory::UniqueStri
 
 SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueString _path) noexcept
 {
-    if (!std::filesystem::exists (*_path))
+    const VirtualFileSystem::Entry pathRoot {*virtualFileSystemContext, *_path};
+    if (pathRoot.GetType () != VirtualFileSystem::EntryType::DIRECTORY)
     {
-        EMERGENCE_LOG (ERROR, "ResourceProvider: Given source path \"", _path, "\" does not exist.");
+        EMERGENCE_LOG (ERROR, "ResourceProvider: Given source directory \"", _path, "\" does not exist.");
         return SourceOperationResponse::NOT_FOUND;
     }
 
+    const Container::Utf8String rootFullPath = pathRoot.GetFullPath ();
     SourceOperationResponse finalResponse = SourceOperationResponse::SUCCESSFUL;
-    for (std::filesystem::recursive_directory_iterator iterator (
-             EMERGENCE_BUILD_STRING (_path, "/"), std::filesystem::directory_options::follow_directory_symlink);
-         iterator != std::filesystem::end (iterator); ++iterator)
+    Container::Vector<VirtualFileSystem::Entry> scanStack {
+        Memory::Profiler::AllocationGroup {Memory::UniqueString {"ResourceProviderAlgorithm"}}};
+    scanStack.emplace_back (pathRoot);
+
+    while (!scanStack.empty ())
     {
-        const std::filesystem::directory_entry &entry = *iterator;
-        if (!std::filesystem::is_regular_file (entry))
-        {
-            continue;
-        }
+        VirtualFileSystem::Entry scanEntry = scanStack.back ();
+        scanStack.pop_back ();
 
-        const Container::Utf8String relativePath =
-            std::filesystem::relative (entry.path (), *_path)
-                .generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ();
-
-        if (relativePath.ends_with (".bin"))
+        for (VirtualFileSystem::Entry::Cursor cursor = scanEntry.ReadChildren ();
+             VirtualFileSystem::Entry entry = *cursor; ++cursor)
         {
-            // Attempt to read type name.
-            std::ifstream input (entry.path (), std::ios::binary);
-            const Memory::UniqueString typeName = Serialization::Binary::DeserializeTypeName (input);
+            switch (entry.GetType ())
+            {
+            case VirtualFileSystem::EntryType::INVALID:
+                EMERGENCE_ASSERT (false);
+                break;
 
-            if (!*typeName)
+            case VirtualFileSystem::EntryType::FILE:
             {
-                EMERGENCE_LOG (ERROR, "ResourceProvider: Failed to parse object type from \"", relativePath,
-                               "\" of source \"", _path, "\".");
-                finalResponse = SourceOperationResponse::IO_ERROR;
-            }
-            else if (SourceOperationResponse response =
-                         AddObject (Memory::UniqueString (entry.path ().stem ().string ().c_str ()), typeName, _path,
-                                    relativePath);
-                     response != SourceOperationResponse::SUCCESSFUL)
-            {
-                finalResponse = response;
-            }
-        }
-        else if (relativePath.ends_with (".yaml"))
-        {
-            // Attempt to read type name.
-            std::ifstream input (entry.path ());
-            const Memory::UniqueString typeName = Serialization::Yaml::DeserializeTypeName (input);
+                if (entry.GetExtension () == "bin")
+                {
+                    // Attempt to read type name.
+                    VirtualFileSystem::Reader reader {entry, VirtualFileSystem::OpenMode::BINARY};
+                    const Memory::UniqueString typeName =
+                        Serialization::Binary::DeserializeTypeName (reader.InputStream ());
 
-            if (!*typeName)
-            {
-                EMERGENCE_LOG (ERROR, "ResourceProvider: Failed to parse object type from \"", relativePath,
-                               "\" of source \"", _path, "\".");
-                finalResponse = SourceOperationResponse::IO_ERROR;
+                    if (!*typeName)
+                    {
+                        EMERGENCE_LOG (ERROR, "ResourceProvider: Failed to parse object type from \"",
+                                       entry.GetFullPath (), "\" of source \"", _path, "\".");
+                        finalResponse = SourceOperationResponse::IO_ERROR;
+                    }
+                    else if (SourceOperationResponse response = AddObject (
+                                 Memory::UniqueString {entry.GetFileName ().c_str ()}, typeName, _path, entry);
+                             response != SourceOperationResponse::SUCCESSFUL)
+                    {
+                        finalResponse = response;
+                    }
+                }
+                else if (entry.GetExtension () == "yaml")
+                {
+                    // Attempt to read type name.
+                    // We always open in binary mode as VFS packages do not support text mode.
+                    VirtualFileSystem::Reader reader {entry, VirtualFileSystem::OpenMode::BINARY};
+
+                    const Memory::UniqueString typeName =
+                        Serialization::Yaml::DeserializeTypeName (reader.InputStream ());
+
+                    if (!*typeName)
+                    {
+                        EMERGENCE_LOG (ERROR, "ResourceProvider: Failed to parse object type from \"",
+                                       entry.GetFullPath (), "\" of source \"", _path, "\".");
+                        finalResponse = SourceOperationResponse::IO_ERROR;
+                    }
+                    else if (SourceOperationResponse response = AddObject (
+                                 Memory::UniqueString {entry.GetFileName ().c_str ()}, typeName, _path, entry);
+                             response != SourceOperationResponse::SUCCESSFUL)
+                    {
+                        finalResponse = response;
+                    }
+                }
+                else if (entry.GetFullFileName () != IndexFile::INDEX_FILE_NAME)
+                {
+                    if (SourceOperationResponse response = AddThirdPartyResource (
+                            Memory::UniqueString {entry.GetFullFileName ().c_str ()}, _path, entry);
+                        response != SourceOperationResponse::SUCCESSFUL)
+                    {
+                        finalResponse = response;
+                    }
+                }
+
+                break;
             }
-            else if (SourceOperationResponse response =
-                         AddObject (Memory::UniqueString (entry.path ().stem ().string ().c_str ()), typeName, _path,
-                                    relativePath);
-                     response != SourceOperationResponse::SUCCESSFUL)
-            {
-                finalResponse = response;
-            }
-        }
-        else if (!relativePath.ends_with (IndexFile::INDEX_FILE_NAME))
-        {
-            if (SourceOperationResponse response = AddThirdPartyResource (
-                    Memory::UniqueString (entry.path ().filename ().string ().c_str ()), _path, relativePath);
-                response != SourceOperationResponse::SUCCESSFUL)
-            {
-                finalResponse = response;
+
+            case VirtualFileSystem::EntryType::DIRECTORY:
+                scanStack.emplace_back (std::move (entry));
+                break;
             }
         }
     }
@@ -448,6 +508,17 @@ SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,
                                                      Memory::UniqueString _source,
                                                      const Container::Utf8String &_relativePath) noexcept
 {
+    return AddObject (
+        _id, _typeName, _source,
+        VirtualFileSystem::Entry {*virtualFileSystemContext,
+                                  EMERGENCE_BUILD_STRING (_source, VirtualFileSystem::PATH_SEPARATOR, _relativePath)});
+}
+
+SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,
+                                                     Memory::UniqueString _typeName,
+                                                     Memory::UniqueString _source,
+                                                     const VirtualFileSystem::Entry &_entry) noexcept
+{
     StandardLayout::Mapping type = objectTypesRegistry.Get (_typeName);
     if (!type)
     {
@@ -456,17 +527,17 @@ SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,
     }
 
     ObjectResourceFormat format;
-    if (_relativePath.ends_with (".bin"))
+    if (_entry.GetExtension () == "bin")
     {
         format = ObjectResourceFormat::BINARY;
     }
-    else if (_relativePath.ends_with (".yaml"))
+    else if (_entry.GetExtension () == "yaml")
     {
         format = ObjectResourceFormat::YAML;
     }
     else
     {
-        EMERGENCE_LOG (ERROR, "ResourceProvider: Unknown object format of file \"", _relativePath, "\"!");
+        EMERGENCE_LOG (ERROR, "ResourceProvider: Unknown object format of file \"", _entry.GetFullPath (), "\"!");
         return SourceOperationResponse::UNKNOWN_FORMAT;
     }
 
@@ -481,7 +552,7 @@ SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,
     objectData->id = _id;
     objectData->type = type;
     objectData->source = _source;
-    objectData->relativePath = _relativePath;
+    objectData->entry = _entry;
     objectData->format = format;
     return SourceOperationResponse::SUCCESSFUL;
 }
@@ -489,6 +560,16 @@ SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,
 SourceOperationResponse ResourceProvider::AddThirdPartyResource (Memory::UniqueString _id,
                                                                  Memory::UniqueString _source,
                                                                  const Container::Utf8String &_relativePath) noexcept
+{
+    return AddThirdPartyResource (
+        _id, _source,
+        VirtualFileSystem::Entry {*virtualFileSystemContext,
+                                  EMERGENCE_BUILD_STRING (_source, VirtualFileSystem::PATH_SEPARATOR, _relativePath)});
+}
+
+SourceOperationResponse ResourceProvider::AddThirdPartyResource (Memory::UniqueString _id,
+                                                                 Memory::UniqueString _source,
+                                                                 const VirtualFileSystem::Entry &_entry) noexcept
 {
     if (auto cursor = thirdPartyResourcesById.ReadPoint (&_id); *cursor)
     {
@@ -500,7 +581,7 @@ SourceOperationResponse ResourceProvider::AddThirdPartyResource (Memory::UniqueS
     auto *resourceData = static_cast<ThirdPartyResourceData *> (resourceInserter.Allocate ());
     resourceData->id = _id;
     resourceData->source = _source;
-    resourceData->relativePath = _relativePath;
+    resourceData->entry = _entry;
     return SourceOperationResponse::SUCCESSFUL;
 }
 

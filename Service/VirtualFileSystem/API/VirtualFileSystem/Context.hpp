@@ -30,6 +30,8 @@ public:
 
     Entry CreateDirectory (Entry _parent, const std::string_view &_directoryName) noexcept;
 
+    // TODO: Support soft file links.
+
     Entry MakeDirectories (const std::string_view &_absolutePath) noexcept;
 
     Entry MakeDirectories (Entry _parent, const std::string_view &_relativePath) noexcept;

@@ -11,6 +11,8 @@
 
 #include <StandardLayout/Mapping.hpp>
 
+#include <VirtualFileSystem/Context.hpp>
+
 namespace Emergence::Resource::Provider
 {
 /// \brief Exit codes for ResourceProvider operations that work with resource sources.
@@ -104,7 +106,8 @@ public:
     };
 
     /// \brief Constructs resource provider that supports given resource types and is aware of given patchable types.
-    ResourceProvider (Container::MappingRegistry _objectTypesRegistry,
+    ResourceProvider (VirtualFileSystem::Context *_virtualFileSystemContext,
+                      Container::MappingRegistry _objectTypesRegistry,
                       Container::MappingRegistry _patchableTypesRegistry) noexcept;
 
     ResourceProvider (const ResourceProvider &_other) = delete;

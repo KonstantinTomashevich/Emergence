@@ -154,7 +154,7 @@ Container::Utf8String Entry::GetExtension () const noexcept
         return "";
     }
 
-    return fullName.substr (dotPos, std::string::npos);
+    return fullName.substr (dotPos + 1u, std::string::npos);
 }
 
 Container::Utf8String Entry::GetFullFileName () const noexcept
