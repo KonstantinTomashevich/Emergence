@@ -20,6 +20,7 @@ namespace Emergence::Celerity::Test
 using namespace Memory::Literals;
 
 static const char *const ENVIRONMENT_ROOT = "Environment";
+static const char *const ENVIRONMENT_MOUNT = "Environment";
 static const char *const LOCALES_ROOT = "Environment/Locale";
 
 struct LocalizationTestStage
@@ -104,7 +105,7 @@ struct EnvironmentLocale
 
 using Environment = Container::Vector<EnvironmentLocale>;
 
-void PrepareEnvironment (const Environment &_environment)
+VirtualFileSystem::Context PrepareEnvironment (const Environment &_environment)
 {
     const std::filesystem::path rootPath {ENVIRONMENT_ROOT};
     if (std::filesystem::exists (rootPath))
@@ -112,7 +113,12 @@ void PrepareEnvironment (const Environment &_environment)
         std::filesystem::remove_all (rootPath);
     }
 
+    std::filesystem::create_directories (ENVIRONMENT_ROOT);
+    VirtualFileSystem::Context virtualFileSystem;
+    REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (), {VirtualFileSystem::MountSource::FILE_SYSTEM,
+                                                                     ENVIRONMENT_ROOT, ENVIRONMENT_MOUNT}));
     std::filesystem::create_directories (LOCALES_ROOT);
+
     for (const EnvironmentLocale &locale : _environment)
     {
         if (locale.binary)
@@ -132,11 +138,13 @@ void PrepareEnvironment (const Environment &_environment)
                                                   LocaleConfiguration::Reflect ().mapping);
         }
     }
+
+    return virtualFileSystem;
 }
 
 void ExecuteTest (const Environment &_environment, Container::Vector<LocalizationTestStage> _stages)
 {
-    PrepareEnvironment (_environment);
+    VirtualFileSystem::Context virtualFileSystem = PrepareEnvironment (_environment);
     bool testFinished = false;
     std::size_t frameIndex = 0u;
 
@@ -145,8 +153,8 @@ void ExecuteTest (const Environment &_environment, Container::Vector<Localizatio
 
     Container::MappingRegistry resourceTypeRegistry;
     resourceTypeRegistry.Register (LocaleConfiguration::Reflect ().mapping);
-    Resource::Provider::ResourceProvider resourceProvider {resourceTypeRegistry, {}};
-    REQUIRE ((resourceProvider.AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+    Resource::Provider::ResourceProvider resourceProvider {&virtualFileSystem, resourceTypeRegistry, {}};
+    REQUIRE ((resourceProvider.AddSource (Memory::UniqueString {ENVIRONMENT_MOUNT}) ==
               Resource::Provider::SourceOperationResponse::SUCCESSFUL));
 
     builder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);

@@ -34,6 +34,6 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (Reader);
 
 private:
-    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 158u);
+    EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t) * 160u);
 };
 } // namespace Emergence::VirtualFileSystem

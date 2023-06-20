@@ -36,6 +36,7 @@ sober_test_begin (CelerityUI OBJECT)
     sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
     sober_library_use_service (SHARED PRIVATE TaskExecutor)
     sober_library_use_service (SHARED PRIVATE Testing)
+    sober_library_use_service (SHARED PRIVATE VirtualFileSystem)
     sober_library_use_service (SHARED PRIVATE Warehouse)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

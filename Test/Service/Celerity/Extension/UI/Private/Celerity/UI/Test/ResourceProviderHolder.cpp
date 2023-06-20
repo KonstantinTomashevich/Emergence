@@ -1,9 +1,10 @@
+#include <filesystem>
+
 #include <Celerity/Asset/Render/Foundation/Material.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
 #include <Celerity/Asset/Render/Foundation/Texture.hpp>
 #include <Celerity/Asset/UI/Font.hpp>
 #include <Celerity/Locale/LocaleConfiguration.hpp>
-#include <Celerity/UI/Test/ImplementationStrings.hpp>
 #include <Celerity/UI/Test/ResourceProviderHolder.hpp>
 
 #include <Testing/Testing.hpp>
@@ -22,8 +23,11 @@ static Container::MappingRegistry GetAssetTypes () noexcept
 }
 
 ResourceProviderHolder::ResourceProviderHolder () noexcept
-    : provider (GetAssetTypes (), {})
+    : provider (&virtualFileSystem, GetAssetTypes (), {})
 {
+    std::filesystem::create_directories ("Resources");
+    REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (),
+                                      {VirtualFileSystem::MountSource::FILE_SYSTEM, "Resources", "Resources"}));
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {"Resources"}) ==
              Resource::Provider::SourceOperationResponse::SUCCESSFUL);
 }

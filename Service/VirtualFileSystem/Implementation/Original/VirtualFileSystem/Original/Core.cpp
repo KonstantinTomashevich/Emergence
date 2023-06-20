@@ -850,7 +850,7 @@ bool VirtualFileSystem::Mount (const Object &_at, const MountConfiguration &_con
 
     switch (_configuration.source)
     {
-    case MountSource::FILESYSTEM:
+    case MountSource::FILE_SYSTEM:
     {
         if (!std::filesystem::is_directory (_configuration.sourcePath))
         {

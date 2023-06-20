@@ -1,7 +1,5 @@
 #pragma once
 
-#include <filesystem>
-
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>

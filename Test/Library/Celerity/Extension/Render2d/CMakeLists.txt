@@ -13,12 +13,14 @@ target_include_directories (TestCelerityRender2dOriginal PRIVATE "${CMAKE_CURREN
 
 sober_naming_implementation_target (RenderBackend BGFX RENDER_BACKEND_BGFX_TARGET)
 sober_naming_implementation_target (ResourceProvider Original RESOURCE_PROVIDER_ORIGINAL_TARGET)
+sober_naming_implementation_target (VirtualFileSystem Original VIRTUAL_FILE_SYSTEM_IMPLEMENTATION_TARGET)
 sober_naming_variant_target (CelerityRender2d Original CELERITY_RENDER_2D_LIBRARY_TARGET)
 sober_naming_variant_target (FileSystemTestUtility Doctest FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET)
 
 sober_target_link_libraries (TestCelerityRender2dOriginal PUBLIC
         ${RENDER_BACKEND_BGFX_TARGET}
         ${RESOURCE_PROVIDER_ORIGINAL_TARGET}
+        ${VIRTUAL_FILE_SYSTEM_IMPLEMENTATION_TARGET}
         ${CELERITY_RENDER_2D_LIBRARY_TARGET}
         ${FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET}
         SDL2

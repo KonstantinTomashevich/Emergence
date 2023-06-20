@@ -149,7 +149,7 @@ VirtualFileSystem::Context SetupEnvironment (const Container::Vector<ResourceSou
 
     std::filesystem::create_directories (rootPath);
     Emergence::VirtualFileSystem::Context virtualFileSystem;
-    REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (), {VirtualFileSystem::MountSource::FILESYSTEM,
+    REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (), {VirtualFileSystem::MountSource::FILE_SYSTEM,
                                                                      ENVIRONMENT_ROOT, ENVIRONMENT_MOUNT}));
 
     for (const ResourceSourceDescription &source : _sources)

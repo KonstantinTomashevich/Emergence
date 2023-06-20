@@ -9,13 +9,13 @@ namespace Emergence::VirtualFileSystem
 {
 enum class MountSource : uint8_t
 {
-    FILESYSTEM = 0u,
+    FILE_SYSTEM = 0u,
     PACKAGE
 };
 
 struct MountConfiguration final
 {
-    MountSource source = MountSource::FILESYSTEM;
+    MountSource source = MountSource::FILE_SYSTEM;
 
     Container::Utf8String sourcePath;
 

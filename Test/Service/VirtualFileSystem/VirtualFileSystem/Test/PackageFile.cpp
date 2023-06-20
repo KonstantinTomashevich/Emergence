@@ -55,8 +55,8 @@ TEST_CASE (PackageFileWithNesting)
     }
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, packageSourcePath, "Source"}));
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, packageOutputPath, "Output"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, packageSourcePath, "Source"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, packageOutputPath, "Output"}));
 
     {
         PackageBuilder builder;

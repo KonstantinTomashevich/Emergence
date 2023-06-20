@@ -8,6 +8,7 @@ struct ResourceProviderHolder
 {
     ResourceProviderHolder () noexcept;
 
+    VirtualFileSystem::Context virtualFileSystem;
     Resource::Provider::ResourceProvider provider;
 };
 

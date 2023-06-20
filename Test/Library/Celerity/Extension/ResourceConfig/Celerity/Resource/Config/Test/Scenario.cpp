@@ -24,11 +24,13 @@
 namespace Emergence::Celerity::Test
 {
 static const char *const ENVIRONMENT_ROOT = "../Resources";
+static const char *const ENVIRONMENT_MOUNT = "Resources";
 
 class Executor final : public TaskExecutorBase<Executor>
 {
 public:
     Executor (TaskConstructor &_constructor,
+              VirtualFileSystem::Context *_virtualFileSystem,
               Resource::Provider::ResourceProvider *_resourceProvider,
               Container::Vector<Task> _tasks,
               bool *_isFinished) noexcept;
@@ -49,6 +51,7 @@ private:
     FetchAscendingRangeQuery fetchBuildingConfigByAscendingId;
     InsertShortTermQuery insertLoadingRequest;
 
+    VirtualFileSystem::Context *virtualFileSystem;
     Resource::Provider::ResourceProvider *resourceProvider;
     Container::Vector<Task> tasks;
     std::size_t currentTaskIndex = 0u;
@@ -57,6 +60,7 @@ private:
 };
 
 Executor::Executor (TaskConstructor &_constructor,
+                    VirtualFileSystem::Context *_virtualFileSystem,
                     Resource::Provider::ResourceProvider *_resourceProvider,
                     Container::Vector<Task> _tasks,
                     bool *_isFinished) noexcept
@@ -67,6 +71,7 @@ Executor::Executor (TaskConstructor &_constructor,
       fetchBuildingConfigByAscendingId (FETCH_ASCENDING_RANGE (BuildingConfig, id)),
       insertLoadingRequest (INSERT_SHORT_TERM (ResourceConfigRequest)),
 
+      virtualFileSystem (_virtualFileSystem),
       resourceProvider (_resourceProvider),
       tasks (std::move (_tasks)),
       isFinished (_isFinished)
@@ -118,7 +123,7 @@ bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
 {
     LOG ("Resetting environment...");
     [[maybe_unused]] Resource::Provider::SourceOperationResponse response =
-        resourceProvider->RemoveSource (Memory::UniqueString {ENVIRONMENT_ROOT});
+        resourceProvider->RemoveSource (Memory::UniqueString {ENVIRONMENT_MOUNT});
     const std::filesystem::path rootPath {ENVIRONMENT_ROOT};
 
     if (std::filesystem::exists (rootPath))
@@ -126,11 +131,15 @@ bool Executor::ExecuteTask (const Tasks::ResetEnvironment &_task) noexcept
         std::filesystem::remove_all (rootPath);
     }
 
+    virtualFileSystem->Delete (VirtualFileSystem::Entry {*virtualFileSystem, ENVIRONMENT_MOUNT}, true, true);
     std::filesystem::create_directories (rootPath);
+    REQUIRE (virtualFileSystem->Mount (virtualFileSystem->GetRoot (), {VirtualFileSystem::MountSource::FILE_SYSTEM,
+                                                                       ENVIRONMENT_ROOT, ENVIRONMENT_MOUNT}));
+
     SerializeConfigs (_task.unitConfigFolder, _task.unitConfigs, _task.useBinaryFormat);
     SerializeConfigs (_task.buildingConfigFolder, _task.buildingConfigs, _task.useBinaryFormat);
 
-    REQUIRE (resourceProvider->AddSource (Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+    REQUIRE (resourceProvider->AddSource (Memory::UniqueString {ENVIRONMENT_MOUNT}) ==
              Resource::Provider::SourceOperationResponse::SUCCESSFUL);
     return true;
 }
@@ -229,14 +238,16 @@ void ExecuteScenario (const Container::Vector<Task> &_tasks) noexcept
     PipelineBuilder builder {world.GetRootView ()};
     bool scenarioFinished = false;
 
+    VirtualFileSystem::Context virtualFileSystem;
     Container::MappingRegistry configTypes;
     configTypes.Register (BuildingConfig::Reflect ().mapping);
     configTypes.Register (UnitConfig::Reflect ().mapping);
-    Resource::Provider::ResourceProvider resourceProvider {configTypes, {}};
+    Resource::Provider::ResourceProvider resourceProvider {&virtualFileSystem, configTypes, {}};
 
     builder.Begin ("LoadingUpdate"_us, PipelineType::CUSTOM);
     ResourceConfigLoading::AddToLoadingPipeline (builder, &resourceProvider, typeMetas);
-    builder.AddTask ("Executor"_us).SetExecutor<Executor> (&resourceProvider, _tasks, &scenarioFinished);
+    builder.AddTask ("Executor"_us)
+        .SetExecutor<Executor> (&virtualFileSystem, &resourceProvider, _tasks, &scenarioFinished);
     Pipeline *loadingUpdate = builder.End ();
     REQUIRE (loadingUpdate);
 

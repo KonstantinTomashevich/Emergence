@@ -428,12 +428,15 @@ static Container::MappingRegistry GetAssetTypes () noexcept
 struct ResourceProviderHolder
 {
     ResourceProviderHolder () noexcept
-        : provider (GetAssetTypes (), {})
+        : provider (&virtualFileSystem, GetAssetTypes (), {})
     {
+        REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (),
+                                          {VirtualFileSystem::MountSource::FILE_SYSTEM, "Resources", "Resources"}));
         REQUIRE ((provider.AddSource (Emergence::Memory::UniqueString {"Resources"}) ==
                   Resource::Provider::SourceOperationResponse::SUCCESSFUL));
     }
 
+    VirtualFileSystem::Context virtualFileSystem;
     Resource::Provider::ResourceProvider provider;
 };
 

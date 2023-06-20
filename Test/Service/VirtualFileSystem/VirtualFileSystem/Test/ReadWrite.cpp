@@ -43,7 +43,7 @@ TEST_CASE (ReadText)
     }
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, path, "Mounted"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
 
     Reader reader {Entry {context.GetRoot (), EMERGENCE_BUILD_STRING ("Mounted", PATH_SEPARATOR, "first.txt")},
                    OpenMode::TEXT};
@@ -71,7 +71,7 @@ TEST_CASE (WriteReadText)
     const Utf8String fileText {"Hello, world! We avoid new lines here, because they are not really portable."};
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, path, "Mounted"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
 
     {
         Writer writer {context.CreateFile (Entry {context, "Mounted"}, "test.txt"), OpenMode::TEXT};
@@ -111,7 +111,7 @@ TEST_CASE (ReadBinary)
     }
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, path, "Mounted"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
 
     Reader reader {Entry {context.GetRoot (), EMERGENCE_BUILD_STRING ("Mounted", PATH_SEPARATOR, "first.bin")},
                    OpenMode::BINARY};
@@ -137,7 +137,7 @@ TEST_CASE (WriteReadBinary)
     std::filesystem::create_directories (path);
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, path, "Mounted"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
     const Vector<std::uint8_t> fileContent {12u, 127u, 13u, 177u, 48u, 99u, 188u, 11u};
 
     {

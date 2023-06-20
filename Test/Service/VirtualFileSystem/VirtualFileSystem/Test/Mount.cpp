@@ -41,7 +41,7 @@ TEST_CASE (MountOneDirectory)
     }
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, path, "Mounted"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
 
     CHECK (Entry {context.GetRoot (), EMERGENCE_BUILD_STRING ("Mounted", PATH_SEPARATOR, "first.txt")}.GetType () ==
            EntryType::FILE);
@@ -74,8 +74,8 @@ TEST_CASE (MountTwoDirectories)
     }
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, firstPath, "Mounted1"}));
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, secondPath, "Mounted2"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, firstPath, "Mounted1"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, secondPath, "Mounted2"}));
 
     CHECK (Entry {context.GetRoot (), EMERGENCE_BUILD_STRING ("Mounted1", PATH_SEPARATOR, "first.txt")}.GetType () ==
            EntryType::FILE);
@@ -104,7 +104,7 @@ TEST_CASE (MountOneDirectoryWithNesting)
     }
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, path, "Mounted"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
 
     CHECK (Entry {context.GetRoot (), EMERGENCE_BUILD_STRING ("Mounted", PATH_SEPARATOR, "first.txt")}.GetType () ==
            EntryType::FILE);
@@ -134,7 +134,7 @@ TEST_CASE (IterateMounted)
     }
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILESYSTEM, path, "Mounted"}));
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
 
     auto cursor = Entry {context, "Mounted"}.ReadChildren ();
     Emergence::Container::Vector<Emergence::Container::Utf8String> children;

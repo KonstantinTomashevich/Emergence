@@ -1,3 +1,5 @@
+#include <Assert/Assert.hpp>
+
 #include <fstream>
 
 #include <SyntaxSugar/BlockCast.hpp>
@@ -11,21 +13,20 @@ namespace Emergence::VirtualFileSystem
 class BoundedFileReadBuffer final : public std::streambuf
 {
 public:
-    static constexpr std::size_t BUFFER_SIZE = 1024;
+    static constexpr std::uint64_t BUFFER_SIZE = 1024u;
 
     BoundedFileReadBuffer (FILE *_source, std::uint64_t _offset, std::uint64_t _size)
         : file (_source),
           offset (static_cast<long> (_offset)),
           size (static_cast<long> (_size))
     {
-        seekoff (0, std::ios::beg);
     }
 
     BoundedFileReadBuffer (const BoundedFileReadBuffer &_other) = delete;
 
     BoundedFileReadBuffer (BoundedFileReadBuffer &&_other) = delete;
 
-    ~BoundedFileReadBuffer () noexcept
+    ~BoundedFileReadBuffer () noexcept override
     {
         if (file)
         {
@@ -33,7 +34,7 @@ public:
         }
     }
 
-    bool IsOpen () const noexcept
+    [[nodiscard]] bool IsOpen () const noexcept
     {
         return file;
     }
@@ -45,67 +46,60 @@ protected:
     {
         if (ferror (file) != 0)
         {
-            return -1;
+            setg (buffer, buffer, buffer);
+            return traits_type::eof ();
         }
 
-        const long chunkBegin = ftell (file);
-        const long readOffset = static_cast<long> (gptr () - eback ());
+        const auto readOffset = static_cast<std::uint64_t> (gptr () - eback ());
+        virtualPosition += readOffset;
 
-        if (fseek (file, chunkBegin + readOffset, SEEK_SET) != 0)
+        const std::uint64_t realPosition = offset + virtualPosition;
+        EMERGENCE_ASSERT (realPosition <= offset + size);
+
+        if (fseek (file, static_cast<long> (realPosition), SEEK_SET) != 0)
         {
-            return EOF;
+            setg (buffer, buffer, buffer);
+            return traits_type::eof ();
         }
 
-        const long newChunkBegin = ftell (file);
-        const long bytesLeft = offset + size - newChunkBegin;
-        const long toRead = bytesLeft < static_cast<long> (BUFFER_SIZE) ? bytesLeft : static_cast<long> (BUFFER_SIZE);
+        EMERGENCE_ASSERT (size >= virtualPosition);
+        const std::uint64_t bytesLeft = size - virtualPosition;
+        const std::uint64_t toRead = bytesLeft < BUFFER_SIZE ? bytesLeft : BUFFER_SIZE;
 
         if (toRead == 0)
         {
-            return EOF;
+            setg (buffer, buffer, buffer);
+            return traits_type::eof ();
         }
 
-        const std::size_t read = fread (buffer, 1u, toRead, file);
+        const auto read = static_cast<std::uint64_t> (fread (buffer, 1u, toRead, file));
         if (read == 0)
         {
-            return EOF;
+            setg (buffer, buffer, buffer);
+            return traits_type::eof ();
         }
 
         setg (buffer, buffer, buffer + read);
-        if (fseek (file, newChunkBegin, SEEK_SET) != 0)
-        {
-            return EOF;
-        }
-
-        return *eback ();
+        return traits_type::to_int_type (buffer[0]);
     }
 
     pos_type seekoff (off_type _offset,
                       std::ios::seekdir _direction,
                       std::ios::openmode /*unused*/ = std::ios::in | std::ios::out) override
     {
-        if (ferror (file) != 0)
-        {
-            return -1;
-        }
-
+        const std::uint64_t positionBackup = virtualPosition;
         switch (_direction)
         {
         case std::ios::beg:
         {
-            if (_offset < 0)
+            const std::int64_t movedPosition = _offset;
+            if (movedPosition >= 0 && movedPosition <= static_cast<std::int64_t> (size))
             {
-                return -1;
+                virtualPosition = static_cast<std::uint64_t> (movedPosition);
             }
-
-            if (_offset > size)
+            else
             {
-                return -1;
-            }
-
-            if (fseek (file, static_cast<long> (offset + _offset), SEEK_SET) != 0)
-            {
-                return -1;
+                return traits_type::eof ();
             }
 
             break;
@@ -113,20 +107,16 @@ protected:
 
         case std::ios::cur:
         {
-            const pos_type current = ftell (file) + (gptr () - eback ());
-            if (current + _offset < offset)
-            {
-                return -1;
-            }
+            const std::uint64_t positionIncludingRead = virtualPosition + (gptr () - eback ());
+            const std::int64_t movedPosition = static_cast<int64_t> (positionIncludingRead) + _offset;
 
-            if (current + _offset > offset + size)
+            if (movedPosition >= 0 && movedPosition <= static_cast<std::int64_t> (size))
             {
-                return -1;
+                virtualPosition = static_cast<std::uint64_t> (movedPosition);
             }
-
-            if (fseek (file, static_cast<long> (current + _offset), SEEK_SET) != 0)
+            else
             {
-                return -1;
+                return traits_type::eof ();
             }
 
             break;
@@ -134,57 +124,45 @@ protected:
 
         case std::ios::end:
         {
-            if (_offset > 0)
+            const std::int64_t movedPosition = static_cast<int64_t> (size) + _offset;
+            if (movedPosition >= 0 && movedPosition <= static_cast<std::int64_t> (size))
             {
-                return -1;
+                virtualPosition = static_cast<std::uint64_t> (movedPosition);
             }
-
-            if (-_offset > size)
+            else
             {
-                return -1;
-            }
-
-            if (fseek (file, static_cast<long> (offset + size + _offset), SEEK_SET) != 0)
-            {
-                return -1;
+                return traits_type::eof ();
             }
 
             break;
         }
         }
 
-        if (_offset != 0 || _direction != std::ios::cur)
+        if (virtualPosition != positionBackup)
         {
+            // We use simplistic approach here and do not check for overlaps
+            // that could technically allow us to preserve buffer.
             setg (buffer, buffer, buffer);
         }
 
-        return ftell (file) - offset + (gptr () - eback ());
+        return static_cast<pos_type> (virtualPosition);
     }
 
     pos_type seekpos (pos_type _position, std::ios::openmode /*unused*/ = std::ios::in | std::ios::out) override
     {
-        if (ferror (file) != 0)
-        {
-            return -1;
-        }
-
+        setg (buffer, buffer, buffer);
         if (_position < 0)
         {
-            return -1;
+            return traits_type::eof ();
         }
 
-        if (_position > size)
+        if (static_cast<int64_t> (_position) > static_cast<std::int64_t> (size))
         {
-            return -1;
+            return traits_type::eof ();
         }
 
-        fpos_t position = offset + _position;
-        if (fsetpos (file, &position) != 0)
-        {
-            return -1;
-        }
-
-        return _position;
+        virtualPosition = static_cast<std::uint64_t> (_position);
+        return static_cast<pos_type> (virtualPosition);
     }
 
     int sync () override
@@ -194,14 +172,15 @@ protected:
             return -1;
         }
 
-        underflow ();
+        setg (buffer, buffer, buffer);
         return 0;
     }
 
 private:
     FILE *file;
-    long offset = 0;
-    long size = 0;
+    std::uint64_t offset = 0;
+    std::uint64_t size = 0;
+    std::uint64_t virtualPosition = 0;
     char buffer[BUFFER_SIZE];
 };
 
