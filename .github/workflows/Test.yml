@@ -53,13 +53,9 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         run: sudo apt-get install ninja-build
 
-      - name: Debug - Check available SDL versions
-        if: matrix.os == 'ubuntu-22.04'
-        run: apt-cache search ^libsdl
-
       - name: Install SDL2
         if: matrix.os == 'ubuntu-22.04'
-        run: sudo apt-get install libsdl2-dev --fix-missing
+        run: sudo apt-get update && sudo apt-get install libsdl2-dev --fix-missing
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
