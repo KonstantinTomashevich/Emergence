@@ -41,8 +41,8 @@ Entry Context::GetRoot () const noexcept
     const auto &holder = block_cast<Original::VirtualFileSystemHolder> (data);
     EMERGENCE_ASSERT (holder.virtualFileSystem);
 
-    Original::EntryImplementationData data {holder.virtualFileSystem, {Original::ROOT_ID}};
-    return Entry {array_cast (data)};
+    Original::EntryImplementationData entryData {holder.virtualFileSystem, {Original::ROOT_ID}};
+    return Entry {array_cast (entryData)};
 }
 
 Entry Context::CreateFile (Entry _parent, const std::string_view &_fileName) noexcept
@@ -52,9 +52,9 @@ Entry Context::CreateFile (Entry _parent, const std::string_view &_fileName) noe
     auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
-    Original::EntryImplementationData data {holder.virtualFileSystem,
-                                            holder.virtualFileSystem->CreateFile (parentData.object, _fileName)};
-    return Entry {array_cast (data)};
+    Original::EntryImplementationData entryData {holder.virtualFileSystem,
+                                                 holder.virtualFileSystem->CreateFile (parentData.object, _fileName)};
+    return Entry {array_cast (entryData)};
 }
 
 Entry Context::CreateDirectory (Entry _parent, const std::string_view &_directoryName) noexcept
@@ -64,9 +64,9 @@ Entry Context::CreateDirectory (Entry _parent, const std::string_view &_director
     auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
-    Original::EntryImplementationData data {
+    Original::EntryImplementationData entryData {
         holder.virtualFileSystem, holder.virtualFileSystem->CreateDirectory (parentData.object, _directoryName)};
-    return Entry {array_cast (data)};
+    return Entry {array_cast (entryData)};
 }
 
 Entry Context::MakeDirectories (const std::string_view &_absolutePath) noexcept
@@ -81,26 +81,26 @@ Entry Context::MakeDirectories (Entry _parent, const std::string_view &_relative
     auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
-    Original::EntryImplementationData data {
+    Original::EntryImplementationData entryData {
         holder.virtualFileSystem, holder.virtualFileSystem->MakeDirectories (parentData.object, _relativePath)};
-    return Entry {array_cast (data)};
+    return Entry {array_cast (entryData)};
 }
 
 bool Context::Delete (const Entry &_entry, bool _recursive, bool _includingFileSystem) noexcept
 {
     const auto &holder = block_cast<Original::VirtualFileSystemHolder> (data);
     EMERGENCE_ASSERT (holder.virtualFileSystem);
-    const auto &data = block_cast<Original::EntryImplementationData> (_entry.data);
-    EMERGENCE_ASSERT (data.owner == holder.virtualFileSystem);
-    return holder.virtualFileSystem->Delete (data.object, _recursive, _includingFileSystem);
+    const auto &entryData = block_cast<Original::EntryImplementationData> (_entry.data);
+    EMERGENCE_ASSERT (entryData.owner == holder.virtualFileSystem);
+    return holder.virtualFileSystem->Delete (entryData.object, _recursive, _includingFileSystem);
 }
 
 bool Context::Mount (const Entry &_at, const MountConfiguration &_configuration) noexcept
 {
     const auto &holder = block_cast<Original::VirtualFileSystemHolder> (data);
     EMERGENCE_ASSERT (holder.virtualFileSystem);
-    const auto &data = block_cast<Original::EntryImplementationData> (_at.data);
-    EMERGENCE_ASSERT (data.owner == holder.virtualFileSystem);
-    return holder.virtualFileSystem->Mount (data.object, _configuration);
+    const auto &entryData = block_cast<Original::EntryImplementationData> (_at.data);
+    EMERGENCE_ASSERT (entryData.owner == holder.virtualFileSystem);
+    return holder.virtualFileSystem->Mount (entryData.object, _configuration);
 }
 } // namespace Emergence::VirtualFileSystem
