@@ -26,6 +26,14 @@ jobs:
           - build_type: Debug
             os: windows-2019
             toolchain: CLang
+        exclude:
+          # TODO: Temporary excluding clang to see what happens in other build (clang seems to be broken on CI)
+          - build_type: Debug
+            os: windows-2022
+            toolchain: CLang
+          - build_type: Release
+            os: windows-2022
+            toolchain: CLang
 
     defaults:
       run:
