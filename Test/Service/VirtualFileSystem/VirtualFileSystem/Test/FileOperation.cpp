@@ -62,8 +62,8 @@ TEST_CASE (CreateFileMounted)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
     REQUIRE (mounted.GetType () == EntryType::DIRECTORY);
@@ -77,8 +77,8 @@ TEST_CASE (ResolvePathWithDots)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
     context.CreateFile (mounted, "test.txt");
@@ -94,8 +94,8 @@ TEST_CASE (CreateDirectoryMounted)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
     REQUIRE (mounted.GetType () == EntryType::DIRECTORY);
@@ -109,8 +109,8 @@ TEST_CASE (MakeDirectoriesMounted)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
     REQUIRE (mounted.GetType () == EntryType::DIRECTORY);
@@ -128,8 +128,8 @@ TEST_CASE (MakeDirectoriesMixed)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
     REQUIRE (mounted.GetType () == EntryType::DIRECTORY);
@@ -149,8 +149,8 @@ TEST_CASE (CreateFileMountedNoDirectory)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry parent {context, EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "X", PATH_SEPARATOR, "Y")};
     CHECK (!parent);
@@ -163,8 +163,8 @@ TEST_CASE (CreateFileMountedMakeDirectories)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry parent {
         context.MakeDirectories (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "X", PATH_SEPARATOR, "Y"))};
@@ -187,8 +187,8 @@ TEST_CASE (DeleteFileMounted)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
     CHECK (context.Delete (context.CreateFile (mounted, "test.txt"), false, true));
@@ -201,8 +201,8 @@ TEST_CASE (DeleteMountedKeepReal)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
     context.CreateFile (mounted, "test.txt");
@@ -217,8 +217,8 @@ TEST_CASE (DeleteMountedDeleteReal)
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (
-        context.Mount (context.GetRoot (), MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
     context.CreateFile (mounted, "test.txt");

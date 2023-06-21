@@ -6,13 +6,13 @@ namespace Emergence::VirtualFileSystem
 {
 const MountConfiguration::Reflection &MountConfiguration::Reflect () noexcept
 {
-    static const Reflection reflection = []()
+    static const Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (MountConfiguration);
         EMERGENCE_MAPPING_REGISTER_REGULAR (source);
         EMERGENCE_MAPPING_REGISTER_REGULAR (sourcePath);
         EMERGENCE_MAPPING_REGISTER_REGULAR (targetPath);
-        EMERGENCE_MAPPING_REGISTRATION_END();
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;
@@ -20,11 +20,11 @@ const MountConfiguration::Reflection &MountConfiguration::Reflect () noexcept
 
 const MountConfigurationList::Reflection &MountConfigurationList::Reflect () noexcept
 {
-    static const Reflection reflection = []()
+    static const Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (MountConfigurationList);
         EMERGENCE_MAPPING_REGISTER_REGULAR (items);
-        EMERGENCE_MAPPING_REGISTRATION_END();
+        EMERGENCE_MAPPING_REGISTRATION_END ();
     }();
 
     return reflection;

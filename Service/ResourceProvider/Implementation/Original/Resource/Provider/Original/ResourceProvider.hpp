@@ -74,7 +74,8 @@ public:
 private:
     friend class ObjectRegistryCursor;
 
-    SourceOperationResponse AddSourceFromIndex (const VirtualFileSystem::Entry &_indexFile, Memory::UniqueString _path) noexcept;
+    SourceOperationResponse AddSourceFromIndex (const VirtualFileSystem::Entry &_indexFile,
+                                                Memory::UniqueString _path) noexcept;
 
     SourceOperationResponse AddSourceThroughScan (Memory::UniqueString _path) noexcept;
 

@@ -212,7 +212,7 @@ VirtualFileSystem::Context SetupEnvironment (const Container::Vector<ResourceSou
 
             // Fallback behaviour to replace Windows separators with VFS ones if necessary.
             std::replace (sourcePathString.begin (), sourcePathString.end (), '\\', VirtualFileSystem::PATH_SEPARATOR);
-            
+
             const Memory::UniqueString sourcePathUniqueString {sourcePathString.c_str ()};
             REQUIRE (provider.AddSource (sourcePathUniqueString) == SourceOperationResponse::SUCCESSFUL);
             REQUIRE (provider.SaveSourceIndex (sourcePathUniqueString) == SourceOperationResponse::SUCCESSFUL);

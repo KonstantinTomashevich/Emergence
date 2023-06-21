@@ -19,7 +19,7 @@ ResourceContextHolder &ResourceContextHolder::Get () noexcept
 }
 
 ResourceContextHolder::ResourceContextHolder () noexcept
-    : resourceProvider (&virtualFileSystem, GetSupportedResourceTypes(), {})
+    : resourceProvider (&virtualFileSystem, GetSupportedResourceTypes (), {})
 {
     constexpr const char *CORE_RESOURCES_FILE = "MountCoreResources.yaml";
     constexpr const char *TEST_RESOURCES_FILE = "MountTestResources.yaml";

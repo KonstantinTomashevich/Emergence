@@ -347,7 +347,8 @@ LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::Uniqu
     reader.InputStream ().seekg (0u, std::ios::beg);
     _dataOutput = static_cast<std::uint8_t *> (_allocator.Acquire (_sizeOutput, alignof (std::uint64_t)));
 
-    if (!reader.InputStream ().read (reinterpret_cast<char *> (_dataOutput), static_cast<std::streamsize> (_sizeOutput)))
+    if (!reader.InputStream ().read (reinterpret_cast<char *> (_dataOutput),
+                                     static_cast<std::streamsize> (_sizeOutput)))
     {
         return LoadingOperationResponse::IO_ERROR;
     }
