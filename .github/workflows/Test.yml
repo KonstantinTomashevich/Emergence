@@ -55,7 +55,7 @@ jobs:
 
       - name: Install SDL2
         if: matrix.os == 'ubuntu-22.04'
-        run: sudo apt-get install libsdl2-dev
+        run: sudo apt-get install libsdl2-dev --fix-missing
 
       - name: Create build directory
         run: cmake -E make_directory ${{env.BUILD_DIRECTORY}}
