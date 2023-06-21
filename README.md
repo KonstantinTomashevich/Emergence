@@ -30,6 +30,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
   in [TaskCollection](./Library/Private/TaskCollection/README.md) format.
 - [Testing](./Service/Testing/README.md): hides selected testing framework under minimal set of framework-agnostic
   macros.
+- [VirtualFileSystem](./Service/VirtualFileSystem/README.md): provides file system abstraction layer that supports
+  mounting of real file system directories and read-only binary packages (for optimized reading).
 - [Warehouse](./Service/Warehouse/README.md): provides database-like API for storing objects and accessing them through
   prepared queries.
 

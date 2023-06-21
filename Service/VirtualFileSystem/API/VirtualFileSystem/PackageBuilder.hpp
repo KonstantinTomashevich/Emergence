@@ -8,6 +8,7 @@
 
 namespace Emergence::VirtualFileSystem
 {
+/// \brief Helper class for building read-only packages. See Context documentation for more info.
 class PackageBuilder final
 {
 public:
@@ -19,10 +20,13 @@ public:
 
     ~PackageBuilder () noexcept;
 
+    /// \brief Attempts to begin package construction routine using given entry as resulting package output.
     bool Begin (const Context &_context, const Entry &_output) noexcept;
 
+    /// \brief Attempts to add given file entry into package under given package-local path.
     bool Add (const Entry &_entry, const Container::Utf8String &_pathInPackage) noexcept;
 
+    /// \brief Attempts to finalize package construction routine.
     bool End () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (PackageBuilder);

@@ -106,25 +106,17 @@ EntryType Entry::GetType () const noexcept
     case Original::ObjectType::PATH:
         switch (std::filesystem::status (entryData.object.path).type ())
         {
-        case std::filesystem::file_type::none:
-        case std::filesystem::file_type::not_found:
-        case std::filesystem::file_type::symlink:
-        case std::filesystem::file_type::block:
-        case std::filesystem::file_type::character:
-        case std::filesystem::file_type::fifo:
-        case std::filesystem::file_type::socket:
-        case std::filesystem::file_type::unknown:
-        case std::filesystem::file_type::junction:
-            return EntryType::INVALID;
-
         case std::filesystem::file_type::regular:
             return EntryType::FILE;
 
         case std::filesystem::file_type::directory:
             return EntryType::DIRECTORY;
-        }
 
-        break;
+        // Unfortunately, we need to use default here for better support across
+        // different standards: not all versions of STL support all the file types.
+        default:
+            return EntryType::INVALID;
+        }
     }
 
     EMERGENCE_ASSERT (false);

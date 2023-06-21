@@ -136,6 +136,10 @@ protected:
 
             break;
         }
+
+        // We need default because some implementations define additional "end" enum value.
+        default:
+            EMERGENCE_ASSERT (false);
         }
 
         if (virtualPosition != positionBackup)

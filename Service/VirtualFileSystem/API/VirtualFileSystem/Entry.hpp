@@ -11,16 +11,24 @@ namespace Emergence::VirtualFileSystem
 {
 class Context;
 
+/// \brief Represents type of virtual file system entry.
 enum class EntryType
 {
+    /// \brief It is not possible to map entry to existing entity in virtual or real file system.
     INVALID = 0u,
+
+    /// \brief Entry points to existing file: either virtual (from read-only package) or real one.
     FILE,
+
+    /// \brief Entry points to existing directory: either virtual or real one.
     DIRECTORY,
 };
 
+/// \brief Weak pointer to virtual file system entry: file or directory.
 class Entry final
 {
 public:
+    /// \brief Provides API for iterating over entry children if entry is directory.
     class Cursor final
     {
     public:
@@ -30,8 +38,10 @@ public:
 
         ~Cursor () noexcept;
 
+        /// \return Entry that points to current child or invalid entry if there is no more children.
         [[nodiscard]] Entry operator* () const noexcept;
 
+        /// \brief Moves to next child.
         Cursor &operator++ () noexcept;
 
         EMERGENCE_DELETE_ASSIGNMENT (Cursor);
@@ -44,10 +54,15 @@ public:
         explicit Cursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
+    /// \brief Constructs invalid entry.
     Entry () noexcept;
 
+    /// \brief Constructs entry that points to object under given absolute path.
+    ///        If object does not exists, entry is invalid.
     Entry (const Context &_context, const std::string_view &_absolutePath) noexcept;
 
+    /// \brief Constructs entry that points to object under given relative path.
+    ///        If object does not exists, entry is invalid.
     Entry (const Entry &_parent, const std::string_view &_relativePath) noexcept;
 
     Entry (const Entry &_entry) noexcept;
@@ -56,16 +71,28 @@ public:
 
     ~Entry () noexcept;
 
+    /// \return Detects up-to-date type of this entry.
+    /// \details If object to which entry points was deleted, type will be automatically changed to invalid.
     [[nodiscard]] EntryType GetType () const noexcept;
 
+    /// \return File name without last extension.
+    /// \invariant Entry is valid.
     [[nodiscard]] Container::Utf8String GetFileName () const noexcept;
 
+    /// \return Last extension.
+    /// \invariant Entry is valid.
     [[nodiscard]] Container::Utf8String GetExtension () const noexcept;
 
+    /// \return File name including last extension.
+    /// \invariant Entry is valid.
     [[nodiscard]] Container::Utf8String GetFullFileName () const noexcept;
 
+    /// \return Absolute object path in virtual file system.
+    /// \invariant Entry is valid.
     [[nodiscard]] Container::Utf8String GetFullPath () const noexcept;
 
+    /// \return Cursor for iteration over entry children.
+    /// \invariant Entry is directory.
     [[nodiscard]] Cursor ReadChildren () const noexcept;
 
     inline explicit operator bool () const noexcept

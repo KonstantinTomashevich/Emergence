@@ -52,9 +52,8 @@ Entry Context::CreateFile (Entry _parent, const std::string_view &_fileName) noe
     auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
-    Original::EntryImplementationData data {
-        holder.virtualFileSystem, holder.virtualFileSystem->CreateFile (
-                                      block_cast<Original::EntryImplementationData> (_parent.data).object, _fileName)};
+    Original::EntryImplementationData data {holder.virtualFileSystem,
+                                            holder.virtualFileSystem->CreateFile (parentData.object, _fileName)};
     return Entry {array_cast (data)};
 }
 
@@ -66,9 +65,7 @@ Entry Context::CreateDirectory (Entry _parent, const std::string_view &_director
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
     Original::EntryImplementationData data {
-        holder.virtualFileSystem,
-        holder.virtualFileSystem->CreateDirectory (block_cast<Original::EntryImplementationData> (_parent.data).object,
-                                                   _directoryName)};
+        holder.virtualFileSystem, holder.virtualFileSystem->CreateDirectory (parentData.object, _directoryName)};
     return Entry {array_cast (data)};
 }
 
@@ -85,9 +82,7 @@ Entry Context::MakeDirectories (Entry _parent, const std::string_view &_relative
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
     Original::EntryImplementationData data {
-        holder.virtualFileSystem,
-        holder.virtualFileSystem->MakeDirectories (block_cast<Original::EntryImplementationData> (_parent.data).object,
-                                                   _relativePath)};
+        holder.virtualFileSystem, holder.virtualFileSystem->MakeDirectories (parentData.object, _relativePath)};
     return Entry {array_cast (data)};
 }
 
