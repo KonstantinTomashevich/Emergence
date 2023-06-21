@@ -92,5 +92,3 @@ These libraries are built on top of [Celerity](./Library/Public/Celerity/README.
   tool for viewing [MemoryRecording](./Library/Public/MemoryRecording/README.md) serialized tracks.
 - [Platformer2dDemo](./Executable/Platformer2dDemo/README.md): simple platformer game in early stage of development,
   used to test new **Emergence** features.
-- [SpaceShooterDemo](./Executable/SpaceShooterDemo/README.md): simple shooter game, that illustrates usage of
-  **Emergence** features.

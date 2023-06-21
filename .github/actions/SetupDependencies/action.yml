@@ -22,5 +22,4 @@ runs:
       shell: pwsh
       run: |
         .\Script\Dependency\Download.ps1 ${{inputs.platform}} ${{inputs.build_type}}
-        echo "URHO3D_DIR=${{github.workspace}}\Dependency\Urho3D\${{inputs.platform}}\${{inputs.build_type}}" >> $Env:GITHUB_ENV
         echo "PHYSX_DIR=${{github.workspace}}\Dependency\PhysX\${{inputs.platform}}\${{inputs.build_type}}" >> $Env:GITHUB_ENV

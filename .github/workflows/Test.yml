@@ -42,7 +42,7 @@ jobs:
           submodules: recursive
 
       - name: Setup dependencies
-        # Currently, things that use Urho3D or PhysX aren't supported on Ubuntu.
+        # Currently, things that use PhysX aren't supported on Ubuntu.
         if: matrix.os != 'ubuntu-22.04'
         uses: ./.github/actions/SetupDependencies
         with:
