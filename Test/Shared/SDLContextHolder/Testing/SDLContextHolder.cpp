@@ -1,5 +1,3 @@
-#include <Celerity/UI/Test/SDLContextHolder.hpp>
-
 #include <Render/Backend/Configuration.hpp>
 
 #if defined(__unix__)
@@ -10,25 +8,31 @@
 #    include <SDL_syswm.h>
 #endif
 
-namespace Emergence::Celerity::Test
-{
-void ContextHolder::Frame () noexcept
-{
-    static ContextHolder contextHolder;
-    SDL_Event event;
+#include <Testing/SDLContextHolder.hpp>
 
+namespace Emergence::Testing
+{
+SDLContextHolder &SDLContextHolder::Get () noexcept
+{
+    static SDLContextHolder contextHolder;
+    return contextHolder;
+}
+
+void SDLContextHolder::Frame () noexcept
+{
+    SDL_Event event;
     while (SDL_PollEvent (&event))
     {
         // Just poll all events...
     }
 }
 
-ContextHolder::ContextHolder () noexcept
+SDLContextHolder::SDLContextHolder () noexcept
 {
     std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
-    window = SDL_CreateWindow ("Celerity::Render tests", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               static_cast<int> (WIDTH), static_cast<int> (HEIGHT),
-                               static_cast<SDL_WindowFlags> (windowFlags));
+    window =
+        SDL_CreateWindow ("Emergence Tests", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int> (WIDTH),
+                          static_cast<int> (HEIGHT), static_cast<SDL_WindowFlags> (windowFlags));
 
     SDL_SysWMinfo windowsManagerInfo;
     SDL_VERSION (&windowsManagerInfo.version);
@@ -55,7 +59,7 @@ ContextHolder::ContextHolder () noexcept
     Render::Backend::Init (config, nativeWindowHandle, nativeDisplayType, false);
 }
 
-ContextHolder::~ContextHolder () noexcept
+SDLContextHolder::~SDLContextHolder () noexcept
 {
     if (window)
     {
@@ -65,4 +69,4 @@ ContextHolder::~ContextHolder () noexcept
 
     SDL_Quit ();
 }
-} // namespace Emergence::Celerity::Test
+} // namespace Emergence::Testing

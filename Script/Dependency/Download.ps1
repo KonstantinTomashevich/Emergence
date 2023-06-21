@@ -8,7 +8,7 @@ if ($args.Count -ne 2)
 
 $Platform = $args[0]
 $BuildType = $args[1]
-$Dependencies = "Urho3D", "PhysX"
+$Dependencies = "PhysX"
 
 foreach ($Dependency in $Dependencies)
 {

@@ -25,7 +25,6 @@
 #include <Celerity/Render/2d/Rendering2d.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/Sprite2dUvAnimationComponent.hpp>
-#include <Celerity/Render/2d/Test/ContextHolder.hpp>
 #include <Celerity/Render/2d/Test/Scenario.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
@@ -38,17 +37,35 @@
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/World.hpp>
 
-#include <FileSystem/Test/Utility.hpp>
-
 #include <Render/Backend/Configuration.hpp>
 
 #include <Resource/Provider/ResourceProvider.hpp>
 
 #include <SyntaxSugar/Time.hpp>
 
+#include <Testing/FileSystemTestUtility.hpp>
+#include <Testing/ResourceContextHolder.hpp>
+#include <Testing/SDLContextHolder.hpp>
 #include <Testing/Testing.hpp>
 
-namespace Emergence::Celerity::Test
+#include <VirtualFileSystem/Reader.hpp>
+
+namespace Emergence
+{
+namespace Testing
+{
+Container::MappingRegistry GetSupportedResourceTypes () noexcept
+{
+    Container::MappingRegistry registry;
+    registry.Register (Celerity::MaterialAsset::Reflect ().mapping);
+    registry.Register (Celerity::MaterialInstanceAsset::Reflect ().mapping);
+    registry.Register (Celerity::Sprite2dUvAnimationAsset::Reflect ().mapping);
+    registry.Register (Celerity::TextureAsset::Reflect ().mapping);
+    return registry;
+}
+} // namespace Testing
+
+namespace Celerity::Test
 {
 class ScenarioExecutor final : public TaskExecutorBase<ScenarioExecutor>
 {
@@ -411,39 +428,23 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    FileSystem::Test::CheckFilesEquality (EMERGENCE_BUILD_STRING ("Expectation/", _id, ".png"),
-                                          EMERGENCE_BUILD_STRING (_id, ".png"), 0.02f);
-}
+    VirtualFileSystem::Reader expectedReader {
+        VirtualFileSystem::Entry {
+            Testing::ResourceContextHolder::Get ().virtualFileSystem,
+            EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_DIRECTORY, VirtualFileSystem::PATH_SEPARATOR,
+                                    "Render2dTest", VirtualFileSystem::PATH_SEPARATOR, "Expectation",
+                                    VirtualFileSystem::PATH_SEPARATOR, _id, ".png")},
+        VirtualFileSystem::OpenMode::BINARY};
+    REQUIRE (expectedReader);
 
-static Container::MappingRegistry GetAssetTypes () noexcept
-{
-    Container::MappingRegistry registry;
-    registry.Register (MaterialAsset::Reflect ().mapping);
-    registry.Register (MaterialInstanceAsset::Reflect ().mapping);
-    registry.Register (Sprite2dUvAnimationAsset::Reflect ().mapping);
-    registry.Register (TextureAsset::Reflect ().mapping);
-    return registry;
-}
+    VirtualFileSystem::Reader resultReader {
+        VirtualFileSystem::Entry {Testing::ResourceContextHolder::Get ().virtualFileSystem,
+                                  EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_OUTPUT_DIRECTORY,
+                                                          VirtualFileSystem::PATH_SEPARATOR, _id, ".png")},
+        VirtualFileSystem::OpenMode::BINARY};
+    REQUIRE (resultReader);
 
-struct ResourceProviderHolder
-{
-    ResourceProviderHolder () noexcept
-        : provider (&virtualFileSystem, GetAssetTypes (), {})
-    {
-        REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (),
-                                          {VirtualFileSystem::MountSource::FILE_SYSTEM, "Resources", "Resources"}));
-        REQUIRE ((provider.AddSource (Emergence::Memory::UniqueString {"Resources"}) ==
-                  Resource::Provider::SourceOperationResponse::SUCCESSFUL));
-    }
-
-    VirtualFileSystem::Context virtualFileSystem;
-    Resource::Provider::ResourceProvider provider;
-};
-
-static Resource::Provider::ResourceProvider &GetSharedResourceProvider () noexcept
-{
-    static ResourceProviderHolder holder;
-    return holder.provider;
+    Testing::CheckStreamEquality (expectedReader.InputStream (), resultReader.InputStream (), 0.02f);
 }
 
 void ExecuteScenario (Scenario _scenario) noexcept
@@ -472,15 +473,15 @@ void ExecuteScenario (Scenario _scenario) noexcept
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
-    MaterialInstanceManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
-                                                   assetReferenceBindingEventMap);
-    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+    MaterialInstanceManagement::AddToNormalUpdate (
+        pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider, assetReferenceBindingEventMap);
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                            assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
-    Sprite2dUvAnimationManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
-                                                      assetReferenceBindingEventMap);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+    Sprite2dUvAnimationManagement::AddToNormalUpdate (
+        pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider, assetReferenceBindingEventMap);
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                           assetReferenceBindingEventMap);
     TransformVisualSync::Add2dToNormalUpdate (pipelineBuilder);
     pipelineBuilder.AddTask ("ScenarioExecutor"_us)
@@ -492,10 +493,11 @@ void ExecuteScenario (Scenario _scenario) noexcept
 
     while (!scenarioFinished)
     {
-        ContextHolder::Frame ();
+        Testing::SDLContextHolder::Get ().Frame ();
         Time::Override (timeOverride);
         world.Update ();
         timeOverride += SIMULATED_TIME_STEP_NS;
     }
 }
-} // namespace Emergence::Celerity::Test
+} // namespace Celerity::Test
+} // namespace Emergence

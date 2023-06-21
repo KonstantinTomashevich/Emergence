@@ -2,55 +2,117 @@
 define_property (TARGET PROPERTY RESOURCE_DIRECTORY_MAPPING
         BRIEF_DOCS "List that describes target resource directories."
         FULL_DOCS "\
-For each resource directory usage 2 items are added: global path to source directory and relative path to symlink for \
-executable that uses this target. Should only be modified through `register_resource_usage` function.")
+For each resource usage 3 items are added: global path to source, virtual path for mounting and group name for \
+grouping mount lists. Should only be modified through `register_resource_usage` function.")
 
-# Registers that target uses resources from DIRECTORY_GLOBAL_PATH, that should be
-# deployed to DEPLOY_RELATIVE_PATH which is relative to runtime output directory.
-function (register_resource_usage TARGET DIRECTORY_GLOBAL_PATH DEPLOY_RELATIVE_PATH)
+# Registers that given target uses resources at given real path (directory or virtual file system package).
+# In resulting mount configuration this resource will have given virtual target path and will be placed in
+# appropriate mount configuration list (one list per group is created).
+function (register_resource_usage TARGET REAL_PATH VIRTUAL_PATH GROUP)
     get_target_property (CURRENT_MAPPING "${TARGET}" RESOURCE_DIRECTORY_MAPPING)
     if (CURRENT_MAPPING STREQUAL "CURRENT_MAPPING-NOTFOUND")
         set (CURRENT_MAPPING)
     endif ()
 
-    list (APPEND CURRENT_MAPPING "${DIRECTORY_GLOBAL_PATH}")
-    list (APPEND CURRENT_MAPPING "${DEPLOY_RELATIVE_PATH}")
+    list (APPEND CURRENT_MAPPING "${REAL_PATH}")
+    list (APPEND CURRENT_MAPPING "${VIRTUAL_PATH}")
+    list (APPEND CURRENT_MAPPING "${GROUP}")
     set_target_properties ("${TARGET}" PROPERTIES RESOURCE_DIRECTORY_MAPPING "${CURRENT_MAPPING}")
 endfunction ()
 
-# Private function, should not be used outside of deploy_used_resources.
-# Deploy direct (without dependencies) resource usages of given target to given deploy root.
-function (private_deploy_direct_resources TARGET DEPLOY_ROOT)
+# File-private function that extracts given target RESOURCE_DIRECTORY_MAPPING
+# and inserts it into MERGED_MAPPING in the parent scope.
+function (private_add_direct_resources_to_merged_mapping TARGET)
     get_target_property (MAPPING "${TARGET}" RESOURCE_DIRECTORY_MAPPING)
     if (MAPPING STREQUAL "MAPPING-NOTFOUND")
         return ()
     endif ()
 
-    # Make sure that deploy root exists.
-    file (MAKE_DIRECTORY "${DEPLOY_ROOT}")
-
+    set (LOCAL_MERGED_MAPPING "${MERGED_MAPPING}")
     list (LENGTH MAPPING MAPPING_LENGTH)
-    if (MAPPING_LENGTH GREATER 0)
-        math (EXPR LAST_INDEX "${MAPPING_LENGTH} - 2")
 
-        foreach (INDEX RANGE 0 ${LAST_INDEX} 2)
-            list (GET MAPPING ${INDEX} SOURCE)
-            math (EXPR "NEXT_INDEX" "${INDEX} + 1")
-            list (GET MAPPING ${NEXT_INDEX} LOCAL_DESTINATION)
-            file (CREATE_LINK "${SOURCE}" "${DEPLOY_ROOT}/${LOCAL_DESTINATION}" SYMBOLIC)
+    if (MAPPING_LENGTH GREATER 0)
+        math (EXPR LAST_INDEX "${MAPPING_LENGTH} - 3")
+
+        foreach (INDEX RANGE 0 ${LAST_INDEX} 3)
+            list (GET MAPPING ${INDEX} REAL_PATH)
+            math (EXPR "VIRTUAL_PATH_INDEX" "${INDEX} + 1")
+            list (GET MAPPING ${VIRTUAL_PATH_INDEX} VIRTUAL_PATH)
+            math (EXPR "GROUP_INDEX" "${INDEX} + 2")
+            list (GET MAPPING ${GROUP_INDEX} GROUP)
+
+            list (APPEND LOCAL_MERGED_MAPPING "${REAL_PATH}")
+            list (APPEND LOCAL_MERGED_MAPPING "${VIRTUAL_PATH}")
+            list (APPEND LOCAL_MERGED_MAPPING "${GROUP}")
         endforeach ()
     endif ()
+
+    set (MERGED_MAPPING "${LOCAL_MERGED_MAPPING}" PARENT_SCOPE)
 endfunction ()
 
-# Creates symlinks for all resources used by target and its linked targets in given deploy root directory
-function (deploy_used_resources TARGET DEPLOY_ROOT)
-    file (MAKE_DIRECTORY "${DEPLOY_ROOT}")
-    private_deploy_direct_resources ("${TARGET}" "${DEPLOY_ROOT}")
+# Deploys mount lists for all resources, used by given target and its dependencies, into given deploy directory.
+# One mount list is created for every group: MountCoreResources.yaml, MountTestResources.yaml, etc.
+# Mount grouping makes it easy to mount and unmount resources at runtime using game-specific logic: for example
+# mount and register one resource set for jungle environment and other for desert environment (while using core
+# resource group all the time).
+function (deploy_resource_mount_lists TARGET DEPLOY_DIRECTORY)
+    set (MERGED_MAPPING)
+    private_add_direct_resources_to_merged_mapping ("${TARGET}")
     sober_find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
 
     foreach (LINKED_TARGET ${ALL_LINKED_TARGETS})
-        private_deploy_direct_resources ("${LINKED_TARGET}" "${DEPLOY_ROOT}")
+        private_add_direct_resources_to_merged_mapping ("${LINKED_TARGET}")
     endforeach ()
+
+    # Make sure that deploy root exists.
+    file (MAKE_DIRECTORY "${DEPLOY_DIRECTORY}")
+    set (MOUNT_LISTS)
+    set (MOUNT_LIST_NAMES)
+    list (LENGTH MERGED_MAPPING MERGED_MAPPING_LENGTH)
+
+    if (MERGED_MAPPING_LENGTH GREATER 0)
+        math (EXPR LAST_INDEX "${MERGED_MAPPING_LENGTH} - 3")
+
+        foreach (INDEX RANGE 0 ${LAST_INDEX} 3)
+            list (GET MERGED_MAPPING ${INDEX} REAL_PATH)
+            math (EXPR "VIRTUAL_PATH_INDEX" "${INDEX} + 1")
+            list (GET MERGED_MAPPING ${VIRTUAL_PATH_INDEX} VIRTUAL_PATH)
+            math (EXPR "GROUP_INDEX" "${INDEX} + 2")
+            list (GET MERGED_MAPPING ${GROUP_INDEX} GROUP)
+
+            set (VARIABLE_NAME "MOUNT_LIST_${GROUP}")
+            list (FIND MOUNT_LISTS "${VARIABLE_NAME}" VARIABLE_INDEX)
+
+            if (VARIABLE_INDEX EQUAL -1)
+                set ("${VARIABLE_NAME}")
+                string (APPEND "${VARIABLE_NAME}" "# MountConfigurationList\n")
+                string (APPEND "${VARIABLE_NAME}" "items:\n")
+
+                list (APPEND MOUNT_LISTS "${VARIABLE_NAME}")
+                list (APPEND MOUNT_LIST_NAMES "${GROUP}")
+            endif ()
+
+            if (IS_DIRECTORY "${REAL_PATH}")
+                string (APPEND "${VARIABLE_NAME}" "  - source: 0\n")
+            else ()
+                string (APPEND "${VARIABLE_NAME}" "  - source: 1\n")
+            endif ()
+
+            string (APPEND "${VARIABLE_NAME}" "    sourcePath: ${REAL_PATH}\n")
+            string (APPEND "${VARIABLE_NAME}" "    targetPath: ${VIRTUAL_PATH}\n")
+        endforeach ()
+    endif ()
+
+    list (LENGTH MOUNT_LISTS MOUNT_LISTS_LENGTH)
+    if (MOUNT_LISTS_LENGTH GREATER 0)
+        math (EXPR LAST_INDEX "${MOUNT_LISTS_LENGTH} - 1")
+
+        foreach (INDEX RANGE 0 ${LAST_INDEX})
+            list (GET MOUNT_LISTS ${INDEX} MOUNT_LIST_VARIABLE)
+            list (GET MOUNT_LIST_NAMES ${INDEX} MOUNT_LIST_NAME)
+            file (WRITE "${DEPLOY_DIRECTORY}/Mount${MOUNT_LIST_NAME}.yaml" "${${MOUNT_LIST_VARIABLE}}")
+        endforeach ()
+    endif ()
 endfunction ()
 
 # Private function, should not be used outside of register_bgfx_shaders.

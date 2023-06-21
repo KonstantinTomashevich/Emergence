@@ -24,9 +24,11 @@ sober_library_end ()
 
 set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
 file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "${RESOURCES_COMPILED_DIRECTORY}/Content" SYMBOLIC)
 register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 sober_naming_library_base_target (CelerityPhysics2dDebugDraw CELERITY_PHYSICS_2D_DEBUG_DRAW_LIBRARY)
 register_resource_usage ("${CELERITY_PHYSICS_2D_DEBUG_DRAW_LIBRARY}"
-        "${RESOURCES_COMPILED_DIRECTORY}" "Physics2dDebugDrawResources")
+        "${RESOURCES_COMPILED_DIRECTORY}" "Physics2dDebugDraw/Compiled" "CoreResources")
+
+register_resource_usage ("${CELERITY_PHYSICS_2D_DEBUG_DRAW_LIBRARY}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "Physics2dDebugDraw/Raw" "CoreResources")
