@@ -53,6 +53,10 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         run: sudo apt-get install ninja-build
 
+      - name: Debug - Check available SDL versions
+        if: matrix.os == 'ubuntu-22.04'
+        run: apt-cache search ^libsdl
+
       - name: Install SDL2
         if: matrix.os == 'ubuntu-22.04'
         run: sudo apt-get install libsdl2-dev --fix-missing
