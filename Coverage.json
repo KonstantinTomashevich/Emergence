@@ -13,11 +13,6 @@
       "Reason": "There is no sense to scan dependency coverage."
     },
     {
-      "Prefix": "./Executable/SpaceShooterDemo",
-      "Action": "Exclude",
-      "Reason": "Currently, demo mechanics are tested by playing. This should be fixed later."
-    },
-    {
       "Prefix": "./Library/Private/Pegasus/Private/Pegasus/RecordUtility.hpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 65.0,
