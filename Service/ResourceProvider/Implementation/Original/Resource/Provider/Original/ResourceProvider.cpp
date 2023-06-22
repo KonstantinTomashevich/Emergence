@@ -424,6 +424,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
         scanStack.pop_back ();
 
         for (VirtualFileSystem::Entry::Cursor cursor = scanEntry.ReadChildren ();
+             // NOLINTNEXTLINE(bugprone-use-after-move): It is actually not right now, might be a detection bug.
              VirtualFileSystem::Entry entry = *cursor; ++cursor)
         {
             switch (entry.GetType ())

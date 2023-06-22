@@ -149,6 +149,7 @@ protected:
             setg (buffer, buffer, buffer);
         }
 
+        // NOLINTNEXTLINE(*-narrowing-conversions): values here should be low enough to avoid errors.
         return static_cast<pos_type> (virtualPosition);
     }
 
@@ -166,6 +167,7 @@ protected:
         }
 
         virtualPosition = static_cast<std::uint64_t> (_position);
+        // NOLINTNEXTLINE(*-narrowing-conversions): values here should be low enough to avoid errors.
         return static_cast<pos_type> (virtualPosition);
     }
 

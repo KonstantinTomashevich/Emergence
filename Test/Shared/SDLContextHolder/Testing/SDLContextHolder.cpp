@@ -18,6 +18,7 @@ SDLContextHolder &SDLContextHolder::Get () noexcept
     return contextHolder;
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Intentionally non-static to make refactors easier.
 void SDLContextHolder::Frame () noexcept
 {
     SDL_Event event;
