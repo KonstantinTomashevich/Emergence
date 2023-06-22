@@ -27,6 +27,7 @@ bool ResourceProviderTestIncludeMarker () noexcept
 namespace
 {
 const char *const ENVIRONMENT_ROOT = "./Environment";
+const char *const ENVIRONMENT_MOUNT = "Environment";
 
 struct TestResourceObjectFirst final
 {
@@ -138,13 +139,18 @@ Container::MappingRegistry GetObjectTypeRegistry ()
     return registry;
 }
 
-void SetupEnvironment (const Container::Vector<ResourceSourceDescription> &_sources)
+VirtualFileSystem::Context SetupEnvironment (const Container::Vector<ResourceSourceDescription> &_sources)
 {
     const std::filesystem::path rootPath {ENVIRONMENT_ROOT};
     if (std::filesystem::exists (rootPath))
     {
         std::filesystem::remove_all (rootPath);
     }
+
+    std::filesystem::create_directories (rootPath);
+    Emergence::VirtualFileSystem::Context virtualFileSystem;
+    REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (), {VirtualFileSystem::MountSource::FILE_SYSTEM,
+                                                                     ENVIRONMENT_ROOT, ENVIRONMENT_MOUNT}));
 
     for (const ResourceSourceDescription &source : _sources)
     {
@@ -200,12 +206,20 @@ void SetupEnvironment (const Container::Vector<ResourceSourceDescription> &_sour
 
         if (source.index)
         {
-            ResourceProvider provider {GetObjectTypeRegistry (), {}};
-            const Memory::UniqueString sourcePathString {sourcePath.string ().c_str ()};
-            REQUIRE (provider.AddSource (sourcePathString) == SourceOperationResponse::SUCCESSFUL);
-            REQUIRE (provider.SaveSourceIndex (sourcePathString) == SourceOperationResponse::SUCCESSFUL);
+            ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
+            Container::Utf8String sourcePathString {
+                sourcePath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ()};
+
+            // Fallback behaviour to replace Windows separators with VFS ones if necessary.
+            std::replace (sourcePathString.begin (), sourcePathString.end (), '\\', VirtualFileSystem::PATH_SEPARATOR);
+
+            const Memory::UniqueString sourcePathUniqueString {sourcePathString.c_str ()};
+            REQUIRE (provider.AddSource (sourcePathUniqueString) == SourceOperationResponse::SUCCESSFUL);
+            REQUIRE (provider.SaveSourceIndex (sourcePathUniqueString) == SourceOperationResponse::SUCCESSFUL);
         }
     }
+
+    return virtualFileSystem;
 }
 
 struct Expectation final
@@ -333,8 +347,8 @@ TEST_CASE (FirstObjectYaml)
         {},
     };
 
-    SetupEnvironment ({source});
-    ResourceProvider provider {GetObjectTypeRegistry (), {}};
+    Emergence::VirtualFileSystem::Context virtualFileSystem = SetupEnvironment ({source});
+    ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {
                  EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
 
@@ -359,10 +373,10 @@ TEST_CASE (FirstObjectBinary)
         {},
     };
 
-    SetupEnvironment ({source});
-    ResourceProvider provider {GetObjectTypeRegistry (), {}};
+    Emergence::VirtualFileSystem::Context virtualFileSystem = SetupEnvironment ({source});
+    ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {
-                 EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 EMERGENCE_BUILD_STRING (ENVIRONMENT_MOUNT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
 
     Expectation expectation;
     AddToExpectation (expectation, source);
@@ -387,10 +401,10 @@ TEST_CASE (FirstObjectMixed)
         {},
     };
 
-    SetupEnvironment ({source});
-    ResourceProvider provider {GetObjectTypeRegistry (), {}};
+    Emergence::VirtualFileSystem::Context virtualFileSystem = SetupEnvironment ({source});
+    ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {
-                 EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 EMERGENCE_BUILD_STRING (ENVIRONMENT_MOUNT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
 
     Expectation expectation;
     AddToExpectation (expectation, source);
@@ -418,10 +432,10 @@ TEST_CASE (TypesMixed)
         {},
     };
 
-    SetupEnvironment ({source});
-    ResourceProvider provider {GetObjectTypeRegistry (), {}};
+    Emergence::VirtualFileSystem::Context virtualFileSystem = SetupEnvironment ({source});
+    ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {
-                 EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 EMERGENCE_BUILD_STRING (ENVIRONMENT_MOUNT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
 
     Expectation expectation;
     AddToExpectation (expectation, source);
@@ -446,13 +460,15 @@ TEST_CASE (Indexed)
         {
             {{"A3"_us, "B3"_us, "C3"_us}, "Configs/3.yaml"},
         },
-        {},
+        {
+            {{13u, 10u, 122u, 253u, 11u, 55u, 69u, 11u}, "Test.someformat"},
+        },
     };
 
-    SetupEnvironment ({source});
-    ResourceProvider provider {GetObjectTypeRegistry (), {}};
+    Emergence::VirtualFileSystem::Context virtualFileSystem = SetupEnvironment ({source});
+    ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {
-                 EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 EMERGENCE_BUILD_STRING (ENVIRONMENT_MOUNT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
 
     Expectation expectation;
     AddToExpectation (expectation, source);
@@ -474,10 +490,10 @@ TEST_CASE (ThirdParty)
         },
     };
 
-    SetupEnvironment ({source});
-    ResourceProvider provider {GetObjectTypeRegistry (), {}};
+    Emergence::VirtualFileSystem::Context virtualFileSystem = SetupEnvironment ({source});
+    ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {
-                 EMERGENCE_BUILD_STRING (ENVIRONMENT_ROOT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 EMERGENCE_BUILD_STRING (ENVIRONMENT_MOUNT, "/", source.path)}) == SourceOperationResponse::SUCCESSFUL);
 
     Expectation expectation;
     AddToExpectation (expectation, source);
@@ -526,14 +542,16 @@ TEST_CASE (Combine)
         {},
     };
 
-    SetupEnvironment ({firstSource, secondSource, thirdSource});
-    ResourceProvider provider {GetObjectTypeRegistry (), {}};
+    Emergence::VirtualFileSystem::Context virtualFileSystem =
+        SetupEnvironment ({firstSource, secondSource, thirdSource});
+    ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
+
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                 ENVIRONMENT_ROOT, "/", firstSource.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 ENVIRONMENT_MOUNT, "/", firstSource.path)}) == SourceOperationResponse::SUCCESSFUL);
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                 ENVIRONMENT_ROOT, "/", secondSource.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 ENVIRONMENT_MOUNT, "/", secondSource.path)}) == SourceOperationResponse::SUCCESSFUL);
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                 ENVIRONMENT_ROOT, "/", thirdSource.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 ENVIRONMENT_MOUNT, "/", thirdSource.path)}) == SourceOperationResponse::SUCCESSFUL);
 
     Expectation expectation;
     AddToExpectation (expectation, firstSource);
@@ -580,16 +598,18 @@ TEST_CASE (Remove)
         {},
     };
 
-    SetupEnvironment ({firstSource, secondSource, thirdSource});
-    ResourceProvider provider {GetObjectTypeRegistry (), {}};
+    Emergence::VirtualFileSystem::Context virtualFileSystem =
+        SetupEnvironment ({firstSource, secondSource, thirdSource});
+    ResourceProvider provider {&virtualFileSystem, GetObjectTypeRegistry (), {}};
+
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                 ENVIRONMENT_ROOT, "/", firstSource.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 ENVIRONMENT_MOUNT, "/", firstSource.path)}) == SourceOperationResponse::SUCCESSFUL);
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                 ENVIRONMENT_ROOT, "/", secondSource.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 ENVIRONMENT_MOUNT, "/", secondSource.path)}) == SourceOperationResponse::SUCCESSFUL);
     REQUIRE (provider.AddSource (Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                 ENVIRONMENT_ROOT, "/", thirdSource.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 ENVIRONMENT_MOUNT, "/", thirdSource.path)}) == SourceOperationResponse::SUCCESSFUL);
     REQUIRE (provider.RemoveSource (Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                 ENVIRONMENT_ROOT, "/", secondSource.path)}) == SourceOperationResponse::SUCCESSFUL);
+                 ENVIRONMENT_MOUNT, "/", secondSource.path)}) == SourceOperationResponse::SUCCESSFUL);
 
     Expectation expectation;
     AddToExpectation (expectation, firstSource);

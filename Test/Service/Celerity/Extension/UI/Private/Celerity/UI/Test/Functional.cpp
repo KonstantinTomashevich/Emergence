@@ -13,11 +13,11 @@
 #include <Celerity/UI/Events.hpp>
 #include <Celerity/UI/Test/ControlManagement.hpp>
 #include <Celerity/UI/Test/Functional.hpp>
-#include <Celerity/UI/Test/ResourceProviderHolder.hpp>
-#include <Celerity/UI/Test/SDLContextHolder.hpp>
 #include <Celerity/UI/Test/UpdateResultCheck.hpp>
 #include <Celerity/UI/UI.hpp>
 
+#include <Testing/ResourceContextHolder.hpp>
+#include <Testing/SDLContextHolder.hpp>
 #include <Testing/Testing.hpp>
 
 namespace Emergence::Celerity::Test
@@ -77,10 +77,10 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (controlManagementFrames));
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
-    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                            assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                           assetReferenceBindingEventMap);
     UI::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, GetKeyCodeMapping ());
     UpdateResultCheck::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, std::move (resultCheckFrames));
@@ -95,7 +95,7 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
 
     for (const auto &frame : _frames)
     {
-        ContextHolder::Frame ();
+        Testing::SDLContextHolder::Get ().Frame ();
         for (const InputEvent &event : frame.inputEvents)
         {
             inputAccumulator.RecordEvent (event);
@@ -112,6 +112,7 @@ using namespace Emergence::Celerity::Test::UpdateResultCheck::Tasks;
 using namespace Emergence::Celerity::Test;
 using namespace Emergence::Celerity;
 using namespace Emergence::Memory::Literals;
+using namespace Emergence::Testing;
 
 static const InputAction DEFAULT_ON_CLOSE_ACTION {"TestGroup"_us, "WindowClosed"_us};
 
@@ -149,7 +150,7 @@ static InputAction WithInputFloat (InputAction _action, float _input)
 
 static CreateViewport CreateDefaultViewport ()
 {
-    return {"UI"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF, ""_us};
+    return {"UI"_us, 0u, 0u, 0u, SDLContextHolder::WIDTH, SDLContextHolder::HEIGHT, 0x000000FF, ""_us};
 }
 
 static CreateWindow CreateDefaultWindow ()
@@ -172,8 +173,8 @@ static CreateWindow CreateDefaultWindow ()
         {0.0f, 0.0f},
         0u,
         0u,
-        WIDTH,
-        HEIGHT,
+        SDLContextHolder::WIDTH,
+        SDLContextHolder::HEIGHT,
         {},
         {},
     };
@@ -277,7 +278,7 @@ TEST_CASE (WindowClose)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH - 20u, 5u, MouseButton::LEFT, KeyState::DOWN, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH - 20u, 5u, MouseButton::LEFT, KeyState::DOWN, 1u}},
             },
             {},
             {
@@ -288,7 +289,7 @@ TEST_CASE (WindowClose)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH - 20u, 5u, MouseButton::LEFT, KeyState::UP, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH - 20u, 5u, MouseButton::LEFT, KeyState::UP, 1u}},
             },
             {},
             {
@@ -323,7 +324,7 @@ TEST_CASE (WindowCloseBlocked)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH - 20u, 5u, MouseButton::LEFT, KeyState::DOWN, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH - 20u, 5u, MouseButton::LEFT, KeyState::DOWN, 1u}},
             },
             {},
             {
@@ -334,7 +335,7 @@ TEST_CASE (WindowCloseBlocked)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH - 20u, 5u, MouseButton::LEFT, KeyState::UP, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH - 20u, 5u, MouseButton::LEFT, KeyState::UP, 1u}},
             },
             {},
             {
@@ -367,7 +368,7 @@ TEST_CASE (WindowMove)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH / 2u, 5u, MouseButton::LEFT, KeyState::DOWN, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH / 2u, 5u, MouseButton::LEFT, KeyState::DOWN, 1u}},
             },
             {},
             {
@@ -378,7 +379,7 @@ TEST_CASE (WindowMove)
         },
         {
             {
-                {0u, MouseMotionEvent {WIDTH / 2u, 5u, WIDTH / 2u + 100u, 55u}},
+                {0u, MouseMotionEvent {SDLContextHolder::WIDTH / 2u, 5u, SDLContextHolder::WIDTH / 2u + 100u, 55u}},
             },
             {},
             {
@@ -389,7 +390,7 @@ TEST_CASE (WindowMove)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH / 2u + 100u, 55u, MouseButton::LEFT, KeyState::UP, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH / 2u + 100u, 55u, MouseButton::LEFT, KeyState::UP, 1u}},
             },
             {},
             {
@@ -422,7 +423,7 @@ TEST_CASE (WindowMoveBlocked)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH / 2u, 5u, MouseButton::LEFT, KeyState::DOWN, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH / 2u, 5u, MouseButton::LEFT, KeyState::DOWN, 1u}},
             },
             {},
             {
@@ -433,7 +434,7 @@ TEST_CASE (WindowMoveBlocked)
         },
         {
             {
-                {0u, MouseMotionEvent {WIDTH / 2u, 5u, WIDTH / 2u + 100u, 55u}},
+                {0u, MouseMotionEvent {SDLContextHolder::WIDTH / 2u, 5u, SDLContextHolder::WIDTH / 2u + 100u, 55u}},
             },
             {},
             {
@@ -444,7 +445,7 @@ TEST_CASE (WindowMoveBlocked)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH / 2u + 100u, 55u, MouseButton::LEFT, KeyState::UP, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH / 2u + 100u, 55u, MouseButton::LEFT, KeyState::UP, 1u}},
             },
             {},
             {
@@ -477,7 +478,8 @@ TEST_CASE (WindowResize)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH - 10u, HEIGHT - 10u, MouseButton::LEFT, KeyState::DOWN, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH - 10u, SDLContextHolder::HEIGHT - 10u, MouseButton::LEFT,
+                                       KeyState::DOWN, 1u}},
             },
             {},
             {
@@ -488,7 +490,8 @@ TEST_CASE (WindowResize)
         },
         {
             {
-                {0u, MouseMotionEvent {WIDTH - 10u, HEIGHT - 10u, WIDTH - 215u, HEIGHT - 115u}},
+                {0u, MouseMotionEvent {SDLContextHolder::WIDTH - 10u, SDLContextHolder::HEIGHT - 10u,
+                                       SDLContextHolder::WIDTH - 215u, SDLContextHolder::HEIGHT - 115u}},
             },
             {},
             {
@@ -499,14 +502,15 @@ TEST_CASE (WindowResize)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH - 215u, HEIGHT - 115u, MouseButton::LEFT, KeyState::UP, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH - 215u, SDLContextHolder::HEIGHT - 115u,
+                                       MouseButton::LEFT, KeyState::UP, 1u}},
             },
             {},
             {
                 {},
                 {},
                 {
-                    ExpectWindowSize {0u, WIDTH - 205u, HEIGHT - 105u},
+                    ExpectWindowSize {0u, SDLContextHolder::WIDTH - 205u, SDLContextHolder::HEIGHT - 105u},
                 },
             },
         },
@@ -532,7 +536,8 @@ TEST_CASE (WindowResizeBlocked)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH - 10u, HEIGHT - 10u, MouseButton::LEFT, KeyState::DOWN, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH - 10u, SDLContextHolder::HEIGHT - 10u, MouseButton::LEFT,
+                                       KeyState::DOWN, 1u}},
             },
             {},
             {
@@ -543,7 +548,8 @@ TEST_CASE (WindowResizeBlocked)
         },
         {
             {
-                {0u, MouseMotionEvent {WIDTH - 10u, HEIGHT - 10u, WIDTH - 215u, HEIGHT - 115u}},
+                {0u, MouseMotionEvent {SDLContextHolder::WIDTH - 10u, SDLContextHolder::HEIGHT - 10u,
+                                       SDLContextHolder::WIDTH - 215u, SDLContextHolder::HEIGHT - 115u}},
             },
             {},
             {
@@ -554,14 +560,15 @@ TEST_CASE (WindowResizeBlocked)
         },
         {
             {
-                {0u, MouseButtonEvent {WIDTH - 215u, HEIGHT - 115u, MouseButton::LEFT, KeyState::UP, 1u}},
+                {0u, MouseButtonEvent {SDLContextHolder::WIDTH - 215u, SDLContextHolder::HEIGHT - 115u,
+                                       MouseButton::LEFT, KeyState::UP, 1u}},
             },
             {},
             {
                 {},
                 {},
                 {
-                    ExpectWindowSize {0u, WIDTH, HEIGHT},
+                    ExpectWindowSize {0u, SDLContextHolder::WIDTH, SDLContextHolder::HEIGHT},
                 },
             },
         },

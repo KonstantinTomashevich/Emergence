@@ -1,3 +1,5 @@
 add_subdirectory (ContextExtension)
 add_subdirectory (FileSystemTestUtility)
 add_subdirectory (MemoryProfilerStub)
+add_subdirectory (ResourceContextHolder)
+add_subdirectory (SDLContextHolder)

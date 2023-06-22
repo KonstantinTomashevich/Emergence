@@ -15,7 +15,6 @@ endif ()
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/GlobalOptions.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/PhysX.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/Resource.cmake")
-include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/Urho3D.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/Utility.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Sober/Sober.cmake")
 

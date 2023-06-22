@@ -21,6 +21,7 @@
 namespace Emergence::Resource::Object::Test
 {
 static const char *const ENVIRONMENT_ROOT = "./Assets";
+static const char *const ENVIRONMENT_MOUNT = "Assets";
 
 enum class SerializationFormat
 {
@@ -39,13 +40,18 @@ struct ObjectDefinition final
     SerializationFormat format = SerializationFormat::YAML;
 };
 
-void PrepareEnvironment (const Container::Vector<ObjectDefinition> &_objects)
+VirtualFileSystem::Context PrepareEnvironment (const Container::Vector<ObjectDefinition> &_objects)
 {
     const std::filesystem::path rootPath {ENVIRONMENT_ROOT};
     if (std::filesystem::exists (rootPath))
     {
         std::filesystem::remove_all (rootPath);
     }
+
+    std::filesystem::create_directories (ENVIRONMENT_ROOT);
+    VirtualFileSystem::Context virtualFileSystem;
+    REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (), {VirtualFileSystem::MountSource::FILE_SYSTEM,
+                                                                     ENVIRONMENT_ROOT, ENVIRONMENT_MOUNT}));
 
     for (const ObjectDefinition &object : _objects)
     {
@@ -73,6 +79,8 @@ void PrepareEnvironment (const Container::Vector<ObjectDefinition> &_objects)
         }
         }
     }
+
+    return virtualFileSystem;
 }
 } // namespace Emergence::Resource::Object::Test
 
@@ -93,13 +101,14 @@ TEST_CASE (LoadTrivial)
     Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
 
-    PrepareEnvironment ({
+    Emergence::VirtualFileSystem::Context virtualFileSystem = PrepareEnvironment ({
         {firstObjectId, "Objects", {{}, firstObjectChangelist}},
         {secondObjectId, "Objects", {{}, secondObjectChangelist}},
     });
 
-    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
-    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+    ResourceProvider resourceProvider {&virtualFileSystem, GetResourceObjectMappingRegistry (),
+                                       GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_MOUNT}) ==
              SourceOperationResponse::SUCCESSFUL);
     LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
@@ -130,13 +139,14 @@ TEST_CASE (LoadDifferentFolders)
     Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
 
-    PrepareEnvironment ({
+    Emergence::VirtualFileSystem::Context virtualFileSystem = PrepareEnvironment ({
         {firstObjectId, "FolderOne", {{}, firstObjectChangelist}},
         {secondObjectId, "FolderTwo", {{}, secondObjectChangelist}},
     });
 
-    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
-    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+    ResourceProvider resourceProvider {&virtualFileSystem, GetResourceObjectMappingRegistry (),
+                                       GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_MOUNT}) ==
              SourceOperationResponse::SUCCESSFUL);
     LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
@@ -167,13 +177,14 @@ TEST_CASE (LoadOnlySelected)
     Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
 
-    PrepareEnvironment ({
+    Emergence::VirtualFileSystem::Context virtualFileSystem = PrepareEnvironment ({
         {firstObjectId, "Objects", {{}, firstObjectChangelist}},
         {secondObjectId, "Objects", {{}, secondObjectChangelist}},
     });
 
-    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
-    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+    ResourceProvider resourceProvider {&virtualFileSystem, GetResourceObjectMappingRegistry (),
+                                       GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_MOUNT}) ==
              SourceOperationResponse::SUCCESSFUL);
     LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
@@ -206,14 +217,15 @@ TEST_CASE (LoadWithInjection)
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u}),
         MakeComponentPatch (InjectionComponent {0u, secondObjectId})};
 
-    PrepareEnvironment ({
+    Emergence::VirtualFileSystem::Context virtualFileSystem = PrepareEnvironment ({
         {firstObjectId, "Objects", {{}, firstObjectChangelist}},
         {secondObjectId, "Objects", {{}, secondObjectChangelist}},
         {thirdObjectId, "Objects", {{}, thirdObjectChangelist}},
     });
 
-    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
-    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+    ResourceProvider resourceProvider {&virtualFileSystem, GetResourceObjectMappingRegistry (),
+                                       GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_MOUNT}) ==
              SourceOperationResponse::SUCCESSFUL);
     LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
@@ -252,13 +264,14 @@ TEST_CASE (LoadTrivialBinary)
     Emergence::Container::Vector<ObjectComponent> secondObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 100u, 20u, 10u})};
 
-    PrepareEnvironment ({
+    Emergence::VirtualFileSystem::Context virtualFileSystem = PrepareEnvironment ({
         {firstObjectId, "Objects", {{}, firstObjectChangelist}, SerializationFormat::BINARY},
         {secondObjectId, "Objects", {{}, secondObjectChangelist}, SerializationFormat::BINARY},
     });
 
-    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
-    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+    ResourceProvider resourceProvider {&virtualFileSystem, GetResourceObjectMappingRegistry (),
+                                       GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_MOUNT}) ==
              SourceOperationResponse::SUCCESSFUL);
     LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 
@@ -293,14 +306,15 @@ TEST_CASE (LoadInheritance)
     Emergence::Container::Vector<ObjectComponent> secondDerivationObjectChangelist {
         MakeComponentPatch (SecondComponent {0u, 0u, 0u, 11u})};
 
-    PrepareEnvironment ({
+    Emergence::VirtualFileSystem::Context virtualFileSystem = PrepareEnvironment ({
         {baseObjectId, "Objects", {{}, baseObjectChangelist}},
         {firstDerivationObjectId, "Objects", {baseObjectId, firstDerivationObjectChangelist}},
         {secondDerivationObjectId, "Objects", {firstDerivationObjectId, secondDerivationObjectChangelist}},
     });
 
-    ResourceProvider resourceProvider {GetResourceObjectMappingRegistry (), GetPatchableTypesMappingRegistry ()};
-    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_ROOT}) ==
+    ResourceProvider resourceProvider {&virtualFileSystem, GetResourceObjectMappingRegistry (),
+                                       GetPatchableTypesMappingRegistry ()};
+    REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {ENVIRONMENT_MOUNT}) ==
              SourceOperationResponse::SUCCESSFUL);
     LibraryLoader loader {&resourceProvider, GetTypeManifest ()};
 

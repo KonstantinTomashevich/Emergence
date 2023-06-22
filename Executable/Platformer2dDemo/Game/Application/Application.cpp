@@ -34,6 +34,7 @@
 
 #include <SyntaxSugar/Time.hpp>
 
+#undef CreateDirectory
 #undef ERROR
 
 using namespace Emergence::Memory::Literals;
@@ -49,7 +50,7 @@ static Emergence::Memory::Profiler::EventObserver StartMemoryRecording (
 Application::Application () noexcept
     : memoryEventOutput ("MemoryRecording.track", std::ios::binary),
       memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput)),
-      resourceProvider (GetResourceTypesRegistry (), GetPatchableTypesRegistry ())
+      resourceProvider (&virtualFileSystem, GetResourceTypesRegistry (), GetPatchableTypesRegistry ())
 {
     Emergence::Log::GlobalLogger::Init (Emergence::Log::Level::ERROR,
                                         {Emergence::Log::Sinks::StandardOut {{Emergence::Log::Level::INFO}}});
@@ -62,12 +63,46 @@ Application::Application () noexcept
         Emergence::ReportCriticalError ("SDL initialization", __FILE__, __LINE__);
     }
 
-    if (Emergence::Resource::Provider::SourceOperationResponse result = resourceProvider.AddSource ("../Resources"_us);
-        result != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+    const Emergence::VirtualFileSystem::Entry resourcesDirectory {
+        virtualFileSystem.CreateDirectory (virtualFileSystem.GetRoot (), "Resources")};
+
+    Emergence::VirtualFileSystem::MountConfigurationList configurationList;
     {
-        Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Resource provider initialization error code ",
-                                                                static_cast<std::uint16_t> (result)),
-                                        __FILE__, __LINE__);
+        std::ifstream input {"../MountCoreResources.yaml"};
+        if (!input)
+        {
+            Emergence::ReportCriticalError ("Failed to open core resources mount list!", __FILE__, __LINE__);
+        }
+
+        if (!Emergence::Serialization::Yaml::DeserializeObject (
+                input, &configurationList, Emergence::VirtualFileSystem::MountConfigurationList::Reflect ().mapping,
+                {}))
+        {
+            Emergence::ReportCriticalError ("Failed to deserialize core resources mount list!", __FILE__, __LINE__);
+        }
+    }
+
+    for (const auto &configuration : configurationList.items)
+    {
+        if (!virtualFileSystem.Mount (resourcesDirectory, configuration))
+        {
+            Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Failed to mount \"", configuration.sourcePath,
+                                                                    "\" into \"", configuration.targetPath, "\"!"),
+                                            __FILE__, __LINE__);
+        }
+
+        const Emergence::Memory::UniqueString mountedSource {EMERGENCE_BUILD_STRING (
+            "Resources", Emergence::VirtualFileSystem::PATH_SEPARATOR, configuration.targetPath)};
+
+        if (Emergence::Resource::Provider::SourceOperationResponse result = resourceProvider.AddSource (mountedSource);
+            result != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+        {
+            Emergence::ReportCriticalError (
+                EMERGENCE_BUILD_STRING ("Resource provider initialization error code ",
+                                        static_cast<std::uint16_t> (result), " while trying to add source \"",
+                                        mountedSource, "\"!"),
+                __FILE__, __LINE__);
+        }
     }
 }
 

@@ -20,16 +20,17 @@
 #include <Celerity/UI/Events.hpp>
 #include <Celerity/UI/Test/ControlManagement.hpp>
 #include <Celerity/UI/Test/ImplementationStrings.hpp>
-#include <Celerity/UI/Test/ResourceProviderHolder.hpp>
-#include <Celerity/UI/Test/SDLContextHolder.hpp>
 #include <Celerity/UI/Test/Visual.hpp>
 #include <Celerity/UI/UI.hpp>
 
-#include <FileSystem/Test/Utility.hpp>
-
 #include <Render/Backend/Configuration.hpp>
 
+#include <Testing/FileSystemTestUtility.hpp>
+#include <Testing/ResourceContextHolder.hpp>
+#include <Testing/SDLContextHolder.hpp>
 #include <Testing/Testing.hpp>
+
+#include <VirtualFileSystem/Reader.hpp>
 
 namespace Emergence::Celerity::Test
 {
@@ -128,9 +129,24 @@ void ScreenshotTester::CheckScreenshot () const noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    FileSystem::Test::CheckFilesEquality (
-        EMERGENCE_BUILD_STRING ("Expectation/", GetUIBackendScreenshotPrefix (), "/", passName, ".png"), screenshotFile,
-        0.02f);
+    VirtualFileSystem::Reader expectedReader {
+        VirtualFileSystem::Entry {
+            Testing::ResourceContextHolder::Get ().virtualFileSystem,
+            EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_DIRECTORY, VirtualFileSystem::PATH_SEPARATOR,
+                                    "UITest", VirtualFileSystem::PATH_SEPARATOR, "Expectation",
+                                    VirtualFileSystem::PATH_SEPARATOR, GetUIBackendScreenshotPrefix (),
+                                    VirtualFileSystem::PATH_SEPARATOR, passName, ".png")},
+        VirtualFileSystem::OpenMode::BINARY};
+    REQUIRE (expectedReader);
+
+    VirtualFileSystem::Reader resultReader {
+        VirtualFileSystem::Entry {Testing::ResourceContextHolder::Get ().virtualFileSystem,
+                                  EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_OUTPUT_DIRECTORY,
+                                                          VirtualFileSystem::PATH_SEPARATOR, screenshotFile)},
+        VirtualFileSystem::OpenMode::BINARY};
+    REQUIRE (resultReader);
+
+    Testing::CheckStreamEquality (expectedReader.InputStream (), resultReader.InputStream (), 0.02f);
 }
 
 bool ScreenshotTester::IsWaitingForDependencies () noexcept
@@ -175,13 +191,14 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (_frames));
-    FontManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (), assetReferenceBindingEventMap);
+    FontManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
+                                       assetReferenceBindingEventMap);
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
-    Localization::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider ());
-    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+    Localization::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider);
+    MaterialManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                            assetReferenceBindingEventMap);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
-    TextureManagement::AddToNormalUpdate (pipelineBuilder, &GetSharedResourceProvider (),
+    TextureManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                           assetReferenceBindingEventMap);
     UI::AddToNormalUpdate (pipelineBuilder, &inputAccumulator, {});
 
@@ -197,7 +214,7 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
 
     while (!testFinished)
     {
-        ContextHolder::Frame ();
+        Testing::SDLContextHolder::Get ().Frame ();
         world.Update ();
     }
 }
@@ -208,6 +225,7 @@ using namespace Emergence::Celerity::Test::ControlManagement::Tasks;
 using namespace Emergence::Celerity::Test;
 using namespace Emergence::Celerity;
 using namespace Emergence::Memory::Literals;
+using namespace Emergence::Testing;
 
 static CreateInput CreateIntInput (UniqueId _nodeId, UniqueId _parentId)
 {
@@ -249,7 +267,8 @@ TEST_CASE (CustomSkin)
     ExecuteScenario (
         "CustomSkin",
         {{
-            CreateViewport {"UI"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF, "DefaultStyle"_us},
+            CreateViewport {"UI"_us, 0u, 0u, 0u, SDLContextHolder::WIDTH, SDLContextHolder::HEIGHT, 0x000000FF,
+                            "DefaultStyle"_us},
 
             CreateStyleColorProperty {"DefaultStyle"_us, UIStyleColorPropertyName::TEXT, 0.86f, 0.93f, 0.87f, 1.0f},
             CreateStyleColorProperty {"DefaultStyle"_us, UIStyleColorPropertyName::DISABLED_TEXT, 0.52f, 0.55f, 0.53f,
@@ -354,8 +373,8 @@ TEST_CASE (CustomSkin)
                 {0.0f, 0.0f},
                 0u,
                 0u,
-                WIDTH / 2,
-                HEIGHT,
+                SDLContextHolder::WIDTH / 2,
+                SDLContextHolder::HEIGHT,
                 {},
                 {},
             },
@@ -399,8 +418,8 @@ TEST_CASE (CustomSkin)
                 {1.0f, 1.0f},
                 0,
                 0u,
-                WIDTH / 2,
-                HEIGHT,
+                SDLContextHolder::WIDTH / 2,
+                SDLContextHolder::HEIGHT,
                 {},
                 {},
             },

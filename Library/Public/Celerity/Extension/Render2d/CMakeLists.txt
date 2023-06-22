@@ -30,8 +30,11 @@ sober_library_end ()
 
 set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
 file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "${RESOURCES_COMPILED_DIRECTORY}/Content" SYMBOLIC)
 register_bgfx_shaders ("${CMAKE_CURRENT_SOURCE_DIR}/Resources/Shaders" "${RESOURCES_COMPILED_DIRECTORY}/Shaders")
 
 sober_naming_library_base_target (CelerityRender2d CELERITY_RENDER_2D_LIBRARY)
-register_resource_usage ("${CELERITY_RENDER_2D_LIBRARY}" "${RESOURCES_COMPILED_DIRECTORY}" "Render2dResources")
+register_resource_usage ("${CELERITY_RENDER_2D_LIBRARY}"
+        "${RESOURCES_COMPILED_DIRECTORY}" "Render2d/Compiled" "CoreResources")
+
+register_resource_usage ("${CELERITY_RENDER_2D_LIBRARY}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "Render2d/Raw" "CoreResources")

@@ -20,7 +20,7 @@ public:
 
         ObjectRegistryCursor (ObjectRegistryCursor &&_other) noexcept;
 
-        ~ObjectRegistryCursor () noexcept;
+        ~ObjectRegistryCursor () noexcept = default;
 
         [[nodiscard]] Memory::UniqueString operator* () const noexcept;
 
@@ -38,14 +38,15 @@ public:
         RecordCollection::PointRepresentation::ReadCursor cursor;
     };
 
-    ResourceProvider (Container::MappingRegistry _objectTypesRegistry,
+    ResourceProvider (VirtualFileSystem::Context *_virtualFileSystemContext,
+                      Container::MappingRegistry _objectTypesRegistry,
                       Container::MappingRegistry _patchableTypesRegistry) noexcept;
 
     ResourceProvider (const ResourceProvider &_other) = delete;
 
     ResourceProvider (ResourceProvider &&_other) = delete;
 
-    ~ResourceProvider () noexcept;
+    ~ResourceProvider () noexcept = default;
 
     EMERGENCE_DELETE_ASSIGNMENT (ResourceProvider);
 
@@ -73,7 +74,8 @@ public:
 private:
     friend class ObjectRegistryCursor;
 
-    SourceOperationResponse AddSourceFromIndex (Memory::UniqueString _path) noexcept;
+    SourceOperationResponse AddSourceFromIndex (const VirtualFileSystem::Entry &_indexFile,
+                                                Memory::UniqueString _path) noexcept;
 
     SourceOperationResponse AddSourceThroughScan (Memory::UniqueString _path) noexcept;
 
@@ -82,14 +84,22 @@ private:
                                        Memory::UniqueString _source,
                                        const Container::Utf8String &_relativePath) noexcept;
 
+    SourceOperationResponse AddObject (Memory::UniqueString _id,
+                                       Memory::UniqueString _typeName,
+                                       Memory::UniqueString _source,
+                                       const VirtualFileSystem::Entry &_entry) noexcept;
+
     SourceOperationResponse AddThirdPartyResource (Memory::UniqueString _id,
                                                    Memory::UniqueString _source,
                                                    const Container::Utf8String &_relativePath) noexcept;
 
+    SourceOperationResponse AddThirdPartyResource (Memory::UniqueString _id,
+                                                   Memory::UniqueString _source,
+                                                   const VirtualFileSystem::Entry &_entry) noexcept;
+
     bool ClearSource (Memory::UniqueString _path) noexcept;
 
-    mutable std::atomic_uintptr_t dataWritersCount = 0u;
-    mutable std::atomic_uintptr_t dataReadersCount = 0u;
+    VirtualFileSystem::Context *virtualFileSystemContext;
 
     RecordCollection::Collection objects;
     mutable RecordCollection::PointRepresentation objectsById;

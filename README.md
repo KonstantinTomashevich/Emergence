@@ -30,6 +30,8 @@ Emergence is a flexible set of libraries for gameplay development, which modular
   in [TaskCollection](./Library/Private/TaskCollection/README.md) format.
 - [Testing](./Service/Testing/README.md): hides selected testing framework under minimal set of framework-agnostic
   macros.
+- [VirtualFileSystem](./Service/VirtualFileSystem/README.md): provides file system abstraction layer that supports
+  mounting of real file system directories and read-only binary packages (for optimized reading).
 - [Warehouse](./Service/Warehouse/README.md): provides database-like API for storing objects and accessing them through
   prepared queries.
 
@@ -92,5 +94,3 @@ These libraries are built on top of [Celerity](./Library/Public/Celerity/README.
   tool for viewing [MemoryRecording](./Library/Public/MemoryRecording/README.md) serialized tracks.
 - [Platformer2dDemo](./Executable/Platformer2dDemo/README.md): simple platformer game in early stage of development,
   used to test new **Emergence** features.
-- [SpaceShooterDemo](./Executable/SpaceShooterDemo/README.md): simple shooter game, that illustrates usage of
-  **Emergence** features.

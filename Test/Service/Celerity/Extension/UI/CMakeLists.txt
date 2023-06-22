@@ -15,11 +15,17 @@ sober_test_begin (CelerityUI OBJECT)
     sober_naming_variant_target (CelerityRenderFoundation Original CELERITY_RENDER_FOUNDATION_LIBRARY_TARGET)
     sober_naming_variant_target (FileSystemTestUtility Doctest FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET)
     sober_naming_variant_target (MemoryProfilerStub Original MEMORY_PROFILER_STUB_LIBRARY_TARGET)
+    sober_naming_variant_target (ResourceContextHolder Doctest RESOURCE_CONTEXT_HOLDER_LIBRARY_TARGET)
+    sober_naming_variant_target (SDLContextHolder Original SDL_CONTEXT_HOLDER_LIBRARY_TARGET)
+    sober_naming_variant_target (Serialization Original SERIALIZATION_LIBRARY_TARGET)
 
     sober_library_link_library (PUBLIC ${CELERITY_LOCALE_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${CELERITY_RENDER_FOUNDATION_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${FILE_SYSTEM_TEST_UTILITY_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC ${MEMORY_PROFILER_STUB_LIBRARY_TARGET})
+    sober_library_link_library (PUBLIC ${RESOURCE_CONTEXT_HOLDER_LIBRARY_TARGET})
+    sober_library_link_library (PUBLIC ${SDL_CONTEXT_HOLDER_LIBRARY_TARGET})
+    sober_library_link_library (PUBLIC ${SERIALIZATION_LIBRARY_TARGET})
     sober_library_link_library (PUBLIC SDL2)
     sober_library_link_library (PUBLIC SDL2main)
 
@@ -36,6 +42,7 @@ sober_test_begin (CelerityUI OBJECT)
     sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
     sober_library_use_service (SHARED PRIVATE TaskExecutor)
     sober_library_use_service (SHARED PRIVATE Testing)
+    sober_library_use_service (SHARED PRIVATE VirtualFileSystem)
     sober_library_use_service (SHARED PRIVATE Warehouse)
 
     # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.
@@ -51,12 +58,17 @@ sober_test_end ()
 sober_naming_test_library (CelerityUI TEST_CELERITY_UI_LIBRARY)
 sober_naming_library_base_target ("${TEST_CELERITY_UI_LIBRARY}" TEST_CELERITY_UI_LIBRARY_TARGET)
 
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Expectation" "${CMAKE_CURRENT_BINARY_DIR}/Expectation" SYMBOLIC)
-set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ResourcesWorkspace")
+set (RESOURCES_COMPILED_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Resources")
 file (MAKE_DIRECTORY "${RESOURCES_COMPILED_DIRECTORY}")
 
-file (CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "${RESOURCES_COMPILED_DIRECTORY}/Content" SYMBOLIC)
-register_resource_usage ("${TEST_CELERITY_UI_LIBRARY_TARGET}" "${RESOURCES_COMPILED_DIRECTORY}" "UITestResources")
+register_resource_usage ("${TEST_CELERITY_UI_LIBRARY_TARGET}"
+        "${RESOURCES_COMPILED_DIRECTORY}" "UITest/Compiled" "CoreResources")
+
+register_resource_usage ("${TEST_CELERITY_UI_LIBRARY_TARGET}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Resources/Content" "UITest/Raw" "CoreResources")
+
+register_resource_usage ("${TEST_CELERITY_UI_LIBRARY_TARGET}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Expectation" "UITest/Expectation" "TestResources")
 
 sober_naming_test_collection (CelerityUI COLLECTION_NAME)
 add_dependencies (ServiceTests "${COLLECTION_NAME}")

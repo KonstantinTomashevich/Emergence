@@ -48,7 +48,8 @@ struct InternalData final
     Original::ResourceProvider *resourceProvider = nullptr;
 };
 
-ResourceProvider::ResourceProvider (Container::MappingRegistry _objectTypesRegistry,
+ResourceProvider::ResourceProvider (VirtualFileSystem::Context *_virtualFileSystemContext,
+                                    Container::MappingRegistry _objectTypesRegistry,
                                     Container::MappingRegistry _patchableTypesRegistry) noexcept
 {
     auto &internal = *new (&data) InternalData ();
@@ -56,7 +57,8 @@ ResourceProvider::ResourceProvider (Container::MappingRegistry _objectTypesRegis
 
     internal.resourceProvider =
         new (internal.heap.Acquire (sizeof (Original::ResourceProvider), alignof (Original::ResourceProvider)))
-            Original::ResourceProvider (std::move (_objectTypesRegistry), std::move (_patchableTypesRegistry));
+            Original::ResourceProvider (_virtualFileSystemContext, std::move (_objectTypesRegistry),
+                                        std::move (_patchableTypesRegistry));
 }
 
 ResourceProvider::~ResourceProvider () noexcept
