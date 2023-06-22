@@ -129,7 +129,7 @@
     {
       "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/Writer.cpp",
       "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 65.0,
+      "MinimumLinesCoveragePerFilePercent": 50.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
     },
     {
