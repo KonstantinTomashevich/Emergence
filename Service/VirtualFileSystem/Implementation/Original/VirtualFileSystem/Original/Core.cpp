@@ -995,6 +995,7 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenM
         auto entryCursor = entriesById.ReadPoint (&_object.entryId);
         const auto *entry = static_cast<const Entry *> (*entryCursor);
         EMERGENCE_ASSERT (entry);
+        EMERGENCE_ASSERT (entry->type == EntryType::PACKAGE_FILE);
 
         FILE *packageFile = fopen (entry->filesystemLink.c_str (), "rb");
         fseek (packageFile, static_cast<long> (entry->packageFileOffset), SEEK_SET);

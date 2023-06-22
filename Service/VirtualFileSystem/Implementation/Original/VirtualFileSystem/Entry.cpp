@@ -113,7 +113,7 @@ EntryType Entry::GetType () const noexcept
             return EntryType::DIRECTORY;
 
         // Unfortunately, we need to use default here for better support across
-        // different standards: not all versions of STL support all the file types.
+        // different standards: not all versions of STL support all the entry types.
         default:
             return EntryType::INVALID;
         }

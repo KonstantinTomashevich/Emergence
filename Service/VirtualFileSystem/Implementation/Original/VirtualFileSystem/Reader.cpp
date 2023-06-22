@@ -83,9 +83,7 @@ protected:
         return traits_type::to_int_type (buffer[0]);
     }
 
-    pos_type seekoff (off_type _offset,
-                      std::ios::seekdir _direction,
-                      std::ios::openmode /*unused*/ = std::ios::in | std::ios::out) override
+    pos_type seekoff (off_type _offset, std::ios::seekdir _direction, std::ios::openmode /*unused*/) override
     {
         const std::uint64_t positionBackup = virtualPosition;
         switch (_direction)
@@ -153,7 +151,7 @@ protected:
         return static_cast<pos_type> (virtualPosition);
     }
 
-    pos_type seekpos (pos_type _position, std::ios::openmode /*unused*/ = std::ios::in | std::ios::out) override
+    pos_type seekpos (pos_type _position, std::ios::openmode /*unused*/) override
     {
         setg (buffer, buffer, buffer);
         if (_position < 0)

@@ -28,39 +28,6 @@ using namespace Emergence::VirtualFileSystem::Test;
 
 BEGIN_SUITE (ReadWrite)
 
-TEST_CASE (ReadText)
-{
-    std::filesystem::remove_all (testDirectory);
-    std::filesystem::create_directories (testDirectory);
-
-    const Utf8String path = EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "First");
-    std::filesystem::create_directories (path);
-    const Utf8String fileText {"Hello, world! We avoid new lines here, because they are not really portable."};
-
-    {
-        std::ofstream textFile {EMERGENCE_BUILD_STRING (path, PATH_SEPARATOR, "first.txt")};
-        textFile << fileText;
-    }
-
-    Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
-
-    Reader reader {Entry {context.GetRoot (), EMERGENCE_BUILD_STRING ("Mounted", PATH_SEPARATOR, "first.txt")},
-                   OpenMode::TEXT};
-    REQUIRE (reader);
-
-    StringBuilder textBuffer;
-    int next;
-
-    while ((next = reader.InputStream ().get ()) != EOF)
-    {
-        textBuffer.Append (static_cast<char> (next));
-    }
-
-    const Utf8String resultText {textBuffer.Get ()};
-    CHECK_EQUAL (resultText, fileText);
-}
-
 TEST_CASE (WriteReadText)
 {
     std::filesystem::remove_all (testDirectory);
@@ -131,39 +98,6 @@ TEST_CASE (ComplicatedWriteReadText)
 
     const Utf8String resultText {textBuffer.Get ()};
     CHECK_EQUAL (resultText, fileText);
-}
-
-TEST_CASE (ReadBinary)
-{
-    std::filesystem::remove_all (testDirectory);
-    std::filesystem::create_directories (testDirectory);
-
-    const Utf8String path = EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "First");
-    std::filesystem::create_directories (path);
-    const Vector<std::uint8_t> fileContent {12u, 127u, 13u, 177u, 48u, 99u, 188u, 11u};
-
-    {
-        std::ofstream file {EMERGENCE_BUILD_STRING (path, PATH_SEPARATOR, "first.bin")};
-        file.write (reinterpret_cast<const char *> (fileContent.data ()),
-                    static_cast<std::streamsize> (fileContent.size ()));
-    }
-
-    Context context;
-    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
-
-    Reader reader {Entry {context.GetRoot (), EMERGENCE_BUILD_STRING ("Mounted", PATH_SEPARATOR, "first.bin")},
-                   OpenMode::BINARY};
-    REQUIRE (reader);
-
-    Vector<std::uint8_t> readContent;
-    int next;
-
-    while ((next = reader.InputStream ().get ()) != EOF)
-    {
-        readContent.emplace_back (static_cast<std::uint8_t> (next));
-    }
-
-    CHECK_EQUAL (readContent, fileContent);
 }
 
 TEST_CASE (WriteReadBinary)

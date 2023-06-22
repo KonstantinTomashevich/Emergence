@@ -54,6 +54,9 @@ TEST_CASE (MakeDirectoriesVirtualWithDots)
                                                          "Game", PATH_SEPARATOR, "..", PATH_SEPARATOR, ".",
                                                          PATH_SEPARATOR, "Menu"))
                .GetType () == EntryType::DIRECTORY);
+
+    CHECK (Entry {context, EMERGENCE_BUILD_STRING ("Resources", PATH_SEPARATOR, "Platformer", PATH_SEPARATOR, "Game")}
+               .GetType () == EntryType::DIRECTORY);
 }
 
 TEST_CASE (CreateFileMounted)

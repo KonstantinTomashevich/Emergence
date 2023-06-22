@@ -42,6 +42,7 @@ public:
         [[nodiscard]] Entry operator* () const noexcept;
 
         /// \brief Moves to next child.
+        /// \invariant Cursor is not empty (does not return invalid entry).
         Cursor &operator++ () noexcept;
 
         EMERGENCE_DELETE_ASSIGNMENT (Cursor);
