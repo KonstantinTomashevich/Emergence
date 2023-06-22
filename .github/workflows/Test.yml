@@ -26,14 +26,20 @@ jobs:
           - build_type: Debug
             os: windows-2019
             toolchain: CLang
-#        exclude:
-#          # TODO: Temporary excluding clang to see what happens in other build (clang seems to be broken on CI)
-#          - build_type: Debug
-#            os: windows-2022
-#            toolchain: CLang
-#          - build_type: Release
-#            os: windows-2022
-#            toolchain: CLang
+          # Adding to compensate the exclusion below.
+          - build_type: Release
+            os: windows-2019
+            toolchain: CLang
+        exclude:
+          # As of June 2023, there is a strange issue with compiling on CLang on VS 2022: either build scripts are
+          # generated incorrectly or there is a strange problem with CLang on CI that cannot be reproduced locally.
+          # Therefore, we're temporary disabling builds on CLang on VS 2022 in favor of VS 2019.
+          - build_type: Debug
+            os: windows-2022
+            toolchain: CLang
+          - build_type: Release
+            os: windows-2022
+            toolchain: CLang
 
     defaults:
       run:
@@ -81,6 +87,12 @@ jobs:
           echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
           $PathWithoutLLVM13 = $Env:Path.Replace("C:\Program Files\LLVM\bin", "")
           echo "PATH=$PathWithoutLLVM13" >> $Env:GITHUB_ENV
+
+      - name: Windows - VS 2019 - Select CLang toolset
+        if: matrix.build_type == 'Release' && matrix.os == 'windows-2019' && matrix.toolchain == 'CLang'
+        run: |
+          echo "CMAKE_FALLBACK_TO_CXX20=-DEMERGENCE_FALLBACK_TO_CXX_20=ON" >> $Env:GITHUB_ENV
+          echo "CMAKE_GENERATOR=-G `"Visual Studio 16 2019`" -A x64 -T clangcl" >> $Env:GITHUB_ENV
 
       - name: Windows - Select CLang toolset
         if: matrix.os == 'windows-2022' && matrix.toolchain == 'CLang'
