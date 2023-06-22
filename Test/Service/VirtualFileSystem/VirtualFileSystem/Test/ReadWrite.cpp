@@ -95,6 +95,44 @@ TEST_CASE (WriteReadText)
     CHECK_EQUAL (resultText, fileText);
 }
 
+TEST_CASE (ComplicatedWriteReadText)
+{
+    std::filesystem::remove_all (testDirectory);
+    std::filesystem::create_directories (testDirectory);
+
+    const Utf8String path = EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "First");
+    std::filesystem::create_directories (path);
+    const Utf8String fileText {"Hello, world! We avoid new lines here, because they are not really portable."};
+
+    Context context;
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
+
+    {
+        Writer writer {context.CreateFile (Entry {context, "Mounted"}, "test.txt"), OpenMode::TEXT};
+        REQUIRE (writer);
+        writer.OutputStream () << "WTFISIT" << fileText.substr (7u, 10u);
+        writer.OutputStream ().seekp (0u, std::ios::beg);
+        writer.OutputStream () << fileText.substr (0u, 7u);
+        writer.OutputStream ().seekp (0u, std::ios::end);
+        writer.OutputStream () << fileText.substr (17u);
+    }
+
+    Reader reader {Entry {context.GetRoot (), EMERGENCE_BUILD_STRING ("Mounted", PATH_SEPARATOR, "test.txt")},
+                   OpenMode::TEXT};
+    REQUIRE (reader);
+
+    StringBuilder textBuffer;
+    int next;
+
+    while ((next = reader.InputStream ().get ()) != EOF)
+    {
+        textBuffer.Append (static_cast<char> (next));
+    }
+
+    const Utf8String resultText {textBuffer.Get ()};
+    CHECK_EQUAL (resultText, fileText);
+}
+
 TEST_CASE (ReadBinary)
 {
     std::filesystem::remove_all (testDirectory);

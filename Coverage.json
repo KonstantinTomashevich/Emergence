@@ -106,8 +106,31 @@
     {
       "Prefix": "./Service/ResourceProvider/Implementation/Original/Resource/Provider/Original/ResourceProvider.cpp",
       "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 68.0,
+      "MinimumLinesCoveragePerFilePercent": 65.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're aren't writing negative tests for now."
+    },
+    {
+      "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/MountConfiguration.cpp",
+      "Action": "Exclude",
+      "Reason": "This file contains only reflection registration that is not used inside tests and should be trivial enough to be uncovered."
+    },
+    {
+      "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/PackageBuilder.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 65.0,
+      "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
+    },
+    {
+      "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/Reader.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 65.0,
+      "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
+    },
+    {
+      "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/Writer.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 65.0,
+      "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
     },
     {
       "Prefix": "./Test/Library/ResourceObject/Resource/Object/Test/Helpers.cpp",

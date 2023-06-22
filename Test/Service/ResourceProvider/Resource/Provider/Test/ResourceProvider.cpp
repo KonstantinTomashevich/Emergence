@@ -460,7 +460,9 @@ TEST_CASE (Indexed)
         {
             {{"A3"_us, "B3"_us, "C3"_us}, "Configs/3.yaml"},
         },
-        {},
+        {
+            {{13u, 10u, 122u, 253u, 11u, 55u, 69u, 11u}, "Test.someformat"},
+        },
     };
 
     Emergence::VirtualFileSystem::Context virtualFileSystem = SetupEnvironment ({source});

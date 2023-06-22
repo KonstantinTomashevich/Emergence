@@ -144,4 +144,38 @@ TEST_CASE (PackageFileWithNesting)
     CHECK (std::find (children.begin (), children.end (), "~/Package/Nested") != children.end ());
 }
 
+TEST_CASE (InvalidOutput)
+{
+    Context context;
+    PackageBuilder builder;
+    CHECK (!builder.Begin (context, Entry {context, "ThisShouldNotExist.bin"}));
+}
+
+TEST_CASE (AddInvalidFile)
+{
+    std::filesystem::remove_all (testDirectory);
+    std::filesystem::create_directories (testDirectory);
+
+    Context context;
+    PackageBuilder builder;
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, testDirectory, "Test"}));
+
+    CHECK (builder.Begin (context, context.CreateFile (Entry {context, "Test"}, "TestPackage.bin")));
+    CHECK (!builder.Add (Entry {context, "ThisShouldNotExist.bin"}, "SomePath/Test.bin"));
+}
+
+TEST_CASE (AddWithTheSamePath)
+{
+    std::filesystem::remove_all (testDirectory);
+    std::filesystem::create_directories (testDirectory);
+
+    Context context;
+    PackageBuilder builder;
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, testDirectory, "Test"}));
+
+    CHECK (builder.Begin (context, context.CreateFile (Entry {context, "Test"}, "TestPackage.bin")));
+    CHECK (builder.Add (context.CreateFile (Entry {context, "Test"}, "First.bin"), "SomePath/Test.bin"));
+    CHECK (!builder.Add (context.CreateFile (Entry {context, "Test"}, "Second.bin"), "SomePath/Test.bin"));
+}
+
 END_SUITE
