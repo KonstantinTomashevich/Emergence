@@ -20,24 +20,6 @@ namespace Emergence::VirtualFileSystem::Original
 {
 using namespace Memory::Literals;
 
-const Entry::Reflection &Entry::Reflect () noexcept
-{
-    static const Reflection reflection = [] ()
-    {
-        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Entry);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (id);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (parentId);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (name);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (type);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (packageFileOffset);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (packageFileSize);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (filesystemLink);
-        EMERGENCE_MAPPING_REGISTRATION_END ();
-    }();
-
-    return reflection;
-}
-
 Object::Object () noexcept
     : type (ObjectType::INVALID)
 {
@@ -130,6 +112,95 @@ Object &Object::operator= (Object &&_other) noexcept
     return *this;
 }
 
+const Object::Reflection &Object::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Object);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (type);
+
+        EMERGENCE_MAPPING_UNION_VARIANT_BEGIN (type, 0u);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (entryId);
+        EMERGENCE_MAPPING_UNION_VARIANT_END ();
+
+        EMERGENCE_MAPPING_UNION_VARIANT_BEGIN (type, 0u);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (path);
+        EMERGENCE_MAPPING_UNION_VARIANT_END ();
+
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+const PackageFileData::Reflection &PackageFileData::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (PackageFileData);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (path);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (offset);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (size);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
+// NOLINTNEXTLINE(modernize-use-equals-default): We cannot use default here due to union.
+Entry::Entry () noexcept
+{
+}
+
+Entry::~Entry () noexcept
+{
+    switch (type)
+    {
+    case EntryType::VIRTUAL_DIRECTORY:
+        break;
+
+    case EntryType::PACKAGE_FILE:
+        packageFile.~PackageFileData ();
+        break;
+
+    case EntryType::FILE_SYSTEM_LINK:
+        filesystemLink.~basic_string ();
+        break;
+
+    case EntryType::WEAK_FILE_LINK:
+        weakFileLink.~Object ();
+        break;
+    }
+}
+
+const Entry::Reflection &Entry::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (Entry);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (id);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (parentId);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (name);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (type);
+
+        EMERGENCE_MAPPING_UNION_VARIANT_BEGIN (type, 1u);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (packageFile);
+        EMERGENCE_MAPPING_UNION_VARIANT_END ();
+
+        EMERGENCE_MAPPING_UNION_VARIANT_BEGIN (type, 2u);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (filesystemLink);
+        EMERGENCE_MAPPING_UNION_VARIANT_END ();
+
+        EMERGENCE_MAPPING_UNION_VARIANT_BEGIN (type, 3u);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (weakFileLink);
+        EMERGENCE_MAPPING_UNION_VARIANT_END ();
+
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
 VirtualFileSystem::Cursor::Cursor (VirtualFileSystem *_owner, const Object &_source) noexcept
 {
     switch (_source.type)
@@ -153,6 +224,7 @@ VirtualFileSystem::Cursor::Cursor (VirtualFileSystem *_owner, const Object &_sou
             break;
 
         case EntryType::PACKAGE_FILE:
+        case EntryType::WEAK_FILE_LINK:
             EMERGENCE_ASSERT (false);
             break;
 
@@ -444,6 +516,12 @@ Object VirtualFileSystem::FindChild (const Object &_object, const std::string_vi
 
                 return {childPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ()};
             }
+
+            case EntryType::WEAK_FILE_LINK:
+                EMERGENCE_LOG (WARNING, "VirtualFileSystem: Unable to get child \"", _name, "\" because path \"",
+                               ExtractFullVirtualPath (_object),
+                               "\" points to weak file link that cannot have children.");
+                return {};
             }
         }
         else
@@ -607,6 +685,12 @@ Object VirtualFileSystem::CreateDirectory (const Object &_parent, const std::str
 
                     return {resultPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ()};
                 }
+
+                case EntryType::WEAK_FILE_LINK:
+                    EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to create child directory \"", _directoryName,
+                                   "\" because path \"", ExtractFullVirtualPath (_parent),
+                                   "\" points to weak file link that cannot have children.");
+                    return {};
                 }
             }
         }
@@ -637,6 +721,56 @@ Object VirtualFileSystem::CreateDirectory (const Object &_parent, const std::str
 
         return {resultPath.generic_string<char, std::char_traits<char>, Memory::HeapSTD<char>> ()};
     }
+    }
+
+    EMERGENCE_ASSERT (false);
+    return {};
+}
+
+Object VirtualFileSystem::CreateWeakFileLink (const Object &_target,
+                                              const Object &_parent,
+                                              const std::string_view &_linkName) noexcept
+{
+    if (_target.type == ObjectType::INVALID)
+    {
+        EMERGENCE_LOG (ERROR, "VirtualFileSystem: Received invalid target for weak file link creation.");
+        return {};
+    }
+
+    switch (_parent.type)
+    {
+    case ObjectType::INVALID:
+        EMERGENCE_LOG (ERROR, "VirtualFileSystem: Received invalid parent for weak file link creation.");
+        return {};
+
+    case ObjectType::ENTRY:
+    {
+        {
+            auto entryCursor = entriesById.ReadPoint (&_parent.entryId);
+            const auto *entry = static_cast<const Entry *> (*entryCursor);
+            EMERGENCE_ASSERT (entry);
+
+            if (entry->type != EntryType::VIRTUAL_DIRECTORY)
+            {
+                EMERGENCE_LOG (ERROR,
+                               "VirtualFileSystem: Weak file links are only supported as virtual directory children.");
+                return {};
+            }
+        }
+
+        auto inserter = entries.AllocateAndInsert ();
+        auto *entry = static_cast<Entry *> (inserter.Allocate ());
+        entry->id = nextEntryId++;
+        entry->parentId = _parent.entryId;
+        entry->name = Memory::UniqueString {_linkName};
+        entry->type = EntryType::WEAK_FILE_LINK;
+        new (&entry->weakFileLink) Object {_target};
+        return {entry->id};
+    }
+
+    case ObjectType::PATH:
+        EMERGENCE_LOG (ERROR, "VirtualFileSystem: Weak file links are only supported as virtual directory children.");
+        return {};
     }
 
     EMERGENCE_ASSERT (false);
@@ -690,6 +824,7 @@ Object VirtualFileSystem::MakeDirectories (const Object &_parent, const std::str
                     break;
 
                 case EntryType::PACKAGE_FILE:
+                case EntryType::WEAK_FILE_LINK:
                     EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to serve make directories request as \"",
                                    ExtractFullVirtualPath (current), "\" is file!");
                     current = {};
@@ -869,7 +1004,7 @@ bool VirtualFileSystem::Mount (const Object &_at, const MountConfiguration &_con
                                                        &_configuration.targetPath[lastSeparatorPosition + 1u]};
 
         mountedEntry->type = EntryType::FILE_SYSTEM_LINK;
-        mountedEntry->filesystemLink = _configuration.sourcePath;
+        new (&mountedEntry->filesystemLink) Container::Utf8String {_configuration.sourcePath};
         return true;
     }
 
@@ -947,9 +1082,10 @@ bool VirtualFileSystem::Mount (const Object &_at, const MountConfiguration &_con
                                                     &headerEntry.relativePath[entryLastSeparatorPosition + 1u]};
 
             entry->type = EntryType::PACKAGE_FILE;
-            entry->filesystemLink = _configuration.sourcePath;
-            entry->packageFileOffset = headerSize + headerEntry.offset;
-            entry->packageFileSize = headerEntry.size;
+            new (&entry->packageFile) PackageFileData {};
+            entry->packageFile.path = _configuration.sourcePath;
+            entry->packageFile.offset = headerSize + headerEntry.offset;
+            entry->packageFile.size = headerEntry.size;
         }
 
         return !anyErrors;
@@ -976,6 +1112,15 @@ Memory::UniqueString VirtualFileSystem::GetEntryName (EntryId _id) const noexcep
     return entry->name;
 }
 
+Object VirtualFileSystem::GetWeakFileLinkTarget (EntryId _id) const noexcept
+{
+    auto entryCursor = entriesById.ReadPoint (&_id);
+    const auto *entry = static_cast<const Entry *> (*entryCursor);
+    EMERGENCE_ASSERT (entry);
+    EMERGENCE_ASSERT (entry->type == EntryType::WEAK_FILE_LINK);
+    return entry->weakFileLink;
+}
+
 FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenMode _mode) const noexcept
 {
     switch (_object.type)
@@ -985,21 +1130,39 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenM
 
     case ObjectType::ENTRY:
     {
-        if (_mode != OpenMode::BINARY)
-        {
-            EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to open file \"", ExtractFullVirtualPath (_object),
-                           "\" for read: it points to package file and therefore can only be opened in binary mode.");
-            return {};
-        }
-
         auto entryCursor = entriesById.ReadPoint (&_object.entryId);
         const auto *entry = static_cast<const Entry *> (*entryCursor);
         EMERGENCE_ASSERT (entry);
-        EMERGENCE_ASSERT (entry->type == EntryType::PACKAGE_FILE);
 
-        FILE *packageFile = fopen (entry->filesystemLink.c_str (), "rb");
-        fseek (packageFile, static_cast<long> (entry->packageFileOffset), SEEK_SET);
-        return {packageFile, entry->packageFileOffset, entry->packageFileSize};
+        switch (entry->type)
+        {
+        case EntryType::VIRTUAL_DIRECTORY:
+        case EntryType::FILE_SYSTEM_LINK:
+            EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to open file \"", ExtractFullVirtualPath (_object),
+                           "\" for read: it points to directory instead of file.");
+            return {};
+
+        case EntryType::PACKAGE_FILE:
+        {
+            if (_mode != OpenMode::BINARY)
+            {
+                EMERGENCE_LOG (
+                    ERROR, "VirtualFileSystem: Unable to open file \"", ExtractFullVirtualPath (_object),
+                    "\" for read: it points to package file and therefore can only be opened in binary mode.");
+                return {};
+            }
+
+            FILE *packageFile = fopen (entry->packageFile.path.c_str (), "rb");
+            fseek (packageFile, static_cast<long> (entry->packageFile.offset), SEEK_SET);
+            return {packageFile, entry->packageFile.offset, entry->packageFile.size};
+        }
+
+        case EntryType::WEAK_FILE_LINK:
+            return OpenFileForRead (entry->weakFileLink, _mode);
+        }
+
+        EMERGENCE_ASSERT (false);
+        return {};
     }
 
     case ObjectType::PATH:
@@ -1027,30 +1190,54 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenM
 
 FileWriteContext VirtualFileSystem::OpenFileForWrite (const Object &_object, OpenMode _mode) const noexcept
 {
-    const char *mode = nullptr;
-    switch (_mode)
-    {
-    case OpenMode::BINARY:
-        mode = "wb";
-        break;
-
-    case OpenMode::TEXT:
-        mode = "w";
-        break;
-    }
-
     switch (_object.type)
     {
     case ObjectType::INVALID:
         return {};
 
     case ObjectType::ENTRY:
-        EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to open file \"", ExtractFullVirtualPath (_object),
-                       "\" for write: only files that are mapped to real file system can be written to.");
+    {
+        auto entryCursor = entriesById.ReadPoint (&_object.entryId);
+        const auto *entry = static_cast<const Entry *> (*entryCursor);
+        EMERGENCE_ASSERT (entry);
+
+        switch (entry->type)
+        {
+        case EntryType::VIRTUAL_DIRECTORY:
+        case EntryType::FILE_SYSTEM_LINK:
+            EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to open file \"", ExtractFullVirtualPath (_object),
+                           "\" for write: it points to directory instead of file.");
+            return {};
+
+        case EntryType::PACKAGE_FILE:
+            EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to open file \"", ExtractFullVirtualPath (_object),
+                           "\" for write: package files are read-only.");
+            return {};
+
+        case EntryType::WEAK_FILE_LINK:
+            return OpenFileForWrite (entry->weakFileLink, _mode);
+        }
+
+        EMERGENCE_ASSERT (false);
         return {};
+    }
 
     case ObjectType::PATH:
+    {
+        const char *mode = nullptr;
+        switch (_mode)
+        {
+        case OpenMode::BINARY:
+            mode = "wb";
+            break;
+
+        case OpenMode::TEXT:
+            mode = "w";
+            break;
+        }
+
         return {fopen (_object.path.c_str (), mode)};
+    }
     }
 
     EMERGENCE_ASSERT (false);

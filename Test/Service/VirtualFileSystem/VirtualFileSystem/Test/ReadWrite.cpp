@@ -100,6 +100,41 @@ TEST_CASE (ComplicatedWriteReadText)
     CHECK_EQUAL (resultText, fileText);
 }
 
+TEST_CASE (WriteReadTextThroughLink)
+{
+    std::filesystem::remove_all (testDirectory);
+    std::filesystem::create_directories (testDirectory);
+
+    const Utf8String path = EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "First");
+    std::filesystem::create_directories (path);
+    const Utf8String fileText {"Hello, world! We avoid new lines here, because they are not really portable."};
+
+    Context context;
+    REQUIRE (context.Mount (context.GetRoot (), {MountSource::FILE_SYSTEM, path, "Mounted"}));
+
+    {
+        Entry file = context.CreateFile (Entry {context, "Mounted"}, "test.txt");
+        Entry link = context.CreateWeakFileLink (file, context.GetRoot (), "linked.txt");
+        Writer writer {link, OpenMode::TEXT};
+        REQUIRE (writer);
+        writer.OutputStream () << fileText;
+    }
+
+    Reader reader {Entry {context.GetRoot (), "linked.txt"}, OpenMode::TEXT};
+    REQUIRE (reader);
+
+    StringBuilder textBuffer;
+    int next;
+
+    while ((next = reader.InputStream ().get ()) != EOF)
+    {
+        textBuffer.Append (static_cast<char> (next));
+    }
+
+    const Utf8String resultText {textBuffer.Get ()};
+    CHECK_EQUAL (resultText, fileText);
+}
+
 TEST_CASE (WriteReadBinary)
 {
     std::filesystem::remove_all (testDirectory);

@@ -74,6 +74,29 @@ TEST_CASE (CreateFileMounted)
     CHECK (std::filesystem::is_regular_file (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "test.txt")));
 }
 
+TEST_CASE (CreateInvalidWeakFileLink)
+{
+    Context context;
+    CHECK (context.CreateWeakFileLink (Entry {context, "test.txt"}, context.GetRoot (), "linked.txt").GetType () ==
+           Emergence::VirtualFileSystem::EntryType::INVALID);
+}
+
+TEST_CASE (CreateValidWeakFileLink)
+{
+    std::filesystem::remove_all (testDirectory);
+    std::filesystem::create_directories (testDirectory);
+
+    Context context;
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+
+    Entry mounted {context, testDirectory};
+    REQUIRE (mounted.GetType () == EntryType::DIRECTORY);
+    CHECK (context.CreateFile (mounted, "test.txt").GetType () == EntryType::FILE);
+    CHECK (context.CreateWeakFileLink (Entry {mounted, "test.txt"}, context.GetRoot (), "linked.txt").GetType () ==
+           EntryType::FILE);
+}
+
 TEST_CASE (ResolvePathWithDots)
 {
     std::filesystem::remove_all (testDirectory);
@@ -198,7 +221,7 @@ TEST_CASE (DeleteFileMounted)
     CHECK (!std::filesystem::exists (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "test.txt")));
 }
 
-TEST_CASE (DeleteMountedKeepReal)
+TEST_CASE (DeleteFileMounted)
 {
     std::filesystem::remove_all (testDirectory);
     std::filesystem::create_directories (testDirectory);
@@ -208,10 +231,44 @@ TEST_CASE (DeleteMountedKeepReal)
                             MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
 
     Entry mounted {context, testDirectory};
-    context.CreateFile (mounted, "test.txt");
+    CHECK (context.Delete (context.CreateFile (mounted, "test.txt"), false, true));
+    CHECK (!std::filesystem::exists (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "test.txt")));
+}
 
-    CHECK (context.Delete (mounted, true, false));
+TEST_CASE (DeleteWeakFileLinkKeepsFile)
+{
+    std::filesystem::remove_all (testDirectory);
+    std::filesystem::create_directories (testDirectory);
+
+    Context context;
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+
+    Entry mounted {context, testDirectory};
+    Entry file = context.CreateFile (mounted, "test.txt");
+    Entry link = context.CreateWeakFileLink (file, context.GetRoot(), "linked.txt");
+
+    CHECK (context.Delete (link, false, false));
+    CHECK (file.GetType() == EntryType::FILE);
     CHECK (std::filesystem::exists (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "test.txt")));
+}
+
+TEST_CASE (DeletingFileInvalidatesWeakFileLink)
+{
+    std::filesystem::remove_all (testDirectory);
+    std::filesystem::create_directories (testDirectory);
+
+    Context context;
+    REQUIRE (context.Mount (context.GetRoot (),
+                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
+
+    Entry mounted {context, testDirectory};
+    Entry file = context.CreateFile (mounted, "test.txt");
+    Entry link = context.CreateWeakFileLink (file, context.GetRoot(), "linked.txt");
+
+    CHECK (link.GetType() == EntryType::FILE);
+    CHECK (context.Delete (file, false, true));
+    CHECK (link.GetType() == EntryType::INVALID);
 }
 
 TEST_CASE (DeleteMountedDeleteReal)

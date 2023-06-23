@@ -77,21 +77,20 @@ Entry::~Entry () noexcept
     block_cast<Original::EntryImplementationData> (data).~EntryImplementationData ();
 }
 
-EntryType Entry::GetType () const noexcept
+static EntryType QueryType (Original::VirtualFileSystem *_owner, const Original::Object &_object) noexcept
 {
-    const auto &entryData = block_cast<Original::EntryImplementationData> (data);
-    if (!entryData.owner)
+    if (!_owner)
     {
         return EntryType::INVALID;
     }
 
-    switch (entryData.object.type)
+    switch (_object.type)
     {
     case Original::ObjectType::INVALID:
         return EntryType::INVALID;
 
     case Original::ObjectType::ENTRY:
-        switch (entryData.owner->GetEntryType (entryData.object.entryId))
+        switch (_owner->GetEntryType (_object.entryId))
         {
         case Original::EntryType::VIRTUAL_DIRECTORY:
         case Original::EntryType::FILE_SYSTEM_LINK:
@@ -99,12 +98,15 @@ EntryType Entry::GetType () const noexcept
 
         case Original::EntryType::PACKAGE_FILE:
             return EntryType::FILE;
+
+        case Original::EntryType::WEAK_FILE_LINK:
+            return QueryType (_owner, _owner->GetWeakFileLinkTarget (_object.entryId));
         }
 
         break;
 
     case Original::ObjectType::PATH:
-        switch (std::filesystem::status (entryData.object.path).type ())
+        switch (std::filesystem::status (_object.path).type ())
         {
         case std::filesystem::file_type::regular:
             return EntryType::FILE;
@@ -121,6 +123,12 @@ EntryType Entry::GetType () const noexcept
 
     EMERGENCE_ASSERT (false);
     return EntryType::INVALID;
+}
+
+EntryType Entry::GetType () const noexcept
+{
+    const auto &entryData = block_cast<Original::EntryImplementationData> (data);
+    return QueryType (entryData.owner, entryData.object);
 }
 
 Container::Utf8String Entry::GetFileName () const noexcept
