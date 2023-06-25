@@ -27,25 +27,25 @@ TEST_CASE (AllResourceImport)
     REQUIRE (BinaryConversionPass (context));
 
     // For simplicity, we do not check the file contents and do not iterate the resource lists.
-    Optional<ObjectData> objectData = context.GetSourceList ().QueryObject ("B_Tower"_us);
+    Optional<ObjectData> objectData = context.GetResourceList ().QueryObject ("B_Tower"_us);
     REQUIRE (objectData);
     CHECK (objectData->type == FirstObjectType::Reflect ().mapping);
     CHECK (objectData->entry);
     CHECK (objectData->format == Emergence::Resource::Provider::ObjectFormat::BINARY);
 
-    objectData = context.GetSourceList ().QueryObject ("B_Barrack"_us);
+    objectData = context.GetResourceList ().QueryObject ("B_Barrack"_us);
     REQUIRE (objectData);
     CHECK (objectData->type == FirstObjectType::Reflect ().mapping);
     CHECK (objectData->entry);
     CHECK (objectData->format == Emergence::Resource::Provider::ObjectFormat::BINARY);
 
-    objectData = context.GetSourceList ().QueryObject ("C_HealingPotion"_us);
+    objectData = context.GetResourceList ().QueryObject ("C_HealingPotion"_us);
     REQUIRE (objectData);
     CHECK (objectData->type == SecondObjectType::Reflect ().mapping);
     CHECK (objectData->entry);
     CHECK (objectData->format == Emergence::Resource::Provider::ObjectFormat::BINARY);
 
-    Optional<ThirdPartyData> thirdPartyData = context.GetSourceList ().QueryThirdParty ("Something.someformat"_us);
+    Optional<ThirdPartyData> thirdPartyData = context.GetResourceList ().QueryThirdParty ("Something.someformat"_us);
     REQUIRE (thirdPartyData);
     CHECK (thirdPartyData->entry);
 }

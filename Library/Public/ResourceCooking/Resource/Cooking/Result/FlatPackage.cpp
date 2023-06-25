@@ -34,8 +34,7 @@ bool ProduceFlatPackage (Context &_context, const std::string_view &_packageFile
         return false;
     }
 
-    for (auto cursor = _context.GetSourceList ().VisitAllObjects (); Container::Optional<ObjectData> object = *cursor;
-         ++cursor)
+    for (auto cursor = _context.GetResourceList ().ReadAllObjects (); const ObjectData *object = *cursor; ++cursor)
     {
         if (!builder.Add (object->entry, object->entry.GetFullName ()))
         {
@@ -45,8 +44,8 @@ bool ProduceFlatPackage (Context &_context, const std::string_view &_packageFile
         }
     }
 
-    for (auto cursor = _context.GetSourceList ().VisitAllThirdParty ();
-         Container::Optional<ThirdPartyData> thirdParty = *cursor; ++cursor)
+    for (auto cursor = _context.GetResourceList ().ReadAllThirdParty (); const ThirdPartyData *thirdParty = *cursor;
+         ++cursor)
     {
         if (!builder.Add (thirdParty->entry, thirdParty->entry.GetFullName ()))
         {

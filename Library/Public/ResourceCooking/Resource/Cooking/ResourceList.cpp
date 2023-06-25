@@ -44,68 +44,152 @@ const ThirdPartyData::Reflection &ThirdPartyData::Reflect () noexcept
     return reflection;
 }
 
-Container::Optional<ObjectData> ResourceList::AllObjectsCursor::operator* () const noexcept
+const ObjectData *ResourceList::AllObjectsReadCursor::operator* () const noexcept
 {
     if (const auto *data = static_cast<const ObjectData *> (*cursor))
     {
-        return *data;
+        return data;
     }
 
-    return {};
+    return nullptr;
 }
 
-ResourceList::AllObjectsCursor &ResourceList::AllObjectsCursor::operator++ () noexcept
+ResourceList::AllObjectsReadCursor &ResourceList::AllObjectsReadCursor::operator++ () noexcept
 {
     ++cursor;
     return *this;
 }
 
-ResourceList::AllObjectsCursor::AllObjectsCursor (
+ResourceList::AllObjectsReadCursor::AllObjectsReadCursor (
     RecordCollection::LinearRepresentation::AscendingReadCursor _cursor) noexcept
     : cursor (std::move (_cursor))
 {
 }
 
-Container::Optional<ObjectData> ResourceList::AllObjectsOfTypeCursor::operator* () const noexcept
+ObjectData *ResourceList::AllObjectsEditCursor::operator* () noexcept
 {
-    if (const auto *data = static_cast<const ObjectData *> (*cursor))
+    if (auto *data = static_cast<ObjectData *> (*cursor))
     {
-        return *data;
+        return data;
     }
 
-    return {};
+    return nullptr;
 }
 
-ResourceList::AllObjectsOfTypeCursor &ResourceList::AllObjectsOfTypeCursor::operator++ () noexcept
+ResourceList::AllObjectsEditCursor &ResourceList::AllObjectsEditCursor::operator++ () noexcept
 {
     ++cursor;
     return *this;
 }
 
-ResourceList::AllObjectsOfTypeCursor::AllObjectsOfTypeCursor (
+ResourceList::AllObjectsEditCursor &ResourceList::AllObjectsEditCursor::operator~() noexcept
+{
+    ~cursor;
+    return *this;
+}
+
+ResourceList::AllObjectsEditCursor::AllObjectsEditCursor (
+    RecordCollection::LinearRepresentation::AscendingEditCursor _cursor) noexcept
+    : cursor (std::move (_cursor))
+{
+}
+
+const ObjectData *ResourceList::AllObjectsOfTypeReadCursor::operator* () const noexcept
+{
+    if (const auto *data = static_cast<const ObjectData *> (*cursor))
+    {
+        return data;
+    }
+
+    return nullptr;
+}
+
+ResourceList::AllObjectsOfTypeReadCursor &ResourceList::AllObjectsOfTypeReadCursor::operator++ () noexcept
+{
+    ++cursor;
+    return *this;
+}
+
+ResourceList::AllObjectsOfTypeReadCursor::AllObjectsOfTypeReadCursor (
     RecordCollection::PointRepresentation::ReadCursor _cursor) noexcept
     : cursor (std::move (_cursor))
 {
 }
 
-Container::Optional<ThirdPartyData> ResourceList::AllThirdPartyCursor::operator* () const noexcept
+ObjectData *ResourceList::AllObjectsOfTypeEditCursor::operator* () noexcept
 {
-    if (const auto *data = static_cast<const ThirdPartyData *> (*cursor))
+    if (auto *data = static_cast<ObjectData *> (*cursor))
     {
-        return *data;
+        return data;
     }
 
-    return {};
+    return nullptr;
 }
 
-ResourceList::AllThirdPartyCursor &ResourceList::AllThirdPartyCursor::operator++ () noexcept
+ResourceList::AllObjectsOfTypeEditCursor &ResourceList::AllObjectsOfTypeEditCursor::operator++ () noexcept
 {
     ++cursor;
     return *this;
 }
 
-ResourceList::AllThirdPartyCursor::AllThirdPartyCursor (
+ResourceList::AllObjectsOfTypeEditCursor &ResourceList::AllObjectsOfTypeEditCursor::operator~() noexcept
+{
+    ~cursor;
+    return *this;
+}
+
+ResourceList::AllObjectsOfTypeEditCursor::AllObjectsOfTypeEditCursor (
+    RecordCollection::PointRepresentation::EditCursor _cursor) noexcept
+    : cursor (std::move (_cursor))
+{
+}
+
+const ThirdPartyData *ResourceList::AllThirdPartyReadCursor::operator* () const noexcept
+{
+    if (const auto *data = static_cast<const ThirdPartyData *> (*cursor))
+    {
+        return data;
+    }
+
+    return nullptr;
+}
+
+ResourceList::AllThirdPartyReadCursor &ResourceList::AllThirdPartyReadCursor::operator++ () noexcept
+{
+    ++cursor;
+    return *this;
+}
+
+ResourceList::AllThirdPartyReadCursor::AllThirdPartyReadCursor (
     RecordCollection::LinearRepresentation::AscendingReadCursor _cursor) noexcept
+    : cursor (std::move (_cursor))
+{
+}
+
+ThirdPartyData *ResourceList::AllThirdPartyEditCursor::operator* () noexcept
+{
+    if (auto *data = static_cast<ThirdPartyData *> (*cursor))
+    {
+        return data;
+    }
+
+    return nullptr;
+}
+
+ResourceList::AllThirdPartyEditCursor &ResourceList::AllThirdPartyEditCursor::operator++ () noexcept
+{
+    ++cursor;
+    return *this;
+}
+
+ResourceList::AllThirdPartyEditCursor &ResourceList::AllThirdPartyEditCursor::operator~() noexcept
+{
+    ~cursor;
+    return *this;
+}
+
+ResourceList::AllThirdPartyEditCursor::AllThirdPartyEditCursor (
+    RecordCollection::LinearRepresentation::AscendingEditCursor _cursor) noexcept
     : cursor (std::move (_cursor))
 {
 }
@@ -136,23 +220,7 @@ void ResourceList::AddThirdParty (const ThirdPartyData &_thirdParty) noexcept
     *thirdPartyInstance = _thirdParty;
 }
 
-ResourceList::AllObjectsCursor ResourceList::VisitAllObjects () const noexcept
-{
-    return {allObjects.ReadAscendingInterval (nullptr, nullptr)};
-}
-
-ResourceList::AllObjectsOfTypeCursor ResourceList::VisitAllObjectsOfType (
-    const StandardLayout::Mapping &_mapping) const noexcept
-{
-    return {objectsByType.ReadPoint (&_mapping)};
-}
-
-ResourceList::AllThirdPartyCursor ResourceList::VisitAllThirdParty () const noexcept
-{
-    return {allThirdParty.ReadAscendingInterval (nullptr, nullptr)};
-}
-
-Container::Optional<ObjectData> ResourceList::QueryObject (const Memory::UniqueString &_id) const noexcept
+Container::Optional<ObjectData> ResourceList::QueryObject (Memory::UniqueString _id) const noexcept
 {
     auto cursor = objectsById.ReadPoint (&_id);
     if (const auto *object = static_cast<const ObjectData *> (*cursor))
@@ -163,7 +231,7 @@ Container::Optional<ObjectData> ResourceList::QueryObject (const Memory::UniqueS
     return {};
 }
 
-Container::Optional<ThirdPartyData> ResourceList::QueryThirdParty (const Memory::UniqueString &_id) const noexcept
+Container::Optional<ThirdPartyData> ResourceList::QueryThirdParty (Memory::UniqueString _id) const noexcept
 {
     auto cursor = thirdPartyById.ReadPoint (&_id);
     if (const auto *thirdPartyInstance = static_cast<const ThirdPartyData *> (*cursor))
@@ -172,6 +240,54 @@ Container::Optional<ThirdPartyData> ResourceList::QueryThirdParty (const Memory:
     }
 
     return {};
+}
+
+void ResourceList::RemoveObject (Memory::UniqueString _id) noexcept
+{
+    if (auto cursor = objectsById.EditPoint (&_id); *cursor)
+    {
+        ~cursor;
+    }
+}
+
+void ResourceList::RemoveThirdParty (Memory::UniqueString _id) noexcept
+{
+    if (auto cursor = thirdPartyById.EditPoint (&_id); *cursor)
+    {
+        ~cursor;
+    }
+}
+
+ResourceList::AllObjectsReadCursor ResourceList::ReadAllObjects () const noexcept
+{
+    return {allObjects.ReadAscendingInterval (nullptr, nullptr)};
+}
+
+ResourceList::AllObjectsEditCursor ResourceList::EditAllObjects () noexcept
+{
+    return {allObjects.EditAscendingInterval (nullptr, nullptr)};
+}
+
+ResourceList::AllObjectsOfTypeReadCursor ResourceList::ReadAllObjectsOfType (
+    const StandardLayout::Mapping &_mapping) const noexcept
+{
+    return {objectsByType.ReadPoint (&_mapping)};
+}
+
+ResourceList::AllObjectsOfTypeEditCursor ResourceList::EditAllObjectsOfType (
+    const StandardLayout::Mapping &_mapping) noexcept
+{
+    return {objectsByType.EditPoint (&_mapping)};
+}
+
+ResourceList::AllThirdPartyReadCursor ResourceList::ReadAllThirdParty () const noexcept
+{
+    return {allThirdParty.ReadAscendingInterval (nullptr, nullptr)};
+}
+
+ResourceList::AllThirdPartyEditCursor ResourceList::EditAllThirdParty () noexcept
+{
+    return {allThirdParty.EditAscendingInterval (nullptr, nullptr)};
 }
 
 void ResourceList::Clear () noexcept

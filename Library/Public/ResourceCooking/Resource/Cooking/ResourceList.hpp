@@ -45,73 +45,148 @@ struct ThirdPartyData final
 class ResourceList final
 {
 public:
-    class AllObjectsCursor final
+    class AllObjectsReadCursor final
     {
     public:
-        AllObjectsCursor (const AllObjectsCursor &_other) noexcept = default;
+        AllObjectsReadCursor (const AllObjectsReadCursor &_other) noexcept = default;
 
-        AllObjectsCursor (AllObjectsCursor &&_other) noexcept = default;
+        AllObjectsReadCursor (AllObjectsReadCursor &&_other) noexcept = default;
 
-        ~AllObjectsCursor () noexcept = default;
+        ~AllObjectsReadCursor () noexcept = default;
 
-        [[nodiscard]] Container::Optional<ObjectData> operator* () const noexcept;
+        [[nodiscard]] const ObjectData *operator* () const noexcept;
 
-        AllObjectsCursor &operator++ () noexcept;
+        AllObjectsReadCursor &operator++ () noexcept;
 
-        EMERGENCE_DELETE_ASSIGNMENT (AllObjectsCursor);
+        EMERGENCE_DELETE_ASSIGNMENT (AllObjectsReadCursor);
 
     private:
         friend class ResourceList;
 
-        AllObjectsCursor (RecordCollection::LinearRepresentation::AscendingReadCursor _cursor) noexcept;
+        AllObjectsReadCursor (RecordCollection::LinearRepresentation::AscendingReadCursor _cursor) noexcept;
 
         RecordCollection::LinearRepresentation::AscendingReadCursor cursor;
     };
 
-    class AllObjectsOfTypeCursor final
+    class AllObjectsEditCursor final
     {
     public:
-        AllObjectsOfTypeCursor (const AllObjectsOfTypeCursor &_other) noexcept = default;
+        AllObjectsEditCursor (const AllObjectsEditCursor &_other) = delete;
 
-        AllObjectsOfTypeCursor (AllObjectsOfTypeCursor &&_other) noexcept = default;
+        AllObjectsEditCursor (AllObjectsEditCursor &&_other) noexcept = default;
 
-        ~AllObjectsOfTypeCursor () noexcept = default;
+        ~AllObjectsEditCursor () noexcept = default;
 
-        [[nodiscard]] Container::Optional<ObjectData> operator* () const noexcept;
+        [[nodiscard]] ObjectData *operator* () noexcept;
 
-        AllObjectsOfTypeCursor &operator++ () noexcept;
+        AllObjectsEditCursor &operator++ () noexcept;
 
-        EMERGENCE_DELETE_ASSIGNMENT (AllObjectsOfTypeCursor);
+        AllObjectsEditCursor &operator~() noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (AllObjectsEditCursor);
 
     private:
         friend class ResourceList;
 
-        AllObjectsOfTypeCursor (RecordCollection::PointRepresentation::ReadCursor _cursor) noexcept;
+        AllObjectsEditCursor (RecordCollection::LinearRepresentation::AscendingEditCursor _cursor) noexcept;
+
+        RecordCollection::LinearRepresentation::AscendingEditCursor cursor;
+    };
+
+    class AllObjectsOfTypeReadCursor final
+    {
+    public:
+        AllObjectsOfTypeReadCursor (const AllObjectsOfTypeReadCursor &_other) noexcept = default;
+
+        AllObjectsOfTypeReadCursor (AllObjectsOfTypeReadCursor &&_other) noexcept = default;
+
+        ~AllObjectsOfTypeReadCursor () noexcept = default;
+
+        [[nodiscard]] const ObjectData *operator* () const noexcept;
+
+        AllObjectsOfTypeReadCursor &operator++ () noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (AllObjectsOfTypeReadCursor);
+
+    private:
+        friend class ResourceList;
+
+        AllObjectsOfTypeReadCursor (RecordCollection::PointRepresentation::ReadCursor _cursor) noexcept;
 
         RecordCollection::PointRepresentation::ReadCursor cursor;
     };
 
-    class AllThirdPartyCursor final
+    class AllObjectsOfTypeEditCursor final
     {
     public:
-        AllThirdPartyCursor (const AllThirdPartyCursor &_other) noexcept = default;
+        AllObjectsOfTypeEditCursor (const AllObjectsOfTypeEditCursor &_other) = delete;
 
-        AllThirdPartyCursor (AllThirdPartyCursor &&_other) noexcept = default;
+        AllObjectsOfTypeEditCursor (AllObjectsOfTypeEditCursor &&_other) noexcept = default;
 
-        ~AllThirdPartyCursor () noexcept = default;
+        ~AllObjectsOfTypeEditCursor () noexcept = default;
 
-        [[nodiscard]] Container::Optional<ThirdPartyData> operator* () const noexcept;
+        [[nodiscard]] ObjectData *operator* () noexcept;
 
-        AllThirdPartyCursor &operator++ () noexcept;
+        AllObjectsOfTypeEditCursor &operator++ () noexcept;
 
-        EMERGENCE_DELETE_ASSIGNMENT (AllThirdPartyCursor);
+        AllObjectsOfTypeEditCursor &operator~() noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (AllObjectsOfTypeEditCursor);
 
     private:
         friend class ResourceList;
 
-        AllThirdPartyCursor (RecordCollection::LinearRepresentation::AscendingReadCursor _cursor) noexcept;
+        AllObjectsOfTypeEditCursor (RecordCollection::PointRepresentation::EditCursor _cursor) noexcept;
+
+        RecordCollection::PointRepresentation::EditCursor cursor;
+    };
+
+    class AllThirdPartyReadCursor final
+    {
+    public:
+        AllThirdPartyReadCursor (const AllThirdPartyReadCursor &_other) noexcept = default;
+
+        AllThirdPartyReadCursor (AllThirdPartyReadCursor &&_other) noexcept = default;
+
+        ~AllThirdPartyReadCursor () noexcept = default;
+
+        [[nodiscard]] const ThirdPartyData *operator* () const noexcept;
+
+        AllThirdPartyReadCursor &operator++ () noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (AllThirdPartyReadCursor);
+
+    private:
+        friend class ResourceList;
+
+        AllThirdPartyReadCursor (RecordCollection::LinearRepresentation::AscendingReadCursor _cursor) noexcept;
 
         RecordCollection::LinearRepresentation::AscendingReadCursor cursor;
+    };
+
+    class AllThirdPartyEditCursor final
+    {
+    public:
+        AllThirdPartyEditCursor (const AllThirdPartyEditCursor &_other) = delete;
+
+        AllThirdPartyEditCursor (AllThirdPartyEditCursor &&_other) noexcept = default;
+
+        ~AllThirdPartyEditCursor () noexcept = default;
+
+        [[nodiscard]] ThirdPartyData *operator* () noexcept;
+
+        AllThirdPartyEditCursor &operator++ () noexcept;
+
+        AllThirdPartyEditCursor &operator~() noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (AllThirdPartyEditCursor);
+
+    private:
+        friend class ResourceList;
+
+        AllThirdPartyEditCursor (RecordCollection::LinearRepresentation::AscendingEditCursor _cursor) noexcept;
+
+        RecordCollection::LinearRepresentation::AscendingEditCursor cursor;
     };
 
     ResourceList () noexcept;
@@ -126,15 +201,25 @@ public:
 
     void AddThirdParty (const ThirdPartyData &_thirdParty) noexcept;
 
-    AllObjectsCursor VisitAllObjects () const noexcept;
+    Container::Optional<ObjectData> QueryObject (Memory::UniqueString _id) const noexcept;
 
-    AllObjectsOfTypeCursor VisitAllObjectsOfType (const StandardLayout::Mapping &_mapping) const noexcept;
+    Container::Optional<ThirdPartyData> QueryThirdParty (Memory::UniqueString _id) const noexcept;
 
-    AllThirdPartyCursor VisitAllThirdParty () const noexcept;
+    void RemoveObject (Memory::UniqueString _id) noexcept;
 
-    Container::Optional<ObjectData> QueryObject (const Memory::UniqueString &_id) const noexcept;
+    void RemoveThirdParty (Memory::UniqueString _id) noexcept;
 
-    Container::Optional<ThirdPartyData> QueryThirdParty (const Memory::UniqueString &_id) const noexcept;
+    AllObjectsReadCursor ReadAllObjects () const noexcept;
+
+    AllObjectsEditCursor EditAllObjects () noexcept;
+
+    AllObjectsOfTypeReadCursor ReadAllObjectsOfType (const StandardLayout::Mapping &_mapping) const noexcept;
+
+    AllObjectsOfTypeEditCursor EditAllObjectsOfType (const StandardLayout::Mapping &_mapping) noexcept;
+
+    AllThirdPartyReadCursor ReadAllThirdParty () const noexcept;
+
+    AllThirdPartyEditCursor EditAllThirdParty () noexcept;
 
     void Clear () noexcept;
 

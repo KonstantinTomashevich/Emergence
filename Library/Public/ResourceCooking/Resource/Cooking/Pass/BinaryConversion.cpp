@@ -49,13 +49,11 @@ bool BinaryConversionPass (Context &_context) noexcept
     BinaryConversionHeap conversionHeap;
     const VirtualFileSystem::Entry passDirectory = _context.GetPassIntermediateRealDirectory ("BinaryConversion");
 
-    for (auto cursor = _context.GetSourceList ().VisitAllObjects (); Container::Optional<ObjectData> object = *cursor;
-         ++cursor)
+    for (auto cursor = _context.GetResourceList ().EditAllObjects (); ObjectData *object = *cursor; ++cursor)
     {
         switch (object->format)
         {
         case Provider::ObjectFormat::BINARY:
-            _context.GetTargetList ().AddObject (*object);
             break;
 
         case Provider::ObjectFormat::YAML:
@@ -140,22 +138,13 @@ bool BinaryConversionPass (Context &_context) noexcept
 
             object->entry = outputEntry;
             object->format = Provider::ObjectFormat::BINARY;
-            _context.GetTargetList ().AddObject (*object);
-
             EMERGENCE_LOG (INFO, "Resource::Cooking: Conversion successful.");
             break;
         }
         }
     }
 
-    for (auto cursor = _context.GetSourceList ().VisitAllThirdParty ();
-         Container::Optional<ThirdPartyData> thirdParty = *cursor; ++cursor)
-    {
-        _context.GetTargetList ().AddThirdParty (*thirdParty);
-    }
-
     EMERGENCE_LOG (INFO, "Resource::Cooking: Binary conversion pass finished successfully.");
-    _context.OnPassFinished ();
     return true;
 }
 } // namespace Emergence::Resource::Cooking

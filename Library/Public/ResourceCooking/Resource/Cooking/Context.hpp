@@ -23,14 +23,9 @@ public:
     bool Setup (const VirtualFileSystem::MountConfigurationList &_inputMount,
                 const std::string_view &_workspaceRealPath) noexcept;
 
-    void OnPassFinished () noexcept;
+    const ResourceList &GetResourceList () const noexcept;
 
-    // TODO: It seems that architecture that uses one list, but allows to delete items from it, is much more efficient.
-    //       Investigate this idea later.
-
-    const ResourceList &GetSourceList () const noexcept;
-
-    ResourceList &GetTargetList () noexcept;
+    ResourceList &GetResourceList () noexcept;
 
     Provider::ResourceProvider &GetInitialResourceProvider () noexcept;
 
@@ -53,11 +48,6 @@ public:
 private:
     VirtualFileSystem::Context virtualFileSystem;
     Provider::ResourceProvider resourceProvider;
-
-    ResourceList firstList;
-    ResourceList secondList;
-
-    ResourceList *sourceList = &firstList;
-    ResourceList *targetList = &secondList;
+    ResourceList resourceList;
 };
 } // namespace Emergence::Resource::Cooking

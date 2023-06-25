@@ -22,8 +22,8 @@ bool AllResourceImportPass (Context &_context) noexcept
                 return false;
             }
 
-            const Provider::ObjectFormat format = _context.GetInitialResourceProvider().GetObjectFormat (type, id);
-            _context.GetTargetList ().AddObject ({id, type, entry, format});
+            const Provider::ObjectFormat format = _context.GetInitialResourceProvider ().GetObjectFormat (type, id);
+            _context.GetResourceList ().AddObject ({id, type, entry, format});
         }
     }
 
@@ -38,11 +38,10 @@ bool AllResourceImportPass (Context &_context) noexcept
             return false;
         }
 
-        _context.GetTargetList ().AddThirdParty ({id, entry});
+        _context.GetResourceList ().AddThirdParty ({id, entry});
     }
 
     EMERGENCE_LOG (INFO, "Resource::Cooking: All resource import pass finished successfully.");
-    _context.OnPassFinished ();
     return true;
 }
 } // namespace Emergence::Resource::Cooking

@@ -28,31 +28,22 @@ bool AllResourceFlatIndexPass (Context &_context) noexcept
         }
     }
 
-    _context.GetTargetList ().AddObject ({
-        Memory::UniqueString {Provider::IndexFile::INDEX_FILE_NAME},
-        Provider::IndexFile::Reflect ().mapping,
-        outputEntry,
-        Provider::ObjectFormat::BINARY,
-    });
-
     const VirtualFileSystem::Entry passVirtualDirectory =
         _context.GetPassIntermediateVirtualDirectory ("AllResourceFlatIndex");
 
-    for (auto cursor = _context.GetSourceList ().VisitAllObjects (); Container::Optional<ObjectData> object = *cursor;
-         ++cursor)
+    for (auto cursor = _context.GetResourceList ().ReadAllObjects (); const ObjectData *object = *cursor; ++cursor)
     {
         if (!_context.GetVirtualFileSystem ().CreateWeakFileLink (object->entry, passVirtualDirectory,
                                                                   object->entry.GetFullName ()))
         {
-            EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to create weak link to \"", object->entry.GetFullName (), "\".");
+            EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to create weak link to \"", object->entry.GetFullName (),
+                           "\".");
             return false;
         }
-
-        _context.GetTargetList ().AddObject (*object);
     }
 
-    for (auto cursor = _context.GetSourceList ().VisitAllThirdParty ();
-         Container::Optional<ThirdPartyData> thirdParty = *cursor; ++cursor)
+    for (auto cursor = _context.GetResourceList ().ReadAllThirdParty (); const ThirdPartyData *thirdParty = *cursor;
+         ++cursor)
     {
         if (!_context.GetVirtualFileSystem ().CreateWeakFileLink (thirdParty->entry, passVirtualDirectory,
                                                                   thirdParty->entry.GetFullName ()))
@@ -61,8 +52,6 @@ bool AllResourceFlatIndexPass (Context &_context) noexcept
                            thirdParty->entry.GetFullName (), "\".");
             return false;
         }
-
-        _context.GetTargetList ().AddThirdParty (*thirdParty);
     }
 
     Provider::ResourceProvider bakingProvider {&_context.GetVirtualFileSystem (),
@@ -86,8 +75,14 @@ bool AllResourceFlatIndexPass (Context &_context) noexcept
         return false;
     }
 
+    _context.GetResourceList ().AddObject ({
+        Memory::UniqueString {Provider::IndexFile::INDEX_FILE_NAME},
+        Provider::IndexFile::Reflect ().mapping,
+        outputEntry,
+        Provider::ObjectFormat::BINARY,
+    });
+
     EMERGENCE_LOG (INFO, "Resource::Cooking: All resource flat index pass finished successfully.");
-    _context.OnPassFinished ();
     return true;
 }
 } // namespace Emergence::Resource::Cooking

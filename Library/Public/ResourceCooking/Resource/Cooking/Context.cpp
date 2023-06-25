@@ -91,20 +91,14 @@ bool Context::Setup (const VirtualFileSystem::MountConfigurationList &_inputMoun
     return true;
 }
 
-void Context::OnPassFinished () noexcept
+const ResourceList &Context::GetResourceList () const noexcept
 {
-    std::swap (sourceList, targetList);
-    targetList->Clear ();
+    return resourceList;
 }
 
-const ResourceList &Context::GetSourceList () const noexcept
+ResourceList &Context::GetResourceList () noexcept
 {
-    return *sourceList;
-}
-
-ResourceList &Context::GetTargetList () noexcept
-{
-    return *targetList;
+    return resourceList;
 }
 
 Provider::ResourceProvider &Context::GetInitialResourceProvider () noexcept
