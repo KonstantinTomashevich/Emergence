@@ -29,6 +29,10 @@ struct MountConfiguration final
     /// \brief Mounting target path in virtual file system that is relative to mount root.
     Container::Utf8String targetPath;
 
+    [[nodiscard]] bool operator== (const MountConfiguration &_other) const noexcept = default;
+
+    [[nodiscard]] bool operator!= (const MountConfiguration &_other) const noexcept = default;
+
     struct Reflection final
     {
         StandardLayout::FieldId source;
@@ -45,6 +49,10 @@ struct MountConfigurationList final
 {
     Container::Vector<MountConfiguration> items {
         Memory::Profiler::AllocationGroup {Memory::UniqueString {"MountConfigurationList"}}};
+
+    [[nodiscard]] bool operator== (const MountConfigurationList &_other) const noexcept = default;
+
+    [[nodiscard]] bool operator!= (const MountConfigurationList &_other) const noexcept = default;
 
     struct Reflection final
     {

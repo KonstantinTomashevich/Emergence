@@ -311,4 +311,9 @@ void SignalIndex::OnWriterClosed () noexcept
 {
     // All changes and deletions should be processed on the spot.
 }
+
+void SignalIndex::Clear () noexcept
+{
+    signaledRecords.clear ();
+}
 } // namespace Emergence::Pegasus

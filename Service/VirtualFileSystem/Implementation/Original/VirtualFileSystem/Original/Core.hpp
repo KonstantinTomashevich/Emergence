@@ -210,6 +210,8 @@ public:
 
     [[nodiscard]] Memory::UniqueString GetEntryName (EntryId _id) const noexcept;
 
+    [[nodiscard]] Container::Utf8String GetPackageFilePath (EntryId _id) const noexcept;
+
     [[nodiscard]] Object GetWeakFileLinkTarget (EntryId _id) const noexcept;
 
     [[nodiscard]] FileReadContext OpenFileForRead (const Object &_object, OpenMode _mode) const noexcept;

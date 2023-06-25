@@ -216,6 +216,9 @@ public:
     ///          connected to hierarchical access, can not be solved without this tricky approach.
     void SetUnsafeReadAllowed (bool _allowed) noexcept;
 
+    /// \brief Removes all records from the collection, but preserves indices.
+    void Clear () noexcept;
+
     /// Collections are designed to store lots of records, therefore it's not optimal to copy assign such collections.
     Collection &operator= (const Collection &_other) = delete;
 

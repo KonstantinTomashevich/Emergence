@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 
 #include <API/Common/Cursor.hpp>
@@ -76,6 +77,8 @@ public:
     /// \details If object to which entry points was deleted, type will be automatically changed to invalid.
     [[nodiscard]] EntryType GetType () const noexcept;
 
+    // TODO: Rename to GetName, GetExtension, GetFullName? Exclude File from naming.
+
     /// \return File name without last extension.
     /// \invariant Entry is valid.
     [[nodiscard]] Container::Utf8String GetFileName () const noexcept;
@@ -91,6 +94,10 @@ public:
     /// \return Absolute object path in virtual file system.
     /// \invariant Entry is valid.
     [[nodiscard]] Container::Utf8String GetFullPath () const noexcept;
+
+    /// \return Time point at which file was last written to.
+    /// \invariant Entry is file.
+    [[nodiscard]] std::chrono::time_point<std::chrono::file_clock> GetLastWriteTime () const noexcept;
 
     /// \return Cursor for iteration over entry children.
     /// \invariant Entry is directory.

@@ -1,3 +1,5 @@
+#include <filesystem>
+
 #include <Assert/Assert.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
@@ -183,6 +185,62 @@ Container::Utf8String Entry::GetFullPath () const noexcept
 {
     const auto &entryData = block_cast<Original::EntryImplementationData> (data);
     return entryData.owner->ExtractFullVirtualPath (entryData.object);
+}
+
+static std::chrono::time_point<std::chrono::file_clock> QueryLastWriteTime (Original::VirtualFileSystem *_owner,
+                                                                            const Original::Object &_object) noexcept
+{
+    if (!_owner)
+    {
+        return {};
+    }
+
+    switch (_object.type)
+    {
+    case Original::ObjectType::INVALID:
+        return {};
+
+    case Original::ObjectType::ENTRY:
+        switch (_owner->GetEntryType (_object.entryId))
+        {
+        case Original::EntryType::VIRTUAL_DIRECTORY:
+        case Original::EntryType::FILE_SYSTEM_LINK:
+            return {};
+
+        case Original::EntryType::PACKAGE_FILE:
+            return std::filesystem::last_write_time (_owner->GetPackageFilePath (_object.entryId));
+
+        case Original::EntryType::WEAK_FILE_LINK:
+            return QueryLastWriteTime (_owner, _owner->GetWeakFileLinkTarget (_object.entryId));
+        }
+
+        break;
+
+    case Original::ObjectType::PATH:
+        switch (std::filesystem::status (_object.path).type ())
+        {
+        case std::filesystem::file_type::regular:
+            return std::filesystem::last_write_time (_object.path);
+
+        case std::filesystem::file_type::directory:
+            EMERGENCE_ASSERT (false);
+            return {};
+
+        // Unfortunately, we need to use default here for better support across
+        // different standards: not all versions of STL support all the entry types.
+        default:
+            return {};
+        }
+    }
+
+    EMERGENCE_ASSERT (false);
+    return {};
+}
+
+std::chrono::time_point<std::chrono::file_clock> Entry::GetLastWriteTime () const noexcept
+{
+    const auto &entryData = block_cast<Original::EntryImplementationData> (data);
+    return QueryLastWriteTime (entryData.owner, entryData.object);
 }
 
 Entry::Cursor Entry::ReadChildren () const noexcept

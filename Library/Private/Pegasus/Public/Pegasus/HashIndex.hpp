@@ -174,6 +174,8 @@ private:
 
     void OnWriterClosed () noexcept;
 
+    void Clear () noexcept;
+
     IndexedFieldVector indexedFields;
     size_t implementationSwitch = 0u;
     RecordHashSet records;

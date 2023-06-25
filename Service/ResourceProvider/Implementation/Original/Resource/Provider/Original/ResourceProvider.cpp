@@ -15,19 +15,13 @@
 
 namespace Emergence::Resource::Provider::Original
 {
-enum class ObjectResourceFormat : std::uint8_t
-{
-    BINARY = 0u,
-    YAML
-};
-
 struct ObjectResourceData final
 {
     Memory::UniqueString id;
     StandardLayout::Mapping type;
     Memory::UniqueString source;
     VirtualFileSystem::Entry entry;
-    ObjectResourceFormat format = ObjectResourceFormat::BINARY;
+    ObjectFormat format = ObjectFormat::BINARY;
 
     struct Reflection final
     {
@@ -101,21 +95,6 @@ const ThirdPartyResourceData::Reflection &ThirdPartyResourceData::Reflect () noe
     return reflection;
 }
 
-ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (
-    const ResourceProvider::ObjectRegistryCursor &_other) noexcept
-    : owner (_other.owner),
-      cursor (_other.cursor)
-{
-    EMERGENCE_ASSERT (owner);
-}
-
-ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (ResourceProvider::ObjectRegistryCursor &&_other) noexcept
-    : owner (_other.owner),
-      cursor (std::move (_other.cursor))
-{
-    _other.owner = nullptr;
-}
-
 Memory::UniqueString ResourceProvider::ObjectRegistryCursor::operator* () const noexcept
 {
     if (const auto *object = static_cast<const ObjectResourceData *> (*cursor))
@@ -133,11 +112,31 @@ ResourceProvider::ObjectRegistryCursor &ResourceProvider::ObjectRegistryCursor::
 }
 
 ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (
-    const ResourceProvider *_owner, RecordCollection::PointRepresentation::ReadCursor _cursor) noexcept
-    : owner (_owner),
-      cursor (std::move (_cursor))
+    RecordCollection::PointRepresentation::ReadCursor _cursor) noexcept
+    : cursor (std::move (_cursor))
 {
-    EMERGENCE_ASSERT (owner);
+}
+
+Memory::UniqueString ResourceProvider::ThirdPartyRegistryCursor::operator* () const noexcept
+{
+    if (const auto *thirdParty = static_cast<const ThirdPartyResourceData *> (*cursor))
+    {
+        return thirdParty->id;
+    }
+
+    return {};
+}
+
+ResourceProvider::ThirdPartyRegistryCursor &ResourceProvider::ThirdPartyRegistryCursor::operator++ () noexcept
+{
+    ++cursor;
+    return *this;
+}
+
+ResourceProvider::ThirdPartyRegistryCursor::ThirdPartyRegistryCursor (
+    RecordCollection::LinearRepresentation::AscendingReadCursor _cursor) noexcept
+    : cursor (std::move (_cursor))
+{
 }
 
 ResourceProvider::ResourceProvider (VirtualFileSystem::Context *_virtualFileSystemContext,
@@ -151,6 +150,8 @@ ResourceProvider::ResourceProvider (VirtualFileSystem::Context *_virtualFileSyst
       objectsBySource (objects.CreatePointRepresentation ({ObjectResourceData::Reflect ().source})),
 
       thirdPartyResources (ThirdPartyResourceData::Reflect ().mapping),
+      thirdPartyResourcesOrderedById (
+          thirdPartyResources.CreateLinearRepresentation (ThirdPartyResourceData::Reflect ().id)),
       thirdPartyResourcesById (thirdPartyResources.CreatePointRepresentation ({ThirdPartyResourceData::Reflect ().id})),
       thirdPartyResourcesBySource (
           thirdPartyResources.CreatePointRepresentation ({ThirdPartyResourceData::Reflect ().source})),
@@ -194,8 +195,8 @@ SourceOperationResponse ResourceProvider::AddSource ([[maybe_unused]] Memory::Un
     return AddSourceThroughScan (_path);
 }
 
-SourceOperationResponse ResourceProvider::SaveSourceIndex (
-    [[maybe_unused]] Memory::UniqueString _sourcePath) const noexcept
+SourceOperationResponse ResourceProvider::SaveSourceIndex ([[maybe_unused]] Memory::UniqueString _sourcePath,
+                                                           const VirtualFileSystem::Entry &_output) const noexcept
 {
     const VirtualFileSystem::Entry sourceEntry {*virtualFileSystemContext, *_sourcePath};
     if (sourceEntry.GetType () != VirtualFileSystem::EntryType::DIRECTORY)
@@ -233,15 +234,12 @@ SourceOperationResponse ResourceProvider::SaveSourceIndex (
         resourceItem.relativePath = resourceFullPath.substr (sourceFullPath.size () + 1u);
     }
 
-    const VirtualFileSystem::Entry indexFile =
-        virtualFileSystemContext->CreateFile ({*virtualFileSystemContext, *_sourcePath}, IndexFile::INDEX_FILE_NAME);
-
-    if (!indexFile)
+    if (!_output)
     {
         return SourceOperationResponse::IO_ERROR;
     }
 
-    VirtualFileSystem::Writer writer {indexFile, VirtualFileSystem::OpenMode::BINARY};
+    VirtualFileSystem::Writer writer {_output, VirtualFileSystem::OpenMode::BINARY};
     if (!writer)
     {
         return SourceOperationResponse::IO_ERROR;
@@ -289,7 +287,7 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
 
     switch (object->format)
     {
-    case ObjectResourceFormat::BINARY:
+    case ObjectFormat::BINARY:
     {
         [[maybe_unused]] const Memory::UniqueString typeName =
             Serialization::Binary::DeserializeTypeName (reader.InputStream ());
@@ -303,7 +301,7 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
         break;
     }
 
-    case ObjectResourceFormat::YAML:
+    case ObjectFormat::YAML:
     {
         // We skip type name deserialization here as it is just a comment.
         if (!Serialization::Yaml::DeserializeObject (reader.InputStream (), _output, _type, patchableTypesRegistry))
@@ -359,7 +357,67 @@ LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::Uniqu
 ResourceProvider::ObjectRegistryCursor ResourceProvider::FindObjectsByType (
     const StandardLayout::Mapping &_type) const noexcept
 {
-    return {this, objectsByType.ReadPoint (&_type)};
+    return {objectsByType.ReadPoint (&_type)};
+}
+
+ResourceProvider::ThirdPartyRegistryCursor ResourceProvider::VisitAllThirdParty () const noexcept
+{
+    return {thirdPartyResourcesOrderedById.ReadAscendingInterval (nullptr, nullptr)};
+}
+
+ObjectFormat ResourceProvider::GetObjectFormat (const StandardLayout::Mapping &_type,
+                                                Memory::UniqueString _id) const noexcept
+{
+    auto cursor = objectsById.ReadPoint (&_id);
+    const auto *object = static_cast<const ObjectResourceData *> (*cursor);
+
+    if (!object)
+    {
+        return {};
+    }
+
+    if (object->type != _type)
+    {
+        EMERGENCE_LOG (ERROR, "ResourceProvider: Object \"", _id, "\" has type \"", object->type.GetName (),
+                       "\", but was requested as \"", _type.GetName (), "\".");
+        return {};
+    }
+
+    return object->format;
+}
+
+VirtualFileSystem::Entry ResourceProvider::GetObjectEntry (const StandardLayout::Mapping &_type,
+                                                           Memory::UniqueString _id) const noexcept
+{
+    auto cursor = objectsById.ReadPoint (&_id);
+    const auto *object = static_cast<const ObjectResourceData *> (*cursor);
+
+    if (!object)
+    {
+        return {};
+    }
+
+    if (object->type != _type)
+    {
+        EMERGENCE_LOG (ERROR, "ResourceProvider: Object \"", _id, "\" has type \"", object->type.GetName (),
+                       "\", but was requested as \"", _type.GetName (), "\".");
+        return {};
+    }
+
+    return object->entry;
+}
+
+VirtualFileSystem::Entry ResourceProvider::GetThirdPartyEntry (Memory::UniqueString _id) const noexcept
+{
+    auto cursor = thirdPartyResourcesById.ReadPoint (&_id);
+    const auto *resource = static_cast<const ThirdPartyResourceData *> (*cursor);
+
+    if (!resource)
+    {
+        return {};
+    }
+
+    return resource->entry;
 }
 
 SourceOperationResponse ResourceProvider::AddSourceFromIndex (const VirtualFileSystem::Entry &_indexFile,
@@ -529,14 +587,14 @@ SourceOperationResponse ResourceProvider::AddObject (Memory::UniqueString _id,
         return SourceOperationResponse::UNKNOWN_TYPE;
     }
 
-    ObjectResourceFormat format;
+    ObjectFormat format;
     if (_entry.GetExtension () == "bin")
     {
-        format = ObjectResourceFormat::BINARY;
+        format = ObjectFormat::BINARY;
     }
     else if (_entry.GetExtension () == "yaml")
     {
-        format = ObjectResourceFormat::YAML;
+        format = ObjectFormat::YAML;
     }
     else
     {

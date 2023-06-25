@@ -179,6 +179,8 @@ public:
     /// \warning Invalidates iterators.
     void Erase (const void *_record, const Shape &_shape) noexcept;
 
+    void Clear () noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (PartitioningTree);
 
 private:
@@ -373,6 +375,8 @@ public:
 
     void EraseWithBackup (const void *_record, const void *_backup) noexcept;
 
+    void Clear () noexcept;
+
     EMERGENCE_DELETE_ASSIGNMENT (VolumetricTree);
 
 private:
@@ -553,6 +557,8 @@ private:
     bool OnRecordChangedByMe (const void *_record, const void *_recordBackup) noexcept;
 
     void OnWriterClosed () noexcept;
+
+    void Clear () noexcept;
 
     VolumetricTreeVariant tree;
     Container::Vector<const void *> reinsertionQueue {Memory::Profiler::AllocationGroup {"ReinsertionQueue"_us}};

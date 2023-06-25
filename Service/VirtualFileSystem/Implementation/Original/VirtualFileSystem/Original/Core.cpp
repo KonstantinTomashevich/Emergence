@@ -329,6 +329,9 @@ VirtualFileSystem::Cursor &VirtualFileSystem::Cursor::operator++ () noexcept
     return *this;
 }
 
+// Internal static, because should not normally be used by user: only appears as a result of full path usage.
+static const char *ROOT_SELECTOR = "~";
+
 VirtualFileSystem::VirtualFileSystem () noexcept
     : entries (Entry::Reflect ().mapping),
       entriesById (entries.CreatePointRepresentation ({Entry::Reflect ().id})),
@@ -342,7 +345,7 @@ VirtualFileSystem::VirtualFileSystem () noexcept
     auto *root = static_cast<Entry *> (inserter.Allocate ());
     root->id = ROOT_ID;
     root->parentId = INVALID_ID;
-    root->name = "~"_us;
+    root->name = Memory::UniqueString {ROOT_SELECTOR};
     root->type = EntryType::VIRTUAL_DIRECTORY;
 }
 
@@ -369,7 +372,11 @@ Object VirtualFileSystem::Resolve (const Object &_relativeTo, const std::string_
     auto processPathStep = [this, &current, &currentStart, &iterator] ()
     {
         const std::string_view partition {currentStart, iterator};
-        if (partition == ".")
+        if (partition == ROOT_SELECTOR)
+        {
+            current = {ROOT_ID};
+        }
+        else if (partition == ".")
         {
             // Do nothing.
         }
@@ -792,7 +799,11 @@ Object VirtualFileSystem::MakeDirectories (const Object &_parent, const std::str
     auto processPathStep = [this, &current, &currentStart, &iterator] ()
     {
         const std::string_view partition {currentStart, iterator};
-        if (partition == ".")
+        if (partition == ROOT_SELECTOR)
+        {
+            current = {ROOT_ID};
+        }
+        else if (partition == ".")
         {
             // Do nothing.
         }
@@ -1112,6 +1123,15 @@ Memory::UniqueString VirtualFileSystem::GetEntryName (EntryId _id) const noexcep
     return entry->name;
 }
 
+Container::Utf8String VirtualFileSystem::GetPackageFilePath (EntryId _id) const noexcept
+{
+    auto entryCursor = entriesById.ReadPoint (&_id);
+    const auto *entry = static_cast<const Entry *> (*entryCursor);
+    EMERGENCE_ASSERT (entry);
+    EMERGENCE_ASSERT (entry->type == EntryType::PACKAGE_FILE);
+    return entry->packageFile.path;
+}
+
 Object VirtualFileSystem::GetWeakFileLinkTarget (EntryId _id) const noexcept
 {
     auto entryCursor = entriesById.ReadPoint (&_id);
@@ -1179,8 +1199,17 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenM
             break;
         }
 
-        return {fopen (_object.path.c_str (), mode), 0u,
-                static_cast<std::uint64_t> (std::filesystem::file_size (_object.path))};
+        FILE *file = fopen (_object.path.c_str (), mode);
+        std::uint64_t size = 0u;
+
+        if (file)
+        {
+            fseek (file, 0u, SEEK_END);
+            size = static_cast<std::uint64_t> (ftell (file));
+            fseek (file, 0u, SEEK_SET);
+        }
+
+        return {file, 0u, size};
     }
     }
 

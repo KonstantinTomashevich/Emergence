@@ -169,6 +169,8 @@ public:
 
     void SetUnsafeReadAllowed (bool _allowed) noexcept;
 
+    void Clear () noexcept;
+
     Storage &operator= (const Storage &_other) = delete;
 
     /// Move assign could be useful, but we don't implement it

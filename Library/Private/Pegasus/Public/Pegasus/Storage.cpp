@@ -107,30 +107,8 @@ Storage::~Storage () noexcept
     EMERGENCE_ASSERT (writers == 0u);
     EMERGENCE_ASSERT (readers == 0u);
 
-    // Destruct all existing records.
-
-    if (!orderedIndices.Empty ())
-    {
-        // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
-        OrderedIndex::AscendingEditCursor cursor =
-            orderedIndices.Begin ()->index->LookupToEditAscending ({nullptr}, {nullptr});
-
-        while (void *record = *cursor)
-        {
-            recordMapping.Destruct (record);
-            ++cursor;
-        }
-    }
-    else
-    {
-        for (void *record : records)
-        {
-            if (record != editedRecordBackup)
-            {
-                recordMapping.Destruct (record);
-            }
-        }
-    }
+    // Clear to destruct all existing records.
+    Clear ();
 
     // Destruct all indices.
 
@@ -326,6 +304,59 @@ void Storage::SetUnsafeReadAllowed (bool _allowed) noexcept
     // Unsafe access should be carefully controlled by user, therefore there should be no set-set or unset-unset calls.
     EMERGENCE_ASSERT (unsafeReadAllowed != _allowed);
     unsafeReadAllowed = _allowed;
+}
+
+void Storage::Clear () noexcept
+{
+    EMERGENCE_ASSERT (writers == 0u);
+    EMERGENCE_ASSERT (readers == 0u);
+
+    // Clear and destruct records.
+    if (!orderedIndices.Empty ())
+    {
+        // If there is an ordered index, fetch records from it, because it's faster than fetching them from pool.
+        OrderedIndex::AscendingEditCursor cursor =
+            orderedIndices.Begin ()->index->LookupToEditAscending ({nullptr}, {nullptr});
+
+        while (void *record = *cursor)
+        {
+            recordMapping.Destruct (record);
+            ++cursor;
+        }
+    }
+    else
+    {
+        for (void *record : records)
+        {
+            if (record != editedRecordBackup)
+            {
+                recordMapping.Destruct (record);
+            }
+        }
+    }
+
+    records.Clear ();
+
+    // Clear index content.
+    for (auto &[index, mask] : hashIndices)
+    {
+        index->Clear ();
+    }
+
+    for (auto &[index, mask] : orderedIndices)
+    {
+        index->Clear ();
+    }
+
+    for (auto &[index, mask] : signalIndices)
+    {
+        index->Clear ();
+    }
+
+    for (auto &[index, mask] : volumetricIndices)
+    {
+        index->Clear ();
+    }
 }
 
 void Storage::RegisterReader () noexcept

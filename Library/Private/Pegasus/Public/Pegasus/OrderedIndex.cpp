@@ -564,4 +564,11 @@ void OrderedIndex::OnWriterClosed () noexcept
 
     hasEditCursor = false;
 }
+
+void OrderedIndex::Clear () noexcept
+{
+    EMERGENCE_ASSERT (changedRecords.empty ());
+    EMERGENCE_ASSERT (deletedRecordIndices.empty ());
+    records.clear ();
+}
 } // namespace Emergence::Pegasus

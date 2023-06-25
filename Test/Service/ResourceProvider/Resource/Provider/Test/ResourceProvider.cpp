@@ -215,7 +215,12 @@ VirtualFileSystem::Context SetupEnvironment (const Container::Vector<ResourceSou
 
             const Memory::UniqueString sourcePathUniqueString {sourcePathString.c_str ()};
             REQUIRE (provider.AddSource (sourcePathUniqueString) == SourceOperationResponse::SUCCESSFUL);
-            REQUIRE (provider.SaveSourceIndex (sourcePathUniqueString) == SourceOperationResponse::SUCCESSFUL);
+
+            VirtualFileSystem::Entry indexOutput {virtualFileSystem.CreateFile (
+                VirtualFileSystem::Entry {virtualFileSystem, sourcePathString}, IndexFile::INDEX_FILE_NAME)};
+
+            REQUIRE (provider.SaveSourceIndex (sourcePathUniqueString, indexOutput) ==
+                     SourceOperationResponse::SUCCESSFUL);
         }
     }
 
@@ -271,6 +276,7 @@ void CheckExpectation (const Expectation &_expectation, const ResourceProvider &
 {
     Container::Vector<IdentifiedObject<TestResourceObjectFirst>> firstObjects;
     Container::Vector<IdentifiedObject<TestResourceObjectSecond>> secondObjects;
+    Container::Vector<IdentifiedObject<Container::Vector<std::uint8_t>>> thirdPartyResources;
 
     for (ResourceProvider::ObjectRegistryCursor cursor =
              _provider.FindObjectsByType (TestResourceObjectFirst::Reflect ().mapping);
@@ -308,18 +314,33 @@ void CheckExpectation (const Expectation &_expectation, const ResourceProvider &
                _expectation.secondObjects.end ());
     }
 
-    for (const IdentifiedObject<Container::Vector<std::uint8_t>> &resource : _expectation.thirdParty)
+    Memory::Heap thirdPartyHeap {Memory::Profiler::AllocationGroup::Top ()};
+    for (ResourceProvider::ThirdPartyRegistryCursor cursor = _provider.VisitAllThirdParty (); **cursor; ++cursor)
     {
-        Memory::Heap thirdPartyHeap {Memory::Profiler::AllocationGroup::Top ()};
         std::uint64_t thirdPartySize = 0u;
         std::uint8_t *thirdPartyData = nullptr;
 
-        REQUIRE (_provider.LoadThirdPartyResource (resource.id, thirdPartyHeap, thirdPartySize, thirdPartyData) ==
+        REQUIRE (_provider.LoadThirdPartyResource (*cursor, thirdPartyHeap, thirdPartySize, thirdPartyData) ==
                  LoadingOperationResponse::SUCCESSFUL);
 
-        CHECK_EQUAL (thirdPartySize, resource.object.size ());
-        CHECK (memcmp (thirdPartyData, resource.object.data (), thirdPartySize) == 0);
+        Container::Vector<std::uint8_t> data;
+        data.reserve (static_cast<std::size_t> (thirdPartySize));
+
+        for (std::uint64_t index = 0u; index < thirdPartySize; ++index)
+        {
+            data.emplace_back (thirdPartyData[index]);
+        }
+
+        thirdPartyResources.emplace_back (
+            IdentifiedObject<Container::Vector<std::uint8_t>> {*cursor, std::move (data)});
         thirdPartyHeap.Release (thirdPartyData, thirdPartySize);
+    }
+
+    CHECK_EQUAL (thirdPartyResources.size (), _expectation.thirdParty.size ());
+    for (const IdentifiedObject<Container::Vector<std::uint8_t>> &resource : thirdPartyResources)
+    {
+        CHECK (std::find (_expectation.thirdParty.begin (), _expectation.thirdParty.end (), resource) !=
+               _expectation.thirdParty.end ());
     }
 }
 } // namespace

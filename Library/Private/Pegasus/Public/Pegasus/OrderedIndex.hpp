@@ -180,6 +180,8 @@ private:
 
     void OnWriterClosed () noexcept;
 
+    void Clear () noexcept;
+
     StandardLayout::Field indexedField;
     Container::Vector<const void *> records;
 

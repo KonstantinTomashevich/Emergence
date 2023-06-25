@@ -16,9 +16,9 @@ public:
     class ObjectRegistryCursor final
     {
     public:
-        ObjectRegistryCursor (const ObjectRegistryCursor &_other) noexcept;
+        ObjectRegistryCursor (const ObjectRegistryCursor &_other) noexcept = default;
 
-        ObjectRegistryCursor (ObjectRegistryCursor &&_other) noexcept;
+        ObjectRegistryCursor (ObjectRegistryCursor &&_other) noexcept = default;
 
         ~ObjectRegistryCursor () noexcept = default;
 
@@ -31,11 +31,32 @@ public:
     private:
         friend class ResourceProvider;
 
-        ObjectRegistryCursor (const ResourceProvider *_owner,
-                              RecordCollection::PointRepresentation::ReadCursor _cursor) noexcept;
+        ObjectRegistryCursor (RecordCollection::PointRepresentation::ReadCursor _cursor) noexcept;
 
-        const ResourceProvider *owner;
         RecordCollection::PointRepresentation::ReadCursor cursor;
+    };
+
+    class ThirdPartyRegistryCursor final
+    {
+    public:
+        ThirdPartyRegistryCursor (const ThirdPartyRegistryCursor &_other) noexcept = default;
+
+        ThirdPartyRegistryCursor (ThirdPartyRegistryCursor &&_other) noexcept = default;
+
+        ~ThirdPartyRegistryCursor () noexcept = default;
+
+        [[nodiscard]] Memory::UniqueString operator* () const noexcept;
+
+        ThirdPartyRegistryCursor &operator++ () noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (ThirdPartyRegistryCursor);
+
+    private:
+        friend class ResourceProvider;
+
+        ThirdPartyRegistryCursor (RecordCollection::LinearRepresentation::AscendingReadCursor _cursor) noexcept;
+
+        RecordCollection::LinearRepresentation::AscendingReadCursor cursor;
     };
 
     ResourceProvider (VirtualFileSystem::Context *_virtualFileSystemContext,
@@ -56,7 +77,8 @@ public:
 
     SourceOperationResponse AddSource (Memory::UniqueString _path) noexcept;
 
-    SourceOperationResponse SaveSourceIndex (Memory::UniqueString _sourcePath) const noexcept;
+    SourceOperationResponse SaveSourceIndex (Memory::UniqueString _sourcePath,
+                                             const VirtualFileSystem::Entry &_output) const noexcept;
 
     SourceOperationResponse RemoveSource (Memory::UniqueString _path) noexcept;
 
@@ -69,7 +91,17 @@ public:
                                                      std::uint64_t &_sizeOutput,
                                                      std::uint8_t *&_dataOutput) const noexcept;
 
-    ObjectRegistryCursor FindObjectsByType (const StandardLayout::Mapping &_type) const noexcept;
+    [[nodiscard]] ObjectRegistryCursor FindObjectsByType (const StandardLayout::Mapping &_type) const noexcept;
+
+    [[nodiscard]] ThirdPartyRegistryCursor VisitAllThirdParty () const noexcept;
+
+    [[nodiscard]] ObjectFormat GetObjectFormat (const StandardLayout::Mapping &_type,
+                                                Memory::UniqueString _id) const noexcept;
+
+    [[nodiscard]] VirtualFileSystem::Entry GetObjectEntry (const StandardLayout::Mapping &_type,
+                                                           Memory::UniqueString _id) const noexcept;
+
+    [[nodiscard]] VirtualFileSystem::Entry GetThirdPartyEntry (Memory::UniqueString _id) const noexcept;
 
 private:
     friend class ObjectRegistryCursor;
@@ -107,6 +139,7 @@ private:
     mutable RecordCollection::PointRepresentation objectsBySource;
 
     RecordCollection::Collection thirdPartyResources;
+    mutable RecordCollection::LinearRepresentation thirdPartyResourcesOrderedById;
     mutable RecordCollection::PointRepresentation thirdPartyResourcesById;
     mutable RecordCollection::PointRepresentation thirdPartyResourcesBySource;
 

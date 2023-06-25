@@ -506,6 +506,16 @@ void PartitioningTree<Dimensions>::Erase (const void *_record, const Shape &_sha
 }
 
 template <std::size_t Dimensions>
+void PartitioningTree<Dimensions>::Clear () noexcept
+{
+    for (Node *&child : root->children)
+    {
+        DeleteNodeWithChildren (child);
+        child = nullptr;
+    }
+}
+
+template <std::size_t Dimensions>
 PartitioningTree<Dimensions>::Node::Node (PartitioningTree *_tree,
                                           const std::array<Index, Dimensions> &_center) noexcept
     : records (_tree->nodePool.GetAllocationGroup ()),
@@ -778,8 +788,8 @@ VolumetricTree<Unit, Dimensions>::VolumetricTree (const std::array<Dimension, Di
 }
 
 template <typename Unit, std::size_t Dimensions>
-const std::array<typename VolumetricTree<Unit, Dimensions>::Dimension, Dimensions>
-    &VolumetricTree<Unit, Dimensions>::GetDimensions () const noexcept
+const std::array<typename VolumetricTree<Unit, Dimensions>::Dimension, Dimensions> &
+VolumetricTree<Unit, Dimensions>::GetDimensions () const noexcept
 {
     return dimensions;
 }
@@ -852,6 +862,12 @@ template <typename Unit, std::size_t Dimensions>
 void VolumetricTree<Unit, Dimensions>::EraseWithBackup (const void *_record, const void *_backup) noexcept
 {
     partitioningTree.Erase (_record, ConvertToPartitioningShape (ExtractShape (_backup)));
+}
+
+template <typename Unit, std::size_t Dimensions>
+void VolumetricTree<Unit, Dimensions>::Clear () noexcept
+{
+    partitioningTree.Clear ();
 }
 
 template <typename Unit, std::size_t Dimensions>
@@ -1593,6 +1609,17 @@ void VolumetricIndex::OnWriterClosed () noexcept
             }
 
             reinsertionQueue.clear ();
+        },
+        tree);
+}
+
+void VolumetricIndex::Clear () noexcept
+{
+    EMERGENCE_ASSERT (reinsertionQueue.empty ());
+    std::visit (
+        [] (auto &_tree)
+        {
+            _tree.Clear ();
         },
         tree);
 }

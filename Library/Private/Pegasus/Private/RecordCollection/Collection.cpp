@@ -251,6 +251,13 @@ void Collection::SetUnsafeReadAllowed (bool _allowed) noexcept
     internal.storage->SetUnsafeReadAllowed (_allowed);
 }
 
+void Collection::Clear () noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    EMERGENCE_ASSERT (internal.storage);
+    internal.storage->Clear ();
+}
+
 Collection &Collection::operator= (Collection &&_other) noexcept
 {
     if (this != &_other)

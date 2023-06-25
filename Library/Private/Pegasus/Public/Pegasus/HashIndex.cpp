@@ -400,6 +400,12 @@ void HashIndex::OnWriterClosed () noexcept
     changedNodes.clear ();
 }
 
+void HashIndex::Clear () noexcept
+{
+    EMERGENCE_ASSERT (changedNodes.empty ());
+    EMERGENCE_UNION2_CALL (records, implementationSwitch, void, clear);
+}
+
 HashIndex::ReadCursor::ReadCursor (const HashIndex::ReadCursor &_other) noexcept
     : index (_other.index),
       current (_other.current),
