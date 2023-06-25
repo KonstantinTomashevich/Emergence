@@ -77,11 +77,9 @@ public:
     /// \details If object to which entry points was deleted, type will be automatically changed to invalid.
     [[nodiscard]] EntryType GetType () const noexcept;
 
-    // TODO: Rename to GetName, GetExtension, GetFullName? Exclude File from naming.
-
     /// \return File name without last extension.
     /// \invariant Entry is valid.
-    [[nodiscard]] Container::Utf8String GetFileName () const noexcept;
+    [[nodiscard]] Container::Utf8String GetName () const noexcept;
 
     /// \return Last extension.
     /// \invariant Entry is valid.
@@ -89,7 +87,7 @@ public:
 
     /// \return File name including last extension.
     /// \invariant Entry is valid.
-    [[nodiscard]] Container::Utf8String GetFullFileName () const noexcept;
+    [[nodiscard]] Container::Utf8String GetFullName () const noexcept;
 
     /// \return Absolute object path in virtual file system.
     /// \invariant Entry is valid.

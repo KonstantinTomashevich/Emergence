@@ -63,7 +63,7 @@ bool BinaryConversionPass (Context &_context) noexcept
             EMERGENCE_LOG (INFO, "Resource::Cooking: Converting \"", object->id, "\" of type \"",
                            object->type.GetName (), "\" to binary.");
 
-            const Container::Utf8String fileName = object->entry.GetFullFileName ();
+            const Container::Utf8String fileName = object->entry.GetFullName ();
             VirtualFileSystem::Entry outputEntry {passDirectory, fileName};
 
             if (outputEntry)
@@ -88,7 +88,7 @@ bool BinaryConversionPass (Context &_context) noexcept
             VirtualFileSystem::Reader reader {object->entry, VirtualFileSystem::OpenMode::BINARY};
             if (!reader)
             {
-                EMERGENCE_LOG (ERROR, "Resource::Cooking: Unable to open \"", object->entry.GetFullFileName (),
+                EMERGENCE_LOG (ERROR, "Resource::Cooking: Unable to open \"", object->entry.GetFullName (),
                                "\" for read.");
                 return false;
             }
@@ -128,7 +128,7 @@ bool BinaryConversionPass (Context &_context) noexcept
                     reader.InputStream (), conversionHeap.currentBuffer, object->type,
                     _context.GetInitialResourceProvider ().GetPatchableTypesRegistry ()))
             {
-                EMERGENCE_LOG (ERROR, "Resource::Cooking: Unable to deserialize \"", object->entry.GetFullFileName (),
+                EMERGENCE_LOG (ERROR, "Resource::Cooking: Unable to deserialize \"", object->entry.GetFullName (),
                                "\" content.");
 
                 object->type.Destruct (conversionHeap.currentBuffer);

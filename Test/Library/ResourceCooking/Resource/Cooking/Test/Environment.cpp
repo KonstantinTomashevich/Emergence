@@ -128,6 +128,6 @@ Container::Utf8String GetFinalResultRealPath (const Context &_context, const std
 {
     return EMERGENCE_BUILD_STRING (
         ENVIRONMENT_ROOT, VirtualFileSystem::PATH_SEPARATOR, WORKSPACE_ROOT, VirtualFileSystem::PATH_SEPARATOR,
-        _context.GetFinalResultDirectory ().GetFullFileName (), VirtualFileSystem::PATH_SEPARATOR, _resultName);
+        _context.GetFinalResultDirectory ().GetFullName (), VirtualFileSystem::PATH_SEPARATOR, _resultName);
 }
 } // namespace Emergence::Resource::Cooking::Test

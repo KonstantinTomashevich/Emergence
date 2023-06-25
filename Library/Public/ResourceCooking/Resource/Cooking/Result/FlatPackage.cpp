@@ -37,7 +37,7 @@ bool ProduceFlatPackage (Context &_context, const std::string_view &_packageFile
     for (auto cursor = _context.GetSourceList ().VisitAllObjects (); Container::Optional<ObjectData> object = *cursor;
          ++cursor)
     {
-        if (!builder.Add (object->entry, object->entry.GetFullFileName ()))
+        if (!builder.Add (object->entry, object->entry.GetFullName ()))
         {
             EMERGENCE_LOG (ERROR, "Resource::Cooking: Unable to add file \"", object->entry.GetFullPath (),
                            "\" to package.");
@@ -48,7 +48,7 @@ bool ProduceFlatPackage (Context &_context, const std::string_view &_packageFile
     for (auto cursor = _context.GetSourceList ().VisitAllThirdParty ();
          Container::Optional<ThirdPartyData> thirdParty = *cursor; ++cursor)
     {
-        if (!builder.Add (thirdParty->entry, thirdParty->entry.GetFullFileName ()))
+        if (!builder.Add (thirdParty->entry, thirdParty->entry.GetFullName ()))
         {
             EMERGENCE_LOG (ERROR, "Resource::Cooking: Unable to add file \"", thirdParty->entry.GetFullPath (),
                            "\" to package.");

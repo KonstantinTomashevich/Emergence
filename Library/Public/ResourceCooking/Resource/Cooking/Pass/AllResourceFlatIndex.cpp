@@ -42,10 +42,9 @@ bool AllResourceFlatIndexPass (Context &_context) noexcept
          ++cursor)
     {
         if (!_context.GetVirtualFileSystem ().CreateWeakFileLink (object->entry, passVirtualDirectory,
-                                                                  object->entry.GetFullFileName ()))
+                                                                  object->entry.GetFullName ()))
         {
-            EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to create weak link to \"",
-                           object->entry.GetFullFileName (), "\".");
+            EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to create weak link to \"", object->entry.GetFullName (), "\".");
             return false;
         }
 
@@ -56,10 +55,10 @@ bool AllResourceFlatIndexPass (Context &_context) noexcept
          Container::Optional<ThirdPartyData> thirdParty = *cursor; ++cursor)
     {
         if (!_context.GetVirtualFileSystem ().CreateWeakFileLink (thirdParty->entry, passVirtualDirectory,
-                                                                  thirdParty->entry.GetFullFileName ()))
+                                                                  thirdParty->entry.GetFullName ()))
         {
             EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to create weak link to \"",
-                           thirdParty->entry.GetFullFileName (), "\".");
+                           thirdParty->entry.GetFullName (), "\".");
             return false;
         }
 

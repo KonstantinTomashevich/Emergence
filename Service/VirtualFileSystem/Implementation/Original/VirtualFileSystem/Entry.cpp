@@ -133,9 +133,9 @@ EntryType Entry::GetType () const noexcept
     return QueryType (entryData.owner, entryData.object);
 }
 
-Container::Utf8String Entry::GetFileName () const noexcept
+Container::Utf8String Entry::GetName () const noexcept
 {
-    Container::Utf8String fullName = GetFullFileName ();
+    Container::Utf8String fullName = GetFullName ();
     const std::size_t dotPos = fullName.find_last_of ('.');
 
     if (dotPos == std::string::npos)
@@ -148,7 +148,7 @@ Container::Utf8String Entry::GetFileName () const noexcept
 
 Container::Utf8String Entry::GetExtension () const noexcept
 {
-    Container::Utf8String fullName = GetFullFileName ();
+    Container::Utf8String fullName = GetFullName ();
     std::size_t dotPos = fullName.find_last_of ('.');
 
     if (dotPos == std::string::npos)
@@ -159,7 +159,7 @@ Container::Utf8String Entry::GetExtension () const noexcept
     return fullName.substr (dotPos + 1u, std::string::npos);
 }
 
-Container::Utf8String Entry::GetFullFileName () const noexcept
+Container::Utf8String Entry::GetFullName () const noexcept
 {
     const auto &entryData = block_cast<Original::EntryImplementationData> (data);
     switch (entryData.object.type)

@@ -508,7 +508,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                         finalResponse = SourceOperationResponse::IO_ERROR;
                     }
                     else if (SourceOperationResponse response = AddObject (
-                                 Memory::UniqueString {entry.GetFileName ().c_str ()}, typeName, _path, entry);
+                                 Memory::UniqueString {entry.GetName ().c_str ()}, typeName, _path, entry);
                              response != SourceOperationResponse::SUCCESSFUL)
                     {
                         finalResponse = response;
@@ -530,16 +530,16 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                         finalResponse = SourceOperationResponse::IO_ERROR;
                     }
                     else if (SourceOperationResponse response = AddObject (
-                                 Memory::UniqueString {entry.GetFileName ().c_str ()}, typeName, _path, entry);
+                                 Memory::UniqueString {entry.GetName ().c_str ()}, typeName, _path, entry);
                              response != SourceOperationResponse::SUCCESSFUL)
                     {
                         finalResponse = response;
                     }
                 }
-                else if (entry.GetFullFileName () != IndexFile::INDEX_FILE_NAME)
+                else if (entry.GetFullName () != IndexFile::INDEX_FILE_NAME)
                 {
                     if (SourceOperationResponse response = AddThirdPartyResource (
-                            Memory::UniqueString {entry.GetFullFileName ().c_str ()}, _path, entry);
+                            Memory::UniqueString {entry.GetFullName ().c_str ()}, _path, entry);
                         response != SourceOperationResponse::SUCCESSFUL)
                     {
                         finalResponse = response;
