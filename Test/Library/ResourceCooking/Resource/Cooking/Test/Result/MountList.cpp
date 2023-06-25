@@ -25,8 +25,7 @@ TEST_CASE (MountList)
 
     REQUIRE (ProduceMountList (context, "CoreResources", testList));
     Emergence::VirtualFileSystem::Reader reader {
-        Emergence::VirtualFileSystem::Entry {context.GetFinalResultDirectory (), "MountCoreResources.bin"},
-        Emergence::VirtualFileSystem::OpenMode::BINARY};
+        Emergence::VirtualFileSystem::Entry {context.GetFinalResultDirectory (), "MountCoreResources.bin"}};
     REQUIRE (reader);
 
     Emergence::VirtualFileSystem::MountConfigurationList resultList;

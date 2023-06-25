@@ -1141,7 +1141,7 @@ Object VirtualFileSystem::GetWeakFileLinkTarget (EntryId _id) const noexcept
     return entry->weakFileLink;
 }
 
-FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenMode _mode) const noexcept
+FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object) const noexcept
 {
     switch (_object.type)
     {
@@ -1164,21 +1164,13 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenM
 
         case EntryType::PACKAGE_FILE:
         {
-            if (_mode != OpenMode::BINARY)
-            {
-                EMERGENCE_LOG (
-                    ERROR, "VirtualFileSystem: Unable to open file \"", ExtractFullVirtualPath (_object),
-                    "\" for read: it points to package file and therefore can only be opened in binary mode.");
-                return {};
-            }
-
             FILE *packageFile = fopen (entry->packageFile.path.c_str (), "rb");
             fseek (packageFile, static_cast<long> (entry->packageFile.offset), SEEK_SET);
             return {packageFile, entry->packageFile.offset, entry->packageFile.size};
         }
 
         case EntryType::WEAK_FILE_LINK:
-            return OpenFileForRead (entry->weakFileLink, _mode);
+            return OpenFileForRead (entry->weakFileLink);
         }
 
         EMERGENCE_ASSERT (false);
@@ -1187,19 +1179,7 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenM
 
     case ObjectType::PATH:
     {
-        const char *mode = nullptr;
-        switch (_mode)
-        {
-        case OpenMode::BINARY:
-            mode = "rb";
-            break;
-
-        case OpenMode::TEXT:
-            mode = "r";
-            break;
-        }
-
-        FILE *file = fopen (_object.path.c_str (), mode);
+        FILE *file = fopen (_object.path.c_str (), "rb");
         std::uint64_t size = 0u;
 
         if (file)
@@ -1217,7 +1197,7 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object, OpenM
     return {};
 }
 
-FileWriteContext VirtualFileSystem::OpenFileForWrite (const Object &_object, OpenMode _mode) const noexcept
+FileWriteContext VirtualFileSystem::OpenFileForWrite (const Object &_object) const noexcept
 {
     switch (_object.type)
     {
@@ -1244,7 +1224,7 @@ FileWriteContext VirtualFileSystem::OpenFileForWrite (const Object &_object, Ope
             return {};
 
         case EntryType::WEAK_FILE_LINK:
-            return OpenFileForWrite (entry->weakFileLink, _mode);
+            return OpenFileForWrite (entry->weakFileLink);
         }
 
         EMERGENCE_ASSERT (false);
@@ -1253,19 +1233,7 @@ FileWriteContext VirtualFileSystem::OpenFileForWrite (const Object &_object, Ope
 
     case ObjectType::PATH:
     {
-        const char *mode = nullptr;
-        switch (_mode)
-        {
-        case OpenMode::BINARY:
-            mode = "wb";
-            break;
-
-        case OpenMode::TEXT:
-            mode = "w";
-            break;
-        }
-
-        return {fopen (_object.path.c_str (), mode)};
+        return {fopen (_object.path.c_str (), "wb")};
     }
     }
 

@@ -239,7 +239,7 @@ SourceOperationResponse ResourceProvider::SaveSourceIndex ([[maybe_unused]] Memo
         return SourceOperationResponse::IO_ERROR;
     }
 
-    VirtualFileSystem::Writer writer {_output, VirtualFileSystem::OpenMode::BINARY};
+    VirtualFileSystem::Writer writer {_output};
     if (!writer)
     {
         return SourceOperationResponse::IO_ERROR;
@@ -278,7 +278,7 @@ LoadingOperationResponse ResourceProvider::LoadObject (const StandardLayout::Map
     }
 
     // We always open in binary mode as VFS packages do not support text mode.
-    VirtualFileSystem::Reader reader {object->entry, VirtualFileSystem::OpenMode::BINARY};
+    VirtualFileSystem::Reader reader {object->entry};
 
     if (!reader)
     {
@@ -334,7 +334,7 @@ LoadingOperationResponse ResourceProvider::LoadThirdPartyResource (Memory::Uniqu
         return LoadingOperationResponse::NOT_FOUND;
     }
 
-    VirtualFileSystem::Reader reader {resource->entry, VirtualFileSystem::OpenMode::BINARY};
+    VirtualFileSystem::Reader reader {resource->entry};
     if (!reader)
     {
         return LoadingOperationResponse::NOT_FOUND;
@@ -423,7 +423,7 @@ VirtualFileSystem::Entry ResourceProvider::GetThirdPartyEntry (Memory::UniqueStr
 SourceOperationResponse ResourceProvider::AddSourceFromIndex (const VirtualFileSystem::Entry &_indexFile,
                                                               Memory::UniqueString _path) noexcept
 {
-    VirtualFileSystem::Reader reader {_indexFile, VirtualFileSystem::OpenMode::BINARY};
+    VirtualFileSystem::Reader reader {_indexFile};
     if (!reader)
     {
         return SourceOperationResponse::IO_ERROR;
@@ -497,7 +497,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                 if (entry.GetExtension () == "bin")
                 {
                     // Attempt to read type name.
-                    VirtualFileSystem::Reader reader {entry, VirtualFileSystem::OpenMode::BINARY};
+                    VirtualFileSystem::Reader reader {entry};
                     const Memory::UniqueString typeName =
                         Serialization::Binary::DeserializeTypeName (reader.InputStream ());
 
@@ -518,7 +518,7 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                 {
                     // Attempt to read type name.
                     // We always open in binary mode as VFS packages do not support text mode.
-                    VirtualFileSystem::Reader reader {entry, VirtualFileSystem::OpenMode::BINARY};
+                    VirtualFileSystem::Reader reader {entry};
 
                     const Memory::UniqueString typeName =
                         Serialization::Yaml::DeserializeTypeName (reader.InputStream ());

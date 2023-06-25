@@ -6,8 +6,6 @@
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
-#include <VirtualFileSystem/OpenMode.hpp>
-
 namespace Emergence::VirtualFileSystem
 {
 /// \brief Provides API for reading files through virtual file system.
@@ -15,7 +13,8 @@ class Reader final
 {
 public:
     /// \brief Constructs reader for given file entry with given open mode.
-    Reader (const Entry &_entry, OpenMode _openMode) noexcept;
+    /// \warning Currently, all files are opened in binary mode only!
+    Reader (const Entry &_entry) noexcept;
 
     Reader (const Reader &_other) = delete;
 

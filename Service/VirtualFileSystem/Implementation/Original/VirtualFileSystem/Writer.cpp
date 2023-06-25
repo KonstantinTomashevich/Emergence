@@ -174,10 +174,10 @@ struct ImplementationData final
     std::ostream output;
 };
 
-Writer::Writer (const Entry &_entry, OpenMode _openMode) noexcept
+Writer::Writer (const Entry &_entry) noexcept
 {
     const auto &entryData = block_cast<Original::EntryImplementationData> (_entry.data);
-    Original::FileWriteContext context = entryData.owner->OpenFileForWrite (entryData.object, _openMode);
+    Original::FileWriteContext context = entryData.owner->OpenFileForWrite (entryData.object);
     new (&data) ImplementationData {context.file};
 }
 

@@ -129,21 +129,18 @@ void ScreenshotTester::CheckScreenshot () const noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    VirtualFileSystem::Reader expectedReader {
-        VirtualFileSystem::Entry {
-            Testing::ResourceContextHolder::Get ().virtualFileSystem,
-            EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_DIRECTORY, VirtualFileSystem::PATH_SEPARATOR,
-                                    "UITest", VirtualFileSystem::PATH_SEPARATOR, "Expectation",
-                                    VirtualFileSystem::PATH_SEPARATOR, GetUIBackendScreenshotPrefix (),
-                                    VirtualFileSystem::PATH_SEPARATOR, passName, ".png")},
-        VirtualFileSystem::OpenMode::BINARY};
+    VirtualFileSystem::Reader expectedReader {VirtualFileSystem::Entry {
+        Testing::ResourceContextHolder::Get ().virtualFileSystem,
+        EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_DIRECTORY, VirtualFileSystem::PATH_SEPARATOR,
+                                "UITest", VirtualFileSystem::PATH_SEPARATOR, "Expectation",
+                                VirtualFileSystem::PATH_SEPARATOR, GetUIBackendScreenshotPrefix (),
+                                VirtualFileSystem::PATH_SEPARATOR, passName, ".png")}};
     REQUIRE (expectedReader);
 
     VirtualFileSystem::Reader resultReader {
         VirtualFileSystem::Entry {Testing::ResourceContextHolder::Get ().virtualFileSystem,
                                   EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_OUTPUT_DIRECTORY,
-                                                          VirtualFileSystem::PATH_SEPARATOR, screenshotFile)},
-        VirtualFileSystem::OpenMode::BINARY};
+                                                          VirtualFileSystem::PATH_SEPARATOR, screenshotFile)}};
     REQUIRE (resultReader);
 
     Testing::CheckStreamEquality (expectedReader.InputStream (), resultReader.InputStream (), 0.02f);

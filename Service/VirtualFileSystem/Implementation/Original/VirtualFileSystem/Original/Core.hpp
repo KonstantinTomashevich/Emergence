@@ -13,7 +13,6 @@
 
 #include <VirtualFileSystem/Context.hpp>
 #include <VirtualFileSystem/MountConfiguration.hpp>
-#include <VirtualFileSystem/OpenMode.hpp>
 
 namespace Emergence::VirtualFileSystem::Original
 {
@@ -214,9 +213,9 @@ public:
 
     [[nodiscard]] Object GetWeakFileLinkTarget (EntryId _id) const noexcept;
 
-    [[nodiscard]] FileReadContext OpenFileForRead (const Object &_object, OpenMode _mode) const noexcept;
+    [[nodiscard]] FileReadContext OpenFileForRead (const Object &_object) const noexcept;
 
-    [[nodiscard]] FileWriteContext OpenFileForWrite (const Object &_object, OpenMode _mode) const noexcept;
+    [[nodiscard]] FileWriteContext OpenFileForWrite (const Object &_object) const noexcept;
 
 private:
     friend class Iterator;

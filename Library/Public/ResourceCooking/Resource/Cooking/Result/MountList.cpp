@@ -29,7 +29,7 @@ bool ProduceMountList (Context &_context,
         }
     }
 
-    VirtualFileSystem::Writer writer {outputEntry, VirtualFileSystem::OpenMode::BINARY};
+    VirtualFileSystem::Writer writer {outputEntry};
     if (!writer)
     {
         EMERGENCE_LOG (ERROR, "Resource::Cooking: Unable to open \"", outputEntry.GetFullPath (), "\" for write.");
