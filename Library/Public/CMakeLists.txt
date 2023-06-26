@@ -1,4 +1,5 @@
 add_subdirectory (Celerity)
+add_subdirectory (CommandLine)
 add_subdirectory (Container)
 add_subdirectory (Flow)
 add_subdirectory (Handling)

@@ -40,6 +40,11 @@ StringBuilder &StringBuilder::Append (const char *_value) noexcept
     SNPRINTF_APPEND ("%s");
 }
 
+StringBuilder &StringBuilder::Append (char *_value) noexcept
+{
+    SNPRINTF_APPEND ("%s");
+}
+
 StringBuilder &StringBuilder::Append (Memory::UniqueString _value) noexcept
 {
     return Append (*_value);

@@ -37,14 +37,16 @@ bool Context::Setup (const VirtualFileSystem::MountConfigurationList &_inputMoun
     const Container::Utf8String finalResultRealDirectory {
         EMERGENCE_BUILD_STRING (_workspaceRealPath, VirtualFileSystem::PATH_SEPARATOR, FINAL_RESULT)};
 
-    if (!std::filesystem::create_directories (intermediateRealDirectory))
+    if (!std::filesystem::is_directory (intermediateRealDirectory) &&
+        !std::filesystem::create_directories (intermediateRealDirectory))
     {
         EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to ensure that \"", _workspaceRealPath, "\" contains \"",
                        INTERMEDIATE, "\" directory.");
         return false;
     }
 
-    if (!std::filesystem::create_directories (finalResultRealDirectory))
+    if (!std::filesystem::is_directory (finalResultRealDirectory) &&
+        !std::filesystem::create_directories (finalResultRealDirectory))
     {
         EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to ensure that \"", _workspaceRealPath, "\" contains \"",
                        FINAL_RESULT, "\" directory.");

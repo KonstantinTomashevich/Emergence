@@ -22,6 +22,7 @@
 
 #include <Render/Backend/Configuration.hpp>
 
+#include <Serialization/Binary.hpp>
 #include <Serialization/Yaml.hpp>
 
 #if defined(__unix__)
@@ -68,17 +69,57 @@ Application::Application () noexcept
 
     Emergence::VirtualFileSystem::MountConfigurationList configurationList;
     {
-        std::ifstream input {"../MountCoreResources.yaml"};
+        Emergence::Container::Utf8String mountListPath;
+        bool binary = false;
+
+        if (std::filesystem::exists ("MountCoreResources.bin"))
+        {
+            mountListPath = "MountCoreResources.bin";
+            binary = true;
+        }
+        else if (std::filesystem::exists ("MountCoreResources.yaml"))
+        {
+            mountListPath = "MountCoreResources.yaml";
+            binary = false;
+        }
+        else if (std::filesystem::exists ("../MountCoreResources.bin"))
+        {
+            mountListPath = "../MountCoreResources.bin";
+            binary = true;
+        }
+        else if (std::filesystem::exists ("../MountCoreResources.yaml"))
+        {
+            mountListPath = "../MountCoreResources.yaml";
+            binary = false;
+        }
+        else
+        {
+            Emergence::ReportCriticalError ("Unable to find core resources mount list!", __FILE__, __LINE__);
+        }
+
+        std::ifstream input {mountListPath.c_str (), binary ? std::ios::binary : std::ios::in};
         if (!input)
         {
             Emergence::ReportCriticalError ("Failed to open core resources mount list!", __FILE__, __LINE__);
         }
 
-        if (!Emergence::Serialization::Yaml::DeserializeObject (
-                input, &configurationList, Emergence::VirtualFileSystem::MountConfigurationList::Reflect ().mapping,
-                {}))
+        if (binary)
         {
-            Emergence::ReportCriticalError ("Failed to deserialize core resources mount list!", __FILE__, __LINE__);
+            if (!Emergence::Serialization::Binary::DeserializeObject (
+                    input, &configurationList, Emergence::VirtualFileSystem::MountConfigurationList::Reflect ().mapping,
+                    {}))
+            {
+                Emergence::ReportCriticalError ("Failed to deserialize core resources mount list!", __FILE__, __LINE__);
+            }
+        }
+        else
+        {
+            if (!Emergence::Serialization::Yaml::DeserializeObject (
+                    input, &configurationList, Emergence::VirtualFileSystem::MountConfigurationList::Reflect ().mapping,
+                    {}))
+            {
+                Emergence::ReportCriticalError ("Failed to deserialize core resources mount list!", __FILE__, __LINE__);
+            }
         }
     }
 

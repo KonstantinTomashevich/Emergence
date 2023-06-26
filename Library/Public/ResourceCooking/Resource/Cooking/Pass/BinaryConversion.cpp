@@ -61,7 +61,7 @@ bool BinaryConversionPass (Context &_context) noexcept
             EMERGENCE_LOG (INFO, "Resource::Cooking: Converting \"", object->id, "\" of type \"",
                            object->type.GetName (), "\" to binary.");
 
-            const Container::Utf8String fileName = object->entry.GetFullName ();
+            const Container::Utf8String fileName = object->entry.GetName () + ".bin";
             VirtualFileSystem::Entry outputEntry {passDirectory, fileName};
 
             if (outputEntry)
@@ -133,6 +133,7 @@ bool BinaryConversionPass (Context &_context) noexcept
                 return false;
             }
 
+            Serialization::Binary::SerializeTypeName (writer.OutputStream (), object->type.GetName ());
             Serialization::Binary::SerializeObject (writer.OutputStream (), conversionHeap.currentBuffer, object->type);
             object->type.Destruct (conversionHeap.currentBuffer);
 

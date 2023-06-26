@@ -9,6 +9,7 @@ add_library ("${GAME_NAME}Shaders" INTERFACE ${GAME_SHADERS})
 add_subdirectory (Game)
 add_subdirectory (Logic)
 add_subdirectory (Model)
+add_subdirectory (ResourceCooker)
 
 file (MAKE_DIRECTORY "${GAME_RESOURCES_COMPILED}")
 register_bgfx_shaders ("${GAME_RESOURCES_SOURCE}/Shaders" "${GAME_RESOURCES_COMPILED}/Shaders")
@@ -20,3 +21,9 @@ register_resource_usage ("${GAME_NAME}GameLauncher"
         "${GAME_RESOURCES_SOURCE}/Content" "Game/Raw" "CoreResources")
 
 deploy_resource_mount_lists ("${GAME_NAME}GameLauncher" "${GAME_OUTPUT_DIRECTORY}/Game")
+setup_resource_cooking_and_packaging (
+        "${GAME_NAME}GameLauncher"
+        "${GAME_NAME}ResourceCookerLauncher"
+        "${GAME_OUTPUT_DIRECTORY}/Game"
+        "${GAME_OUTPUT_DIRECTORY}/Game/CookingWorkspace"
+        "${GAME_OUTPUT_DIRECTORY}/Game/Packaged")

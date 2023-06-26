@@ -8,6 +8,11 @@
 
 namespace Emergence::Resource::Cooking
 {
+// TODO: Later we might need advanced is-update-needed check for intermediate cache.
+//       Right now passes are doing that by themselves (not always even) and do not take cooker version into account.
+//       This needs careful consideration, because excessive is-update-needed checks might severely slow down
+//       cooking and cause more harm that good.
+
 class Context final
 {
 public:
