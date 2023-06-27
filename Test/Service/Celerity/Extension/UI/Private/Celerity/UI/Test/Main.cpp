@@ -3,11 +3,7 @@
 
 #include <cstring>
 
-#if defined(__unix__)
-#    include <SDL2/SDL.h>
-#else
-#    include <SDL.h>
-#endif
+#include <SDL3/SDL_main.h>
 
 #include <Testing/SetupMain.hpp>
 

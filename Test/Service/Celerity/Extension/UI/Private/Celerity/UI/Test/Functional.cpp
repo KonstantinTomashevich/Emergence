@@ -639,6 +639,8 @@ TEST_CASE (ButtonClick)
                 {},
             },
         },
+        // Unfortunately, there is one frame delay between button creation and time when button becomes available.
+        {},
         {
             {
                 {0u, MouseButtonEvent {30u, 30u, MouseButton::LEFT, KeyState::DOWN, 1u}},
@@ -727,6 +729,8 @@ TEST_CASE (Checkbox)
                 {},
             },
         },
+        // Unfortunately, there is one frame delay between checkbox creation and time when checkbox becomes available.
+        {},
         {
             {
                 {0u, MouseButtonEvent {30u, 30u, MouseButton::LEFT, KeyState::DOWN, 1u}},

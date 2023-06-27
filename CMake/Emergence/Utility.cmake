@@ -1,11 +1,43 @@
+# Traverses linked libraries tree of given target and outputs all shared libraries to output list with given name.
+function (find_required_shared_libraries TARGET OUTPUT_VARIABLE)
+    set (LIBRARIES)
+    sober_find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
+
+    foreach (LINKED_TARGET ${ALL_LINKED_TARGETS})
+        get_target_property (TARGET_TYPE "${LINKED_TARGET}" TYPE)
+        if (TARGET_TYPE STREQUAL "SHARED_LIBRARY")
+            list (APPEND LIBRARIES "${LINKED_TARGET}")
+        endif ()
+    endforeach ()
+
+    set ("${OUTPUT_VARIABLE}" "${LIBRARIES}" PARENT_SCOPE)
+endfunction ()
+
 # Adds custom command that copies shared libraries, requested by given target.
-# Currently, only Windows platform is supported as there is no TARGET_RUNTIME_DLLS on other platforms.
+# On Unix platforms also forces Windows-like SO search behaviour by settings build rpath to $ORIGIN.
 function (copy_required_shared_libraries TARGET)
-    if (WIN32)
-        add_custom_command (
-                TARGET "${TARGET}" POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${TARGET}> $<TARGET_FILE_DIR:${TARGET}>
-                COMMAND_EXPAND_LISTS)
+    find_required_shared_libraries ("${TARGET}" REQUIRED_LIBRARIES)
+    foreach (LIBRARY_TARGET ${REQUIRED_LIBRARIES})
+        if (UNIX)
+            add_custom_command (
+                    TARGET "${TARGET}" POST_BUILD
+                    COMMAND
+                    ${CMAKE_COMMAND} -E copy_if_different
+                    $<TARGET_SONAME_FILE:${LIBRARY_TARGET}> $<TARGET_FILE_DIR:${TARGET}>
+                    COMMAND_EXPAND_LISTS)
+        else ()
+            add_custom_command (
+                    TARGET "${TARGET}" POST_BUILD
+                    COMMAND
+                    ${CMAKE_COMMAND} -E copy_if_different
+                    $<TARGET_FILE:${LIBRARY_TARGET}> $<TARGET_FILE_DIR:${TARGET}>
+                    COMMAND_EXPAND_LISTS)
+        endif ()
+    endforeach ()
+
+    # Force Windows-like behaviour on rpath-driven unix builds.
+    if (UNIX)
+        set_target_properties ("${TARGET}" PROPERTIES BUILD_RPATH "\$ORIGIN")
     endif ()
 endfunction ()
 

@@ -48,26 +48,18 @@ add_library (ImGUI STATIC
 
 target_include_directories (ImGUI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
 
-add_library (SDL2ImGUI STATIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_sdl.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_sdlrenderer.cpp")
+add_library (SDL3ImGUI STATIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_sdl3.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_sdlrenderer3.cpp")
 
-target_include_directories (SDL2ImGUI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
-target_link_libraries (SDL2ImGUI PUBLIC ImGUI SDL2)
+target_include_directories (SDL3ImGUI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
+target_link_libraries (SDL3ImGUI PUBLIC ImGUI SDL3::SDL3)
 
-# SDL2
-if (UNIX)
-    # Right now SDL2 from GitHub does not have correct SDL_config.h for Linux for some reason.
-    # Perhaps, it is not added to GitHub version as there is lots of distros and it is impossible
-    # to create configs for all of them. Therefore on Linux we have to resort to using installed
-    # package, that is guaranteed to have correct config.
-    find_package (SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2 SDL2main)
-else ()
-    # TODO: Takes ~75% configuration time on CI. Can it be optimized somehow?
-    set (SDL_SHARED ON CACHE BOOL "We use double-set with cache to override third party project options for good.")
-    set (SDL_SHARED ON)
-    add_subdirectory (SDL)
-endif ()
+# SDL3
+# TODO: Takes ~75% configuration time on CI. Can it be optimized somehow?
+set (SDL_SHARED ON CACHE BOOL "We use double-set with cache to override third party project options for good.")
+set (SDL_SHARED ON)
+add_subdirectory (SDL)
 
 # SPDLog
 # We don't need exceptions neither from spdlog nor fmt.

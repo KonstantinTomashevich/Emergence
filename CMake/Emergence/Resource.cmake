@@ -257,15 +257,31 @@ function (setup_resource_cooking_and_packaging
         endforeach ()
     endif ()
 
-    set (COOKING_TARGETS)
-    set (COOKING_CLEAN_TARGETS)
-    set (PACKAGING_TARGETS)
+    set (COOKING_MAIN_TARGET "${TARGET}AllResourceCooking")
+    add_custom_target (
+            "${COOKING_MAIN_TARGET}"
+            COMMENT "Cooking all resources for target \"${TARGET}\".")
+
+    set (COOKING_MAIN_CLEAN_TARGET "${TARGET}AllResourceCookingClean")
+    add_custom_target (
+            "${COOKING_MAIN_CLEAN_TARGET}"
+            COMMENT "Cleaning cooking workspace of \"${TARGET}\".")
+
+    set (PACKAGING_MAIN_TARGET "${TARGET}Packaging")
+    add_custom_target (
+            "${PACKAGING_MAIN_TARGET}"
+            COMMENT "Packaging target \"${TARGET}\" executable."
+            COMMAND
+            ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET}> "${PACKAGING_OUTPUT}"
+            VERBATIM)
+    add_dependencies ("${PACKAGING_MAIN_TARGET}" ${TARGET})
 
     set (PACKAGING_CLEAN_TARGET "${TARGET}PackageClean")
     add_custom_target (
             "${PACKAGING_CLEAN_TARGET}"
             COMMENT "Cleaning packaging output of \"${TARGET}\"."
             COMMAND ${CMAKE_COMMAND} -E remove_directory "${PACKAGING_OUTPUT}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${PACKAGING_OUTPUT}"
             VERBATIM)
 
     foreach (GROUP ${GROUPS})
@@ -281,7 +297,7 @@ function (setup_resource_cooking_and_packaging
                 VERBATIM)
 
         add_dependencies ("${COOKING_TARGET}" "${COOKER_TARGET}")
-        list (APPEND COOKING_TARGETS "${COOKING_TARGET}")
+        add_dependencies ("${COOKING_MAIN_TARGET}" "${COOKING_TARGET}")
 
         set (COOKING_CLEAN_TARGET "${TARGET}${GROUP}CookingClean")
         add_custom_target (
@@ -289,7 +305,7 @@ function (setup_resource_cooking_and_packaging
                 COMMENT "Cleaning cooking workspace for \"${GROUP}\" for \"${TARGET}\"."
                 COMMAND ${CMAKE_COMMAND} -E remove_directory "${COOKING_WORKSPACE}/${GROUP}"
                 VERBATIM)
-        list (APPEND COOKING_CLEAN_TARGETS "${COOKING_CLEAN_TARGET}")
+        add_dependencies ("${COOKING_MAIN_CLEAN_TARGET}" "${COOKING_CLEAN_TARGET}")
 
         set (PACKAGING_TARGET "${TARGET}${GROUP}Packaging")
         add_custom_target (
@@ -301,30 +317,31 @@ function (setup_resource_cooking_and_packaging
                 VERBATIM)
 
         add_dependencies ("${PACKAGING_TARGET}" "${PACKAGING_CLEAN_TARGET}" "${COOKING_TARGET}")
-        list (APPEND PACKAGING_TARGETS "${PACKAGING_TARGET}")
+        add_dependencies ("${PACKAGING_MAIN_TARGET}" "${PACKAGING_TARGET}")
     endforeach ()
 
-    set (COOKING_MAIN_TARGET "${TARGET}AllResourceCooking")
-    add_custom_target (
-            "${COOKING_MAIN_TARGET}"
-            COMMENT "Cooking all resources for target \"${TARGET}\".")
-    add_dependencies ("${COOKING_MAIN_TARGET}" ${COOKING_TARGETS})
+    find_required_shared_libraries ("${TARGET}" REQUIRED_LIBRARIES)
+    foreach (LIBRARY_TARGET ${REQUIRED_LIBRARIES})
+        set (PACKAGING_TARGET "${TARGET}${LIBRARY_TARGET}Packaging")
+        string (REPLACE "::" "_" PACKAGING_TARGET "${PACKAGING_TARGET}")
 
-    set (COOKING_MAIN_CLEAN_TARGET "${TARGET}AllResourceCookingClean")
-    add_custom_target (
-            "${COOKING_MAIN_CLEAN_TARGET}"
-            COMMENT "Cleaning cooking workspace of \"${TARGET}\".")
-    add_dependencies ("${COOKING_MAIN_CLEAN_TARGET}" ${COOKING_CLEAN_TARGETS})
+        if (UNIX)
+            add_custom_target (
+                    ${PACKAGING_TARGET}
+                    COMMENT "Packaging \"${LIBRARY_TARGET}\" dependency of \"${TARGET}\"."
+                    COMMAND
+                    ${CMAKE_COMMAND} -E copy $<TARGET_SONAME_FILE:${LIBRARY_TARGET}> "${PACKAGING_OUTPUT}"
+                    VERBATIM)
+        else ()
+            add_custom_target (
+                    ${PACKAGING_TARGET}
+                    COMMENT "Packaging \"${LIBRARY_TARGET}\" dependency of \"${TARGET}\"."
+                    COMMAND
+                    ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${LIBRARY_TARGET}> "${PACKAGING_OUTPUT}"
+                    VERBATIM)
+        endif ()
 
-    set (PACKAGING_MAIN_TARGET "${TARGET}Packaging")
-    add_custom_target (
-            "${PACKAGING_MAIN_TARGET}"
-            COMMENT "Packaging target \"${TARGET}\"."
-            COMMAND
-            ${CMAKE_COMMAND} -E copy
-            $<TARGET_FILE:${TARGET}>
-            $<TARGET_RUNTIME_DLLS:${TARGET}>
-            ${PACKAGING_OUTPUT}
-            VERBATIM)
-    add_dependencies ("${PACKAGING_MAIN_TARGET}" ${TARGET} ${PACKAGING_TARGETS})
+        add_dependencies ("${PACKAGING_TARGET}" "${PACKAGING_CLEAN_TARGET}")
+        add_dependencies ("${PACKAGING_MAIN_TARGET}" "${PACKAGING_TARGET}")
+    endforeach ()
 endfunction ()
