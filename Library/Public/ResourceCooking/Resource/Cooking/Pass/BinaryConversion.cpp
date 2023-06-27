@@ -69,6 +69,8 @@ bool BinaryConversionPass (Context &_context) noexcept
                 if (outputEntry.GetLastWriteTime () >= object->entry.GetLastWriteTime ())
                 {
                     EMERGENCE_LOG (INFO, "Resource::Cooking: Conversion skipped, already up to date.");
+                    object->entry = outputEntry;
+                    object->format = Provider::ObjectFormat::BINARY;
                     break;
                 }
             }
