@@ -72,9 +72,7 @@ public:
     /// \brief Creates new weak file link with given name that is child of given
     ///        virtual file system entry and points to given target entry.
     /// \invariant Given parent entry must be a virtual directory: real file system driven links are not supported yet.
-    Entry CreateWeakFileLink (const Entry &_target,
-                              const Entry &_parent,
-                              const std::string_view &_linkName) noexcept;
+    Entry CreateWeakFileLink (const Entry &_target, const Entry &_parent, const std::string_view &_linkName) noexcept;
 
     /// \brief Ensure that given absolute path is valid by creating all missing directories along the way.
     Entry MakeDirectories (const std::string_view &_absolutePath) noexcept;

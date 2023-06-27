@@ -507,8 +507,8 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                                        entry.GetFullPath (), "\" of source \"", _path, "\".");
                         finalResponse = SourceOperationResponse::IO_ERROR;
                     }
-                    else if (SourceOperationResponse response = AddObject (
-                                 Memory::UniqueString {entry.GetName ().c_str ()}, typeName, _path, entry);
+                    else if (SourceOperationResponse response =
+                                 AddObject (Memory::UniqueString {entry.GetName ().c_str ()}, typeName, _path, entry);
                              response != SourceOperationResponse::SUCCESSFUL)
                     {
                         finalResponse = response;
@@ -529,8 +529,8 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                                        entry.GetFullPath (), "\" of source \"", _path, "\".");
                         finalResponse = SourceOperationResponse::IO_ERROR;
                     }
-                    else if (SourceOperationResponse response = AddObject (
-                                 Memory::UniqueString {entry.GetName ().c_str ()}, typeName, _path, entry);
+                    else if (SourceOperationResponse response =
+                                 AddObject (Memory::UniqueString {entry.GetName ().c_str ()}, typeName, _path, entry);
                              response != SourceOperationResponse::SUCCESSFUL)
                     {
                         finalResponse = response;
@@ -538,8 +538,8 @@ SourceOperationResponse ResourceProvider::AddSourceThroughScan (Memory::UniqueSt
                 }
                 else if (entry.GetFullName () != IndexFile::INDEX_FILE_NAME)
                 {
-                    if (SourceOperationResponse response = AddThirdPartyResource (
-                            Memory::UniqueString {entry.GetFullName ().c_str ()}, _path, entry);
+                    if (SourceOperationResponse response =
+                            AddThirdPartyResource (Memory::UniqueString {entry.GetFullName ().c_str ()}, _path, entry);
                         response != SourceOperationResponse::SUCCESSFUL)
                     {
                         finalResponse = response;

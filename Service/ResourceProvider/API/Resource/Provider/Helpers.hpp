@@ -16,7 +16,7 @@ inline SourceOperationResponse AddMountedDirectoryAsSource (ResourceProvider &_r
                                                             const VirtualFileSystem::MountConfiguration &_configuration)
 {
     const VirtualFileSystem::Entry mountedSource {_mountPoint, _configuration.targetPath};
-    return _resourceProvider.AddSource (Memory::UniqueString {mountedSource.GetFullPath()});
+    return _resourceProvider.AddSource (Memory::UniqueString {mountedSource.GetFullPath ()});
 }
 
 /// \brief Attempts to add all directories, mounted using given

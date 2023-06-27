@@ -246,10 +246,10 @@ TEST_CASE (DeleteWeakFileLinkKeepsFile)
 
     Entry mounted {context, testDirectory};
     Entry file = context.CreateFile (mounted, "test.txt");
-    Entry link = context.CreateWeakFileLink (file, context.GetRoot(), "linked.txt");
+    Entry link = context.CreateWeakFileLink (file, context.GetRoot (), "linked.txt");
 
     CHECK (context.Delete (link, false, false));
-    CHECK (file.GetType() == EntryType::FILE);
+    CHECK (file.GetType () == EntryType::FILE);
     CHECK (std::filesystem::exists (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "test.txt")));
 }
 
@@ -264,11 +264,11 @@ TEST_CASE (DeletingFileInvalidatesWeakFileLink)
 
     Entry mounted {context, testDirectory};
     Entry file = context.CreateFile (mounted, "test.txt");
-    Entry link = context.CreateWeakFileLink (file, context.GetRoot(), "linked.txt");
+    Entry link = context.CreateWeakFileLink (file, context.GetRoot (), "linked.txt");
 
-    CHECK (link.GetType() == EntryType::FILE);
+    CHECK (link.GetType () == EntryType::FILE);
     CHECK (context.Delete (file, false, true));
-    CHECK (link.GetType() == EntryType::INVALID);
+    CHECK (link.GetType () == EntryType::INVALID);
 }
 
 TEST_CASE (DeleteMountedDeleteReal)
