@@ -147,8 +147,12 @@ FrameInputAccumulator::EventIterator FrameInputAccumulator::EventsEnd () noexcep
 
 void FrameInputAccumulator::RecordEvent (const InputEvent &_event) noexcept
 {
-    EMERGENCE_ASSERT (events.empty () || events.back ().timeNs <= _event.timeNs);
-    events.emplace_back (_event);
+    auto place = std::upper_bound (events.begin (), events.end (), _event,
+                                   [] (const InputEvent &_first, const InputEvent &_second)
+                                   {
+                                       return _first.timeNs < _second.timeNs;
+                                   });
+    events.emplace (place, _event);
 }
 
 void FrameInputAccumulator::Clear () noexcept

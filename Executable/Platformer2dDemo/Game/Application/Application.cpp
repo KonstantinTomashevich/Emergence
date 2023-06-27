@@ -203,7 +203,6 @@ void Application::EventLoop () noexcept
         SDL_Event event;
         Emergence::Celerity::FrameInputAccumulator *inputAccumulator = gameState->GetFrameInputAccumulator ();
 
-        // TODO: Looks like SDL events are no longer sorted by timestamp? We need to adjust our logic to it.
         while (SDL_PollEvent (&event))
         {
             if (event.type == SDL_EVENT_QUIT ||
