@@ -229,8 +229,8 @@ endfunction ()
 # Parameters:
 #    TARGET: Target which resources we're cooking and which we're planning to distribute.
 #    COOKER_TARGET: Target executable that is used for cooking resources. Must accept following parameters:
-#        --resultGroupName: Name of the group for naming final results.
-#        --mountList: Path to mount list with all the resources for cooking.
+#        --groupName: Name of the mount group to fetch mount list and correctly name final results.
+#        --mountListDirectory: Path to directory with all mount lists of given target.
 #        --workspace: Path to the workspace directory.
 #    MOUNT_LIST_DIRECTORY: Path to directory where all mount lists of TARGET are stored.
 #    COOKING_WORKSPACE: Path to directory where cooking routines may store intermediate files and final results.
@@ -291,8 +291,8 @@ function (setup_resource_cooking_and_packaging
                 COMMENT "Cooking resource group \"${GROUP}\" for \"${TARGET}\"."
                 COMMAND
                 $<TARGET_FILE:${COOKER_TARGET}>
-                "--resultGroupName" "${GROUP}"
-                "--mountList" "${MOUNT_LIST_DIRECTORY}/Mount${GROUP}.yaml"
+                "--groupName" "${GROUP}"
+                "--mountListDirectory" "${MOUNT_LIST_DIRECTORY}"
                 "--workspace" "${COOKING_WORKSPACE}/${GROUP}"
                 VERBATIM)
 

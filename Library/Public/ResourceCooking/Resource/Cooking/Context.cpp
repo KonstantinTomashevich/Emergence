@@ -6,6 +6,10 @@
 
 #include <Resource/Cooking/Context.hpp>
 
+#include <Resource/Provider/Helpers.hpp>
+
+#include <VirtualFileSystem/Helpers.hpp>
+
 namespace Emergence::Resource::Cooking
 {
 static const char *INPUT = "Input";
@@ -70,24 +74,18 @@ bool Context::Setup (const VirtualFileSystem::MountConfigurationList &_inputMoun
     }
 
     const VirtualFileSystem::Entry inputDirectory = GetInputDirectory ();
-    for (const VirtualFileSystem::MountConfiguration &inputConfiguration : _inputMount.items)
+    if (!Emergence::VirtualFileSystem::MountConfigurationListAt (virtualFileSystem, inputDirectory, _inputMount))
     {
-        if (!virtualFileSystem.Mount (inputDirectory, inputConfiguration))
-        {
-            EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to mount input \"", inputConfiguration.sourcePath,
-                           "\" to \", ", inputConfiguration.targetPath, "\".");
-            return false;
-        }
+        Emergence::ReportCriticalError ("Resource::Cooking: Failed to mount given input mount list!", __FILE__,
+                                        __LINE__);
+    }
 
-        const VirtualFileSystem::Entry mountedEntry {inputDirectory, inputConfiguration.targetPath};
-        if (Provider::SourceOperationResponse response =
-                resourceProvider.AddSource (Memory::UniqueString {mountedEntry.GetFullPath ().c_str ()});
-            response != Provider::SourceOperationResponse::SUCCESSFUL)
-        {
-            EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to add source \"", mountedEntry.GetFullPath (),
-                           "\" to resource provider, response code: ", static_cast<std::uint16_t> (response), ".");
-            return false;
-        }
+    if (Emergence::Resource::Provider::AddMountedDirectoriesAsSources (resourceProvider, inputDirectory, _inputMount) !=
+        Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+    {
+        Emergence::ReportCriticalError (
+            "Resource::Cooking: Failed to add directories from given mount list as resource provider sources!",
+            __FILE__, __LINE__);
     }
 
     return true;

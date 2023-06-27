@@ -1,12 +1,9 @@
-#include <filesystem>
-#include <fstream>
-
-#include <Container/StringBuilder.hpp>
-
-#include <Serialization/Yaml.hpp>
+#include <Resource/Provider/Helpers.hpp>
 
 #include <Testing/ResourceContextHolder.hpp>
 #include <Testing/Testing.hpp>
+
+#include <VirtualFileSystem/Helpers.hpp>
 
 #undef CreateDirectory
 
@@ -21,46 +18,30 @@ ResourceContextHolder &ResourceContextHolder::Get () noexcept
 ResourceContextHolder::ResourceContextHolder () noexcept
     : resourceProvider (&virtualFileSystem, GetSupportedResourceTypes (), {})
 {
-    constexpr const char *CORE_RESOURCES_FILE = "MountCoreResources.yaml";
-    constexpr const char *TEST_RESOURCES_FILE = "MountTestResources.yaml";
-
-    if (std::filesystem::is_regular_file (CORE_RESOURCES_FILE))
     {
-        VirtualFileSystem::MountConfigurationList configurationList;
-        {
-            std::ifstream input {CORE_RESOURCES_FILE};
-            Serialization::Yaml::DeserializeObject (input, &configurationList,
-                                                    VirtualFileSystem::MountConfigurationList::Reflect ().mapping, {});
-        }
+        Emergence::VirtualFileSystem::MountConfigurationList configurationList;
+        REQUIRE (Emergence::VirtualFileSystem::FetchMountConfigurationList (".", "CoreResources", configurationList));
 
         const VirtualFileSystem::Entry resourcesDirectory =
             virtualFileSystem.CreateDirectory (virtualFileSystem.GetRoot (), RESOURCES_DIRECTORY);
 
-        for (const auto &configuration : configurationList.items)
-        {
-            REQUIRE (virtualFileSystem.Mount (resourcesDirectory, configuration));
-            REQUIRE (resourceProvider.AddSource (Emergence::Memory::UniqueString {EMERGENCE_BUILD_STRING (
-                         RESOURCES_DIRECTORY, VirtualFileSystem::PATH_SEPARATOR, configuration.targetPath)}) ==
-                     Resource::Provider::SourceOperationResponse::SUCCESSFUL);
-        }
+        REQUIRE (Emergence::VirtualFileSystem::MountConfigurationListAt (virtualFileSystem, resourcesDirectory,
+                                                                         configurationList));
+
+        REQUIRE (Emergence::Resource::Provider::AddMountedDirectoriesAsSources (resourceProvider, resourcesDirectory,
+                                                                                configurationList) ==
+                 Resource::Provider::SourceOperationResponse::SUCCESSFUL);
     }
 
-    if (std::filesystem::is_regular_file (TEST_RESOURCES_FILE))
     {
-        VirtualFileSystem::MountConfigurationList configurationList;
-        {
-            std::ifstream input {TEST_RESOURCES_FILE};
-            Serialization::Yaml::DeserializeObject (input, &configurationList,
-                                                    VirtualFileSystem::MountConfigurationList::Reflect ().mapping, {});
-        }
+        Emergence::VirtualFileSystem::MountConfigurationList configurationList;
+        REQUIRE (Emergence::VirtualFileSystem::FetchMountConfigurationList (".", "TestResources", configurationList));
 
         const VirtualFileSystem::Entry testDirectory =
             virtualFileSystem.CreateDirectory (virtualFileSystem.GetRoot (), TEST_DIRECTORY);
 
-        for (const auto &configuration : configurationList.items)
-        {
-            REQUIRE (virtualFileSystem.Mount (testDirectory, configuration));
-        }
+        REQUIRE (Emergence::VirtualFileSystem::MountConfigurationListAt (virtualFileSystem, testDirectory,
+                                                                         configurationList));
     }
 
     REQUIRE (virtualFileSystem.Mount (virtualFileSystem.GetRoot (),

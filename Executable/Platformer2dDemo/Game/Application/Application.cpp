@@ -22,16 +22,18 @@
 
 #include <Render/Backend/Configuration.hpp>
 
-#include <Serialization/Binary.hpp>
+#include <Resource/Provider/Helpers.hpp>
+
 #include <Serialization/Yaml.hpp>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_syswm.h>
+#undef CreateDirectory
+#undef ERROR
 
 #include <SyntaxSugar/Time.hpp>
 
-#undef CreateDirectory
-#undef ERROR
+#include <VirtualFileSystem/Helpers.hpp>
 
 using namespace Emergence::Memory::Literals;
 
@@ -63,82 +65,24 @@ Application::Application () noexcept
         virtualFileSystem.CreateDirectory (virtualFileSystem.GetRoot (), "Resources")};
 
     Emergence::VirtualFileSystem::MountConfigurationList configurationList;
+    if (!Emergence::VirtualFileSystem::FetchMountConfigurationList (".", "CoreResources", configurationList) &&
+        !Emergence::VirtualFileSystem::FetchMountConfigurationList ("..", "CoreResources", configurationList))
     {
-        Emergence::Container::Utf8String mountListPath;
-        bool binary = false;
-
-        if (std::filesystem::exists ("MountCoreResources.bin"))
-        {
-            mountListPath = "MountCoreResources.bin";
-            binary = true;
-        }
-        else if (std::filesystem::exists ("MountCoreResources.yaml"))
-        {
-            mountListPath = "MountCoreResources.yaml";
-            binary = false;
-        }
-        else if (std::filesystem::exists ("../MountCoreResources.bin"))
-        {
-            mountListPath = "../MountCoreResources.bin";
-            binary = true;
-        }
-        else if (std::filesystem::exists ("../MountCoreResources.yaml"))
-        {
-            mountListPath = "../MountCoreResources.yaml";
-            binary = false;
-        }
-        else
-        {
-            Emergence::ReportCriticalError ("Unable to find core resources mount list!", __FILE__, __LINE__);
-        }
-
-        std::ifstream input {mountListPath.c_str (), binary ? std::ios::binary : std::ios::in};
-        if (!input)
-        {
-            Emergence::ReportCriticalError ("Failed to open core resources mount list!", __FILE__, __LINE__);
-        }
-
-        if (binary)
-        {
-            if (!Emergence::Serialization::Binary::DeserializeObject (
-                    input, &configurationList, Emergence::VirtualFileSystem::MountConfigurationList::Reflect ().mapping,
-                    {}))
-            {
-                Emergence::ReportCriticalError ("Failed to deserialize core resources mount list!", __FILE__, __LINE__);
-            }
-        }
-        else
-        {
-            if (!Emergence::Serialization::Yaml::DeserializeObject (
-                    input, &configurationList, Emergence::VirtualFileSystem::MountConfigurationList::Reflect ().mapping,
-                    {}))
-            {
-                Emergence::ReportCriticalError ("Failed to deserialize core resources mount list!", __FILE__, __LINE__);
-            }
-        }
+        Emergence::ReportCriticalError ("Failed to fetch \"CoreResources\" mount list!", __FILE__, __LINE__);
     }
 
-    for (const auto &configuration : configurationList.items)
+    if (!Emergence::VirtualFileSystem::MountConfigurationListAt (virtualFileSystem, resourcesDirectory,
+                                                                 configurationList))
     {
-        if (!virtualFileSystem.Mount (resourcesDirectory, configuration))
-        {
-            Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Failed to mount \"", configuration.sourcePath,
-                                                                    "\" into \"", configuration.targetPath, "\"!"),
-                                            __FILE__, __LINE__);
-        }
+        Emergence::ReportCriticalError ("Failed to mount \"CoreResources\" mount list!", __FILE__, __LINE__);
+    }
 
-        const Emergence::Memory::UniqueString mountedSource {EMERGENCE_BUILD_STRING (
-            "Resources", Emergence::VirtualFileSystem::PATH_SEPARATOR, configuration.targetPath)};
-
-        if (Emergence::Resource::Provider::SourceOperationResponse result = resourceProvider.AddSource (mountedSource);
-            result != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
-        {
-            Emergence::ReportCriticalError (
-                EMERGENCE_BUILD_STRING ("Resource provider initialization error code ",
-                                        static_cast<std::uint16_t> (result), " while trying to add source \"",
-                                        mountedSource, "\"!"),
-                __FILE__, __LINE__);
-        }
+    if (Emergence::Resource::Provider::AddMountedDirectoriesAsSources (resourceProvider, resourcesDirectory,
+                                                                       configurationList) !=
+        Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+    {
+        Emergence::ReportCriticalError ("Failed to add directories from \"CoreResources\" to resource provider!",
+                                        __FILE__, __LINE__);
     }
 }
 
@@ -259,6 +203,7 @@ void Application::EventLoop () noexcept
         SDL_Event event;
         Emergence::Celerity::FrameInputAccumulator *inputAccumulator = gameState->GetFrameInputAccumulator ();
 
+        // TODO: Looks like SDL events are no longer sorted by timestamp? We need to adjust our logic to it.
         while (SDL_PollEvent (&event))
         {
             if (event.type == SDL_EVENT_QUIT ||
