@@ -48,12 +48,15 @@ These services are built on top of [Celerity](./Library/Public/Celerity/README.m
 - [Celerity](./Library/Public/Celerity/README.md): combines [Warehouse](./Service/Warehouse/README.md),
   [Flow](./Library/Public/Flow/README.md) and [TaskExecutor](./Service/TaskExecutor/README.md) into framework
   for gameplay world logic implementation.
+- [CommandLine](./Library/Public/CommandLine/README.md): Provides utilities for command line applications.
 - [Container](./Library/Public/Container/README.md): template container proxies and implementations.
 - [Flow](./Library/Public/Flow/README.md): compact user-friendly task registration library. It verifies that there is no
   circular dependencies, no missing dependencies and no data races between registered tasks.
 - [Handling](./Library/Public/Handling/README.md): compact handle-based ownership implementation.
 - [Math](./Library/Public/Math/README.md): math classes and functions for game programming.
 - [MemoryRecording](./Library/Public/MemoryRecording/README.md): toolset for memory usage recording and replaying.
+- [ResourceCooking](./Library/Public/ResourceCooking/README.md): Provides foundation and stores common logic for 
+  resource cooking tools.
 - [ResourceObject](Library/Public/ResourceObject/README.md): provides format for storing game objects (like units,
   buildings, etc) in YAML or binary with single inheritance support.
 - [Serialization](./Library/Public/Serialization/README.md): toolset for serializing and deserializing data from 

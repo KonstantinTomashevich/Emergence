@@ -101,9 +101,19 @@ ResourceList &Context::GetResourceList () noexcept
     return resourceList;
 }
 
+const Provider::ResourceProvider &Context::GetInitialResourceProvider () const noexcept
+{
+    return resourceProvider;
+}
+
 Provider::ResourceProvider &Context::GetInitialResourceProvider () noexcept
 {
     return resourceProvider;
+}
+
+const VirtualFileSystem::Context &Context::GetVirtualFileSystem () const noexcept
+{
+    return virtualFileSystem;
 }
 
 VirtualFileSystem::Context &Context::GetVirtualFileSystem () noexcept

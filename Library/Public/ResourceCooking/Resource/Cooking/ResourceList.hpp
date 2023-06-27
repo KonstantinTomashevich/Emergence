@@ -10,11 +10,19 @@
 
 namespace Emergence::Resource::Cooking
 {
+/// \brief Describes a reflection-driven resource object instance.
 struct ObjectData final
 {
+    /// \brief Unique identifier of this object. Usually it is a file name without last extension.
     Memory::UniqueString id;
+
+    /// \brief Mapping that describes contents of this object.
     StandardLayout::Mapping type;
+
+    /// \brief Entry that points to where this object is stored.
     VirtualFileSystem::Entry entry;
+
+    /// \brief Format in which this object is stored.
     Provider::ObjectFormat format = Provider::ObjectFormat::BINARY;
 
     struct Reflection final
@@ -28,9 +36,13 @@ struct ObjectData final
     static const Reflection &Reflect () noexcept;
 };
 
+/// \brief Describes a third-party (not backed by reflection) resource instance.
 struct ThirdPartyData final
 {
+    /// \brief Unique identifier of this resource. Usually it is a file name including extensions.
     Memory::UniqueString id;
+
+    /// \brief Entry that points to where this resource is stored.
     VirtualFileSystem::Entry entry;
 
     struct Reflection final
@@ -42,9 +54,19 @@ struct ThirdPartyData final
     static const Reflection &Reflect () noexcept;
 };
 
+/// \brief Stores list of resources, both reflection-driven and third-party, that are currently being processed.
+/// \details Goal of this class is to store resource list in an efficient manner backed by indexing.
+///
+/// \par Access rules and thread safety
+/// \parblock
+/// This class follows readers-writers pattern: calling const methods and using read cursors is thread safe unless any
+/// non-const method is being executed or edit cursor exists. Non-const methods and edit cursors usage is not thread
+/// safe. There are no inbuilt shared locking: user is responsible for taking care of thread safety if it is needed.
+/// \endparblock
 class ResourceList final
 {
 public:
+    /// \brief Provides read access to all reflection-driven resource objects.
     class AllObjectsReadCursor final
     {
     public:
@@ -54,8 +76,11 @@ public:
 
         ~AllObjectsReadCursor () noexcept = default;
 
+        /// \return Pointer to current object data or nullptr if there is no more objects.
         [[nodiscard]] const ObjectData *operator* () const noexcept;
 
+        /// \brief Moves cursor to the next object.
+        /// \invariant Cursor is not pointing to the end.
         AllObjectsReadCursor &operator++ () noexcept;
 
         EMERGENCE_DELETE_ASSIGNMENT (AllObjectsReadCursor);
@@ -68,6 +93,7 @@ public:
         RecordCollection::LinearRepresentation::AscendingReadCursor cursor;
     };
 
+    /// \brief Provides edit access to all reflection-driven resource objects.
     class AllObjectsEditCursor final
     {
     public:
@@ -77,10 +103,15 @@ public:
 
         ~AllObjectsEditCursor () noexcept = default;
 
+        /// \return Pointer to current object data or nullptr if there is no more objects.
         [[nodiscard]] ObjectData *operator* () noexcept;
 
+        /// \brief Moves cursor to the next object.
+        /// \invariant Cursor is not pointing to the end.
         AllObjectsEditCursor &operator++ () noexcept;
 
+        /// \brief Deletes object under the cursor and moves to the next one.
+        /// \invariant Cursor is not pointing to the end.
         AllObjectsEditCursor &operator~() noexcept;
 
         EMERGENCE_DELETE_ASSIGNMENT (AllObjectsEditCursor);
@@ -93,6 +124,7 @@ public:
         RecordCollection::LinearRepresentation::AscendingEditCursor cursor;
     };
 
+    /// \brief Provides read access to all reflection-driven resource objects of requested type.
     class AllObjectsOfTypeReadCursor final
     {
     public:
@@ -102,8 +134,11 @@ public:
 
         ~AllObjectsOfTypeReadCursor () noexcept = default;
 
+        /// \return Pointer to current object data or nullptr if there is no more objects.
         [[nodiscard]] const ObjectData *operator* () const noexcept;
 
+        /// \brief Moves cursor to the next object.
+        /// \invariant Cursor is not pointing to the end.
         AllObjectsOfTypeReadCursor &operator++ () noexcept;
 
         EMERGENCE_DELETE_ASSIGNMENT (AllObjectsOfTypeReadCursor);
@@ -116,6 +151,7 @@ public:
         RecordCollection::PointRepresentation::ReadCursor cursor;
     };
 
+    /// \brief Provides edit access to all reflection-driven resource objects of requested type.
     class AllObjectsOfTypeEditCursor final
     {
     public:
@@ -125,10 +161,15 @@ public:
 
         ~AllObjectsOfTypeEditCursor () noexcept = default;
 
+        /// \return Pointer to current object data or nullptr if there is no more objects.
         [[nodiscard]] ObjectData *operator* () noexcept;
 
+        /// \brief Moves cursor to the next object.
+        /// \invariant Cursor is not pointing to the end.
         AllObjectsOfTypeEditCursor &operator++ () noexcept;
 
+        /// \brief Deletes object under the cursor and moves to the next one.
+        /// \invariant Cursor is not pointing to the end.
         AllObjectsOfTypeEditCursor &operator~() noexcept;
 
         EMERGENCE_DELETE_ASSIGNMENT (AllObjectsOfTypeEditCursor);
@@ -141,6 +182,7 @@ public:
         RecordCollection::PointRepresentation::EditCursor cursor;
     };
 
+    /// \brief Provides read access to all third-party resources.
     class AllThirdPartyReadCursor final
     {
     public:
@@ -150,8 +192,11 @@ public:
 
         ~AllThirdPartyReadCursor () noexcept = default;
 
+        /// \return Pointer to current resource data or nullptr if there is no more resources.
         [[nodiscard]] const ThirdPartyData *operator* () const noexcept;
 
+        /// \brief Moves cursor to the next resource.
+        /// \invariant Cursor is not pointing to the end.
         AllThirdPartyReadCursor &operator++ () noexcept;
 
         EMERGENCE_DELETE_ASSIGNMENT (AllThirdPartyReadCursor);
@@ -164,6 +209,7 @@ public:
         RecordCollection::LinearRepresentation::AscendingReadCursor cursor;
     };
 
+    /// \brief Provides edit access to all third-party resources.
     class AllThirdPartyEditCursor final
     {
     public:
@@ -173,10 +219,15 @@ public:
 
         ~AllThirdPartyEditCursor () noexcept = default;
 
+        /// \return Pointer to current resource data or nullptr if there is no more resources.
         [[nodiscard]] ThirdPartyData *operator* () noexcept;
 
+        /// \brief Moves cursor to the next resource.
+        /// \invariant Cursor is not pointing to the end.
         AllThirdPartyEditCursor &operator++ () noexcept;
 
+        /// \brief Deletes resource under the cursor and moves to the next one.
+        /// \invariant Cursor is not pointing to the end.
         AllThirdPartyEditCursor &operator~() noexcept;
 
         EMERGENCE_DELETE_ASSIGNMENT (AllThirdPartyEditCursor);
@@ -189,6 +240,7 @@ public:
         RecordCollection::LinearRepresentation::AscendingEditCursor cursor;
     };
 
+    /// \brief Constructs empty resource list.
     ResourceList () noexcept;
 
     ResourceList (const ResourceList &_other) = delete;
@@ -197,30 +249,49 @@ public:
 
     ~ResourceList () noexcept = default;
 
+    /// \brief Adds new reflection-driven resource object to the list.
+    /// \invariant User is responsible for preserving id uniqueness.
     void AddObject (const ObjectData &_object) noexcept;
 
+    /// \brief Adds new third-party resource to the list.
+    /// \invariant User is responsible for preserving id uniqueness.
     void AddThirdParty (const ThirdPartyData &_thirdParty) noexcept;
 
+    /// \return Object with given id or nullopt if there is no such object.
+    /// \details We return optional with copy instead of pointer,
+    ///          otherwise it would be impossible to preserve read-write scope.
     Container::Optional<ObjectData> QueryObject (Memory::UniqueString _id) const noexcept;
 
+    /// \return Resource with given id or nullopt if there is no such resource.
+    /// \details We return optional with copy instead of pointer,
+    ///          otherwise it would be impossible to preserve read-write scope.
     Container::Optional<ThirdPartyData> QueryThirdParty (Memory::UniqueString _id) const noexcept;
 
+    /// \brief Removes reflection-driven resource object with given id if it exists.
     void RemoveObject (Memory::UniqueString _id) noexcept;
 
+    /// \brief Removes third-party resource with given id if it exists.
     void RemoveThirdParty (Memory::UniqueString _id) noexcept;
 
+    /// \return Cursor with read access to all reflection-driven resource objects.
     AllObjectsReadCursor ReadAllObjects () const noexcept;
 
+    /// \return Cursor with edit access to all reflection-driven resource objects.
     AllObjectsEditCursor EditAllObjects () noexcept;
 
+    /// \return Cursor with read access to all reflection-driven resource objects of requested type.
     AllObjectsOfTypeReadCursor ReadAllObjectsOfType (const StandardLayout::Mapping &_mapping) const noexcept;
 
+    /// \return Cursor with edit access to all reflection-driven resource objects of requested type.
     AllObjectsOfTypeEditCursor EditAllObjectsOfType (const StandardLayout::Mapping &_mapping) noexcept;
 
+    /// \return Cursor with read access to all third-party resources.
     AllThirdPartyReadCursor ReadAllThirdParty () const noexcept;
 
+    /// \return Cursor with edit access to all third-party resources.
     AllThirdPartyEditCursor EditAllThirdParty () noexcept;
 
+    /// \brief Removes everything from the list, making it empty.
     void Clear () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (ResourceList);
