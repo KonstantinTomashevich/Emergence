@@ -309,7 +309,7 @@ void Application::EventLoop () noexcept
                     event.button.clicks,
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                inputAccumulator->RecordEvent ({SDLTicksToTime (event.button.timestamp), inputEvent});
             }
             else if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
@@ -320,7 +320,7 @@ void Application::EventLoop () noexcept
                     static_cast<std::int32_t> (event.motion.y),
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                inputAccumulator->RecordEvent ({SDLTicksToTime (event.motion.timestamp), inputEvent});
             }
             else if (event.type == SDL_EVENT_MOUSE_WHEEL)
             {
@@ -329,14 +329,14 @@ void Application::EventLoop () noexcept
                     event.wheel.y,
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                inputAccumulator->RecordEvent ({SDLTicksToTime (event.wheel.timestamp), inputEvent});
             }
             else if (event.type == SDL_EVENT_TEXT_INPUT)
             {
                 Emergence::Celerity::TextInputEvent inputEvent;
                 static_assert (sizeof (inputEvent.utf8Value) >= sizeof (event.text.text));
                 strcpy (inputEvent.utf8Value.data (), event.text.text);
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                inputAccumulator->RecordEvent ({SDLTicksToTime (event.text.timestamp), inputEvent});
             }
         }
 
