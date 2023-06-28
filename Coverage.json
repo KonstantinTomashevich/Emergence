@@ -137,7 +137,7 @@
       "Prefix": "./Service/ResourceProvider/Implementation/Original/Resource/Provider/Original/ResourceProvider.hpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
-      "Reason": "Defaulted cursor copy is not yet used anywhere, therefore coverage it lower than 75%."
+      "Reason": "Defaulted cursor copy is not yet used anywhere, therefore coverage is lower than 75%."
     },
     {
       "Prefix": "./Service/VirtualFileSystem/API/VirtualFileSystem/Helpers.hpp",

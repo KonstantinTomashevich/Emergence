@@ -329,7 +329,7 @@ VirtualFileSystem::Cursor &VirtualFileSystem::Cursor::operator++ () noexcept
     return *this;
 }
 
-// Internal static, because should not normally be used by user: only appears as a result of full path usage.
+// Internal static, because should not normally be relevant to user: only appears as a result of full path usage.
 static const char *const ROOT_SELECTOR = "~";
 
 VirtualFileSystem::VirtualFileSystem () noexcept

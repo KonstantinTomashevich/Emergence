@@ -8,13 +8,10 @@ sober_library_begin (ResourceCooking OBJECT)
 
     sober_naming_variant_target (Container Original CONTAINER_ORIGINAL_LIBRARY)
     sober_naming_variant_target (Serialization Original SERIALIZATION_ORIGINAL_LIBRARY)
-    sober_naming_variant_target (SyntaxSugar Original SYNTAX_SUGAR_ORIGINAL_LIBRARY)
 
     sober_library_link_library (PRIVATE "${SERIALIZATION_ORIGINAL_LIBRARY}")
     sober_library_link_library (PUBLIC "${CONTAINER_ORIGINAL_LIBRARY}")
-    sober_library_link_library (PUBLIC "${SYNTAX_SUGAR_ORIGINAL_LIBRARY}")
 
-    sober_library_use_service (EXPECTED PRIVATE JobDispatcher)
     sober_library_use_service (EXPECTED PRIVATE Log)
     sober_library_use_service (EXPECTED PUBLIC RecordCollection)
     sober_library_use_service (EXPECTED PUBLIC ResourceProvider)

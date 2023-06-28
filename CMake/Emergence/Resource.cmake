@@ -227,7 +227,7 @@ endfunction ()
 
 # Sets up resource cooking targets and distribution packaging targets for given target.
 # Parameters:
-#    TARGET: Target which resources we're cooking and which we're planning to distribute.
+#    TARGET: Target which resources we're cooking and that we're planning to distribute.
 #    COOKER_TARGET: Target executable that is used for cooking resources. Must accept following parameters:
 #        --groupName: Name of the mount group to fetch mount list and correctly name final results.
 #        --mountListDirectory: Path to directory with all mount lists of given target.

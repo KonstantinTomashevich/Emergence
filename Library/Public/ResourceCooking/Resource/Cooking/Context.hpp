@@ -33,7 +33,7 @@ namespace Emergence::Resource::Cooking
 ///
 /// \par Passes and results
 /// \parblock
-/// Although context does not enforces any particular architecture, it is advised to use passes and results approach.
+/// Although context does not enforce any particular architecture, it is advised to use passes and results approach.
 /// Pass is a single meaningful transformation, that is applied to resource list. It might be conversion from one
 /// format to another, index backing or even just resource list population from resource provider. Passes are executed
 /// sequentially and execution stops after first failure. Results are functions that take current resource list state
