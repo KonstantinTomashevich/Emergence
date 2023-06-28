@@ -13,53 +13,10 @@
 
 #include <VirtualFileSystem/Context.hpp>
 #include <VirtualFileSystem/MountConfiguration.hpp>
-#include <VirtualFileSystem/OpenMode.hpp>
 
 namespace Emergence::VirtualFileSystem::Original
 {
 using EntryId = std::uint64_t;
-
-constexpr EntryId INVALID_ID = std::numeric_limits<EntryId>::max ();
-
-constexpr EntryId ROOT_ID = 0u;
-
-enum class EntryType : uint8_t
-{
-    VIRTUAL_DIRECTORY = 0u,
-    PACKAGE_FILE,
-    FILE_SYSTEM_LINK,
-};
-
-struct Entry final
-{
-    EntryId id = INVALID_ID;
-
-    EntryId parentId = INVALID_ID;
-
-    Memory::UniqueString name;
-
-    EntryType type = EntryType::VIRTUAL_DIRECTORY;
-
-    std::uint64_t packageFileOffset = 0u;
-
-    std::uint64_t packageFileSize = 0u;
-
-    Container::Utf8String filesystemLink;
-
-    struct Reflection final
-    {
-        StandardLayout::FieldId id;
-        StandardLayout::FieldId parentId;
-        StandardLayout::FieldId name;
-        StandardLayout::FieldId type;
-        StandardLayout::FieldId packageFileOffset;
-        StandardLayout::FieldId packageFileSize;
-        StandardLayout::FieldId filesystemLink;
-        StandardLayout::Mapping mapping;
-    };
-
-    static const Reflection &Reflect () noexcept;
-};
 
 enum class ObjectType : uint8_t
 {
@@ -94,6 +51,87 @@ struct Object final
 
         Container::Utf8String path;
     };
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId type;
+        StandardLayout::FieldId entryId;
+        StandardLayout::FieldId path;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+constexpr EntryId INVALID_ID = std::numeric_limits<EntryId>::max ();
+
+constexpr EntryId ROOT_ID = 0u;
+
+enum class EntryType : uint8_t
+{
+    VIRTUAL_DIRECTORY = 0u,
+    PACKAGE_FILE,
+    FILE_SYSTEM_LINK,
+    WEAK_FILE_LINK,
+};
+
+struct PackageFileData final
+{
+    Container::Utf8String path;
+    std::uint64_t offset = 0u;
+    std::uint64_t size = 0u;
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId path;
+        StandardLayout::FieldId offset;
+        StandardLayout::FieldId size;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
+};
+
+struct Entry final
+{
+    Entry () noexcept;
+
+    Entry (const Entry &_other) = delete;
+
+    Entry (Entry &&_other) = delete;
+
+    ~Entry () noexcept;
+
+    EMERGENCE_DELETE_ASSIGNMENT (Entry);
+
+    EntryId id = INVALID_ID;
+
+    EntryId parentId = INVALID_ID;
+
+    Memory::UniqueString name;
+
+    EntryType type = EntryType::VIRTUAL_DIRECTORY;
+
+    union
+    {
+        PackageFileData packageFile;
+        Container::Utf8String filesystemLink;
+        Object weakFileLink;
+    };
+
+    struct Reflection final
+    {
+        StandardLayout::FieldId id;
+        StandardLayout::FieldId parentId;
+        StandardLayout::FieldId name;
+        StandardLayout::FieldId type;
+        StandardLayout::FieldId packageFile;
+        StandardLayout::FieldId filesystemLink;
+        StandardLayout::FieldId weakFileLink;
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 
 struct FileReadContext final
@@ -157,6 +195,10 @@ public:
 
     Object CreateDirectory (const Object &_parent, const std::string_view &_directoryName) noexcept;
 
+    Object CreateWeakFileLink (const Object &_target,
+                               const Object &_parent,
+                               const std::string_view &_linkName) noexcept;
+
     Object MakeDirectories (const Object &_parent, const std::string_view &_relativePath) noexcept;
 
     bool Delete (const Object &_entry, bool _recursive, bool _includingFileSystem) noexcept;
@@ -167,9 +209,13 @@ public:
 
     [[nodiscard]] Memory::UniqueString GetEntryName (EntryId _id) const noexcept;
 
-    [[nodiscard]] FileReadContext OpenFileForRead (const Object &_object, OpenMode _mode) const noexcept;
+    [[nodiscard]] Container::Utf8String GetPackageFilePath (EntryId _id) const noexcept;
 
-    [[nodiscard]] FileWriteContext OpenFileForWrite (const Object &_object, OpenMode _mode) const noexcept;
+    [[nodiscard]] Object GetWeakFileLinkTarget (EntryId _id) const noexcept;
+
+    [[nodiscard]] FileReadContext OpenFileForRead (const Object &_object) const noexcept;
+
+    [[nodiscard]] FileWriteContext OpenFileForWrite (const Object &_object) const noexcept;
 
 private:
     friend class Iterator;

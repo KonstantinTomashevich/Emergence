@@ -94,7 +94,7 @@ TEST_CASE (PackageFileWithNesting)
     {
         auto testReadFile = [] (const Entry &_entry, const Utf8String &_expected)
         {
-            Reader reader {_entry, OpenMode::BINARY};
+            Reader reader {_entry};
             REQUIRE (reader);
 
             StringBuilder textBuffer;
@@ -117,13 +117,13 @@ TEST_CASE (PackageFileWithNesting)
     // Test that entries not writable.
 
     {
-        Writer firstWriter {packagedFirst, OpenMode::BINARY};
+        Writer firstWriter {packagedFirst};
         CHECK (!firstWriter);
 
-        Writer secondWriter {packagedSecond, OpenMode::BINARY};
+        Writer secondWriter {packagedSecond};
         CHECK (!secondWriter);
 
-        Writer thirdWriter {packagedThird, OpenMode::BINARY};
+        Writer thirdWriter {packagedThird};
         CHECK (!thirdWriter);
     }
 

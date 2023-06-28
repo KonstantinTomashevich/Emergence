@@ -1,12 +1,7 @@
 #include <Render/Backend/Configuration.hpp>
 
-#if defined(__unix__)
-#    include <SDL2/SDL.h>
-#    include <SDL2/SDL_syswm.h>
-#else
-#    include <SDL.h>
-#    include <SDL_syswm.h>
-#endif
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_syswm.h>
 
 #include <Testing/SDLContextHolder.hpp>
 
@@ -30,25 +25,24 @@ void SDLContextHolder::Frame () noexcept
 
 SDLContextHolder::SDLContextHolder () noexcept
 {
-    std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
-    window =
-        SDL_CreateWindow ("Emergence Tests", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, static_cast<int> (WIDTH),
-                          static_cast<int> (HEIGHT), static_cast<SDL_WindowFlags> (windowFlags));
+    std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+    window = SDL_CreateWindow ("Emergence Tests", static_cast<int> (WIDTH), static_cast<int> (HEIGHT),
+                               static_cast<SDL_WindowFlags> (windowFlags));
 
     SDL_SysWMinfo windowsManagerInfo;
-    SDL_VERSION (&windowsManagerInfo.version);
-    SDL_GetWindowWMInfo (window, &windowsManagerInfo);
+    SDL_GetWindowWMInfo (window, &windowsManagerInfo, SDL_SYSWM_CURRENT_VERSION);
 
-#if SDL_VIDEO_DRIVER_X11
+#if defined(SDL_ENABLE_SYSWM_X11)
     void *nativeDisplayType = windowsManagerInfo.info.x11.display;
-    void *nativeWindowHandle = (void *) (std::uintptr_t) windowsManagerInfo.info.x11.window;
-#elif SDL_VIDEO_DRIVER_COCOA
+    auto *nativeWindowHandle =
+        reinterpret_cast<void *> (static_cast<std::uintptr_t> (windowsManagerInfo.info.x11.window));
+#elif defined(SDL_ENABLE_SYSWM_COCOA)
     void *nativeDisplayType = nullptr;
     void *nativeWindowHandle = windowsManagerInfo.info.cocoa.window;
-#elif SDL_VIDEO_DRIVER_WINDOWS
+#elif defined(SDL_ENABLE_SYSWM_WINDOWS)
     void *nativeDisplayType = nullptr;
     void *nativeWindowHandle = windowsManagerInfo.info.win.window;
-#elif SDL_VIDEO_DRIVER_VIVANTE
+#elif defined(SDL_ENABLE_SYSWM_VIVANTE)
     void *nativeDisplayType = windowsManagerInfo.info.vivante.display;
     void *nativeWindowHandle = windowsManagerInfo.info.vivante.window;
 #endif

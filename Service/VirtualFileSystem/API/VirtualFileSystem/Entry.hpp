@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <cstdint>
 
 #include <API/Common/Cursor.hpp>
@@ -78,7 +79,7 @@ public:
 
     /// \return File name without last extension.
     /// \invariant Entry is valid.
-    [[nodiscard]] Container::Utf8String GetFileName () const noexcept;
+    [[nodiscard]] Container::Utf8String GetName () const noexcept;
 
     /// \return Last extension.
     /// \invariant Entry is valid.
@@ -86,11 +87,15 @@ public:
 
     /// \return File name including last extension.
     /// \invariant Entry is valid.
-    [[nodiscard]] Container::Utf8String GetFullFileName () const noexcept;
+    [[nodiscard]] Container::Utf8String GetFullName () const noexcept;
 
     /// \return Absolute object path in virtual file system.
     /// \invariant Entry is valid.
     [[nodiscard]] Container::Utf8String GetFullPath () const noexcept;
+
+    /// \return Time point at which file was last written to.
+    /// \invariant Entry is file.
+    [[nodiscard]] std::chrono::time_point<std::chrono::file_clock> GetLastWriteTime () const noexcept;
 
     /// \return Cursor for iteration over entry children.
     /// \invariant Entry is directory.

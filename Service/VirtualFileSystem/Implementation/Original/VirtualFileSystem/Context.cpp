@@ -45,11 +45,11 @@ Entry Context::GetRoot () const noexcept
     return Entry {array_cast (entryData)};
 }
 
-Entry Context::CreateFile (Entry _parent, const std::string_view &_fileName) noexcept
+Entry Context::CreateFile (const Entry &_parent, const std::string_view &_fileName) noexcept
 {
     const auto &holder = block_cast<Original::VirtualFileSystemHolder> (data);
     EMERGENCE_ASSERT (holder.virtualFileSystem);
-    auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
+    const auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
     Original::EntryImplementationData entryData {holder.virtualFileSystem,
@@ -57,15 +57,34 @@ Entry Context::CreateFile (Entry _parent, const std::string_view &_fileName) noe
     return Entry {array_cast (entryData)};
 }
 
-Entry Context::CreateDirectory (Entry _parent, const std::string_view &_directoryName) noexcept
+Entry Context::CreateDirectory (const Entry &_parent, const std::string_view &_directoryName) noexcept
 {
     const auto &holder = block_cast<Original::VirtualFileSystemHolder> (data);
     EMERGENCE_ASSERT (holder.virtualFileSystem);
-    auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
+    const auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
     Original::EntryImplementationData entryData {
         holder.virtualFileSystem, holder.virtualFileSystem->CreateDirectory (parentData.object, _directoryName)};
+    return Entry {array_cast (entryData)};
+}
+
+Entry Context::CreateWeakFileLink (const Entry &_target,
+                                   const Entry &_parent,
+                                   const std::string_view &_linkName) noexcept
+{
+    const auto &holder = block_cast<Original::VirtualFileSystemHolder> (data);
+    EMERGENCE_ASSERT (holder.virtualFileSystem);
+
+    const auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
+    EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
+
+    const auto &targetData = block_cast<Original::EntryImplementationData> (_target.data);
+    EMERGENCE_ASSERT (targetData.owner == holder.virtualFileSystem);
+
+    Original::EntryImplementationData entryData {
+        holder.virtualFileSystem,
+        holder.virtualFileSystem->CreateWeakFileLink (targetData.object, parentData.object, _linkName)};
     return Entry {array_cast (entryData)};
 }
 
@@ -74,11 +93,11 @@ Entry Context::MakeDirectories (const std::string_view &_absolutePath) noexcept
     return MakeDirectories (GetRoot (), _absolutePath);
 }
 
-Entry Context::MakeDirectories (Entry _parent, const std::string_view &_relativePath) noexcept
+Entry Context::MakeDirectories (const Entry &_parent, const std::string_view &_relativePath) noexcept
 {
     const auto &holder = block_cast<Original::VirtualFileSystemHolder> (data);
     EMERGENCE_ASSERT (holder.virtualFileSystem);
-    auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
+    const auto &parentData = block_cast<Original::EntryImplementationData> (_parent.data);
     EMERGENCE_ASSERT (parentData.owner == holder.virtualFileSystem);
 
     Original::EntryImplementationData entryData {

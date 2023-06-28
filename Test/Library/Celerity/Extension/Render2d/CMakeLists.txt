@@ -29,8 +29,7 @@ sober_target_link_libraries (TestCelerityRender2dOriginal PUBLIC
         ${RESOURCE_CONTEXT_HOLDER_LIBRARY_TARGET}
         ${SDL_CONTEXT_HOLDER_LIBRARY_TARGET}
         ${SERIALIZATION_LIBRARY_TARGET}
-        SDL2
-        SDL2main)
+        SDL3::SDL3)
 link_celerity_with_dependencies (TestCelerityRender2dOriginal)
 
 # On MSVC CLang exceptions are disabled by default, but Doctest needs them for REQUIRE assertions.

@@ -52,4 +52,7 @@ struct WorldSingleton final
 
     static const Reflection &Reflect () noexcept;
 };
+
+// TODO: We need to split Celerity and Celerity extensions into Model and Logic parts.
+//       For example, tools need model all the time, but almost never need logic.
 } // namespace Emergence::Celerity

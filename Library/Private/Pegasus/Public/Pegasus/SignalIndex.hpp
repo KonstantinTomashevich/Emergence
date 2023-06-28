@@ -84,6 +84,8 @@ private:
 
     void OnWriterClosed () noexcept;
 
+    void Clear () noexcept;
+
     StandardLayout::Field indexedField;
     const std::size_t offset;
     const std::uint64_t mask;

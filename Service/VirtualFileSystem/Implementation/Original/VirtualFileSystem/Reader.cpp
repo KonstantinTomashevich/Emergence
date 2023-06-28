@@ -200,10 +200,10 @@ struct ReaderImplementationData
     std::istream input;
 };
 
-Reader::Reader (const Entry &_entry, OpenMode _openMode) noexcept
+Reader::Reader (const Entry &_entry) noexcept
 {
     const auto &entryData = block_cast<Original::EntryImplementationData> (_entry.data);
-    Original::FileReadContext context = entryData.owner->OpenFileForRead (entryData.object, _openMode);
+    Original::FileReadContext context = entryData.owner->OpenFileForRead (entryData.object);
     new (&data) ReaderImplementationData {context.file, context.offset, context.size};
 }
 

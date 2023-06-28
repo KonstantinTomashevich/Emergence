@@ -11,9 +11,8 @@ sober_library_begin (MemoryRecordingClient OBJECT)
 
     sober_library_link_library (PRIVATE ${CONTAINER_LIBRARY_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_RECORDING_LIBRARY_TARGET})
-    sober_library_link_library (PRIVATE SDL2)
-    sober_library_link_library (PRIVATE SDL2ImGUI)
-    sober_library_link_library (PRIVATE SDL2main)
+    sober_library_link_library (PRIVATE SDL3::SDL3)
+    sober_library_link_library (PRIVATE SDL3ImGUI)
 
     sober_library_use_service (SHARED PRIVATE Assert)
     sober_library_use_service (SHARED PRIVATE CPUProfiler)

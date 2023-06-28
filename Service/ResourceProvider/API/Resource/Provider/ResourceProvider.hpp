@@ -9,6 +9,8 @@
 
 #include <Memory/Heap.hpp>
 
+#include <Resource/Provider/ObjectFormat.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 #include <VirtualFileSystem/Context.hpp>
@@ -100,9 +102,35 @@ public:
     private:
         friend class ResourceProvider;
 
-        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 8u);
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 7u);
 
         explicit ObjectRegistryCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
+    };
+
+    /// \brief Cursor that provides access to ids of all third party resources.
+    class ThirdPartyRegistryCursor final
+    {
+    public:
+        ThirdPartyRegistryCursor (const ThirdPartyRegistryCursor &_other) noexcept;
+
+        ThirdPartyRegistryCursor (ThirdPartyRegistryCursor &&_other) noexcept;
+
+        ~ThirdPartyRegistryCursor () noexcept;
+
+        /// \brief Id of third party resource to which cursor points right now.
+        [[nodiscard]] Memory::UniqueString operator* () const noexcept;
+
+        /// \brief Moves cursor to next third party resource.
+        ThirdPartyRegistryCursor &operator++ () noexcept;
+
+        EMERGENCE_DELETE_ASSIGNMENT (ThirdPartyRegistryCursor);
+
+    private:
+        friend class ResourceProvider;
+
+        EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 3u);
+
+        explicit ThirdPartyRegistryCursor (std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
     };
 
     /// \brief Constructs resource provider that supports given resource types and is aware of given patchable types.
@@ -127,8 +155,9 @@ public:
     /// \brief Registers given source and adds all resources from it to resource provider.
     [[nodiscard]] SourceOperationResponse AddSource (Memory::UniqueString _path) noexcept;
 
-    /// \brief Saves index file for given source to its location.
-    [[nodiscard]] SourceOperationResponse SaveSourceIndex (Memory::UniqueString _sourcePath) const noexcept;
+    /// \brief Saves index file for given source to given output file.
+    [[nodiscard]] SourceOperationResponse SaveSourceIndex (Memory::UniqueString _sourcePath,
+                                                           const VirtualFileSystem::Entry &_output) const noexcept;
 
     /// \brief Removes given source and all resources associated with it.
     [[nodiscard]] SourceOperationResponse RemoveSource (Memory::UniqueString _path) noexcept;
@@ -148,6 +177,21 @@ public:
     /// \brief Returns cursor that provides access to ids of all resources of given type.
     /// \warning Cursor holds read access to resource registry while it is alive.
     [[nodiscard]] ObjectRegistryCursor FindObjectsByType (const StandardLayout::Mapping &_type) const noexcept;
+
+    /// \brief Returns cursor that provides access to ids of all third party resources.
+    /// \warning Cursor holds read access to resource registry while it is alive.
+    [[nodiscard]] ThirdPartyRegistryCursor VisitAllThirdParty () const noexcept;
+
+    /// \return Format in which object is stored.
+    [[nodiscard]] ObjectFormat GetObjectFormat (const StandardLayout::Mapping &_type,
+                                                Memory::UniqueString _id) const noexcept;
+
+    /// \return Virtual file system entry that points to location of object storage.
+    [[nodiscard]] VirtualFileSystem::Entry GetObjectEntry (const StandardLayout::Mapping &_type,
+                                                           Memory::UniqueString _id) const noexcept;
+
+    /// \return Virtual file system entry that points to location of third party resource storage.
+    [[nodiscard]] VirtualFileSystem::Entry GetThirdPartyEntry (Memory::UniqueString _id) const noexcept;
 
 private:
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uintptr_t) * 2u);

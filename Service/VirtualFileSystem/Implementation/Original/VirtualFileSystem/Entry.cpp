@@ -1,3 +1,5 @@
+#include <filesystem>
+
 #include <Assert/Assert.hpp>
 
 #include <SyntaxSugar/BlockCast.hpp>
@@ -77,21 +79,20 @@ Entry::~Entry () noexcept
     block_cast<Original::EntryImplementationData> (data).~EntryImplementationData ();
 }
 
-EntryType Entry::GetType () const noexcept
+static EntryType QueryType (Original::VirtualFileSystem *_owner, const Original::Object &_object) noexcept
 {
-    const auto &entryData = block_cast<Original::EntryImplementationData> (data);
-    if (!entryData.owner)
+    if (!_owner)
     {
         return EntryType::INVALID;
     }
 
-    switch (entryData.object.type)
+    switch (_object.type)
     {
     case Original::ObjectType::INVALID:
         return EntryType::INVALID;
 
     case Original::ObjectType::ENTRY:
-        switch (entryData.owner->GetEntryType (entryData.object.entryId))
+        switch (_owner->GetEntryType (_object.entryId))
         {
         case Original::EntryType::VIRTUAL_DIRECTORY:
         case Original::EntryType::FILE_SYSTEM_LINK:
@@ -99,12 +100,15 @@ EntryType Entry::GetType () const noexcept
 
         case Original::EntryType::PACKAGE_FILE:
             return EntryType::FILE;
+
+        case Original::EntryType::WEAK_FILE_LINK:
+            return QueryType (_owner, _owner->GetWeakFileLinkTarget (_object.entryId));
         }
 
         break;
 
     case Original::ObjectType::PATH:
-        switch (std::filesystem::status (entryData.object.path).type ())
+        switch (std::filesystem::status (_object.path).type ())
         {
         case std::filesystem::file_type::regular:
             return EntryType::FILE;
@@ -123,9 +127,15 @@ EntryType Entry::GetType () const noexcept
     return EntryType::INVALID;
 }
 
-Container::Utf8String Entry::GetFileName () const noexcept
+EntryType Entry::GetType () const noexcept
 {
-    Container::Utf8String fullName = GetFullFileName ();
+    const auto &entryData = block_cast<Original::EntryImplementationData> (data);
+    return QueryType (entryData.owner, entryData.object);
+}
+
+Container::Utf8String Entry::GetName () const noexcept
+{
+    Container::Utf8String fullName = GetFullName ();
     const std::size_t dotPos = fullName.find_last_of ('.');
 
     if (dotPos == std::string::npos)
@@ -138,7 +148,7 @@ Container::Utf8String Entry::GetFileName () const noexcept
 
 Container::Utf8String Entry::GetExtension () const noexcept
 {
-    Container::Utf8String fullName = GetFullFileName ();
+    Container::Utf8String fullName = GetFullName ();
     std::size_t dotPos = fullName.find_last_of ('.');
 
     if (dotPos == std::string::npos)
@@ -149,7 +159,7 @@ Container::Utf8String Entry::GetExtension () const noexcept
     return fullName.substr (dotPos + 1u, std::string::npos);
 }
 
-Container::Utf8String Entry::GetFullFileName () const noexcept
+Container::Utf8String Entry::GetFullName () const noexcept
 {
     const auto &entryData = block_cast<Original::EntryImplementationData> (data);
     switch (entryData.object.type)
@@ -175,6 +185,62 @@ Container::Utf8String Entry::GetFullPath () const noexcept
 {
     const auto &entryData = block_cast<Original::EntryImplementationData> (data);
     return entryData.owner->ExtractFullVirtualPath (entryData.object);
+}
+
+static std::chrono::time_point<std::chrono::file_clock> QueryLastWriteTime (Original::VirtualFileSystem *_owner,
+                                                                            const Original::Object &_object) noexcept
+{
+    if (!_owner)
+    {
+        return {};
+    }
+
+    switch (_object.type)
+    {
+    case Original::ObjectType::INVALID:
+        return {};
+
+    case Original::ObjectType::ENTRY:
+        switch (_owner->GetEntryType (_object.entryId))
+        {
+        case Original::EntryType::VIRTUAL_DIRECTORY:
+        case Original::EntryType::FILE_SYSTEM_LINK:
+            return {};
+
+        case Original::EntryType::PACKAGE_FILE:
+            return std::filesystem::last_write_time (_owner->GetPackageFilePath (_object.entryId));
+
+        case Original::EntryType::WEAK_FILE_LINK:
+            return QueryLastWriteTime (_owner, _owner->GetWeakFileLinkTarget (_object.entryId));
+        }
+
+        break;
+
+    case Original::ObjectType::PATH:
+        switch (std::filesystem::status (_object.path).type ())
+        {
+        case std::filesystem::file_type::regular:
+            return std::filesystem::last_write_time (_object.path);
+
+        case std::filesystem::file_type::directory:
+            EMERGENCE_ASSERT (false);
+            return {};
+
+        // Unfortunately, we need to use default here for better support across
+        // different standards: not all versions of STL support all the entry types.
+        default:
+            return {};
+        }
+    }
+
+    EMERGENCE_ASSERT (false);
+    return {};
+}
+
+std::chrono::time_point<std::chrono::file_clock> Entry::GetLastWriteTime () const noexcept
+{
+    const auto &entryData = block_cast<Original::EntryImplementationData> (data);
+    return QueryLastWriteTime (entryData.owner, entryData.object);
 }
 
 Entry::Cursor Entry::ReadChildren () const noexcept

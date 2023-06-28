@@ -6,7 +6,7 @@ add_test (NAME "TestSerializationOriginal" COMMAND TestSerializationOriginal)
 add_dependencies (LibraryTests TestSerializationOriginal)
 target_include_directories (TestSerializationOriginal PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
-sober_naming_implementation_target (Assert SDL2 ASSERT_IMPLEMENTATION_TARGET)
+sober_naming_implementation_target (Assert SDL3 ASSERT_IMPLEMENTATION_TARGET)
 sober_naming_implementation_target (CPUProfiler None CPU_PROFILER_IMPLEMENTATION_TARGET)
 sober_naming_variant_target (Serialization Original SERIALIZATION_LIBRARY_TARGET)
 sober_naming_implementation_target (Log SPDLog LOG_IMPLEMENTATION_TARGET)

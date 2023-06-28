@@ -1,5 +1,5 @@
 function (link_celerity_with_dependencies TARGET_NAME)
-    sober_naming_implementation_target (Assert SDL2 ASSERT_IMPLEMENTATION_TARGET)
+    sober_naming_implementation_target (Assert SDL3 ASSERT_IMPLEMENTATION_TARGET)
     sober_naming_implementation_target (CPUProfiler None CPU_PROFILER_IMPLEMENTATION_TARGET)
     sober_naming_implementation_target (JobDispatcher Original JOB_DISPATCHER_IMPLEMENTATION_TARGET)
     sober_naming_implementation_target (Log SPDLog LOG_IMPLEMENTATION_TARGET)

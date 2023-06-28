@@ -62,21 +62,24 @@ public:
 
     /// \brief Creates empty file with given name that is child of given virtual file system entry.
     /// \invariant Given parent entry must be mappable to real file system path, we do not support fully virtual files.
-    Entry CreateFile (Entry _parent, const std::string_view &_fileName) noexcept;
+    Entry CreateFile (const Entry &_parent, const std::string_view &_fileName) noexcept;
 
     /// \brief Creates new directory with given name that is child of given virtual file system entry.
     /// \details If given parent entry is mappable to real file system path, then new directory will be created
     ///          in real file system too. Otherwise, new directory will exists only in virtual file system.
-    Entry CreateDirectory (Entry _parent, const std::string_view &_directoryName) noexcept;
+    Entry CreateDirectory (const Entry &_parent, const std::string_view &_directoryName) noexcept;
 
-    // TODO: Support soft file links. Needed for resource cooking platform.
+    /// \brief Creates new weak file link with given name that is child of given
+    ///        virtual file system entry and points to given target entry.
+    /// \invariant Given parent entry must be a virtual directory: real file system driven links are not supported yet.
+    Entry CreateWeakFileLink (const Entry &_target, const Entry &_parent, const std::string_view &_linkName) noexcept;
 
     /// \brief Ensure that given absolute path is valid by creating all missing directories along the way.
     Entry MakeDirectories (const std::string_view &_absolutePath) noexcept;
 
     /// \brief Ensure that given path, relative to given parent, is
     ///        valid by creating all missing directories along the way.
-    Entry MakeDirectories (Entry _parent, const std::string_view &_relativePath) noexcept;
+    Entry MakeDirectories (const Entry &_parent, const std::string_view &_relativePath) noexcept;
 
     /// \brief Attempts to delete given virtual file system entry.
     /// \param _entry Entry to delete.
@@ -86,6 +89,7 @@ public:
     ///                             Otherwise, only virtual file system entries will be deleted. This behaviour
     ///                             is useful for unmounting: we can delete virtual mount points while keeping
     ///                             files of real file system intact.
+    /// \warning Keep in mind that weak file link deletion does not result in file deletion!
     bool Delete (const Entry &_entry, bool _recursive, bool _includingFileSystem) noexcept;
 
     /// \brief Attempts to mount given configuration as child of given entry that must be virtual directory.

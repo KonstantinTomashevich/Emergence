@@ -197,7 +197,6 @@ public:
     [[nodiscard]] EventIterator EventsEnd () noexcept;
 
     /// \brief Pushes new event to the back of the input events sequence.
-    /// \invariant InputEvent::timeNs must be greater or equal to the InputEvent::timeNs of the last recorded event.
     void RecordEvent (const InputEvent &_event) noexcept;
 
     /// \brief Removes all stored input events and resets qualifier mask to zero.

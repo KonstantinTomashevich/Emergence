@@ -6,8 +6,7 @@ sober_library_begin (SDLContextHolder OBJECT)
     sober_library_set_sources ("${SOURCES}")
     sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    sober_library_link_library (PUBLIC SDL2)
-    sober_library_link_library (PUBLIC SDL2main)
+    sober_library_link_library (PUBLIC SDL3::SDL3)
 
     sober_library_use_service (PER_VARIANT PRIVATE RenderBackend)
 

@@ -14,8 +14,7 @@ sober_library_begin ("${GAME_NAME}Game" OBJECT)
     sober_library_link_library (PRIVATE ${LOGIC_TARGET})
     sober_library_link_library (PRIVATE ${MEMORY_RECORDING_TARGET})
     sober_library_link_library (PRIVATE ${SERIALIZATION_TARGET})
-    sober_library_link_library (PRIVATE SDL2)
-    sober_library_link_library (PRIVATE SDL2main)
+    sober_library_link_library (PRIVATE SDL3::SDL3)
 
     sober_library_use_service (PER_VARIANT PRIVATE Assert)
     sober_library_use_service (PER_VARIANT PRIVATE CelerityPhysics2d)
@@ -34,13 +33,26 @@ sober_library_begin ("${GAME_NAME}Game" OBJECT)
     sober_library_use_service (PER_VARIANT PRIVATE VirtualFileSystem)
     sober_library_use_service (PER_VARIANT PRIVATE Warehouse)
 
-    sober_variant_begin (Original)
-        sober_variant_set_default_implementation (CPUProfiler Tracy)
+    sober_variant_begin (Profiled)
+        sober_variant_freeze_implementation (CPUProfiler Tracy)
+        sober_variant_freeze_implementation (MemoryProfiler Original)
+    sober_variant_end ()
+
+    sober_variant_begin (Shipping)
+        sober_variant_freeze_implementation (CPUProfiler None)
+        sober_variant_freeze_implementation (MemoryProfiler None)
     sober_variant_end ()
 sober_library_end ()
 
+option (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING "Whether Platformer2dDemo game should be built in shipping variant." OFF)
+set (PLATFORMED_2D_GAME_VARIANT "Profiled")
+
+if (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING)
+    set (PLATFORMED_2D_DEMO_VARIANT "Shipping")
+endif ()
+
 add_executable ("${GAME_NAME}GameLauncher" "${SOBER_TEST_RUNNER_STUB_SOURCE}")
-sober_naming_variant_target ("${GAME_NAME}Game" Original GAME_TARGET)
+sober_naming_variant_target ("${GAME_NAME}Game" "${PLATFORMED_2D_GAME_VARIANT}" GAME_TARGET)
 sober_target_link_libraries ("${GAME_NAME}GameLauncher" PUBLIC "${GAME_TARGET}")
 
 set_target_properties ("${GAME_NAME}GameLauncher" PROPERTIES

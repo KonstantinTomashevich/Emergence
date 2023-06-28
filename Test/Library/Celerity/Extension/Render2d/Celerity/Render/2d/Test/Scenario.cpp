@@ -428,20 +428,17 @@ void ScenarioExecutor::CompareScreenShots (Memory::UniqueString &_id) noexcept
     std::this_thread::sleep_for (std::chrono::milliseconds {300u});
     LOG ("Starting image check.");
 
-    VirtualFileSystem::Reader expectedReader {
-        VirtualFileSystem::Entry {
-            Testing::ResourceContextHolder::Get ().virtualFileSystem,
-            EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_DIRECTORY, VirtualFileSystem::PATH_SEPARATOR,
-                                    "Render2dTest", VirtualFileSystem::PATH_SEPARATOR, "Expectation",
-                                    VirtualFileSystem::PATH_SEPARATOR, _id, ".png")},
-        VirtualFileSystem::OpenMode::BINARY};
+    VirtualFileSystem::Reader expectedReader {VirtualFileSystem::Entry {
+        Testing::ResourceContextHolder::Get ().virtualFileSystem,
+        EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_DIRECTORY, VirtualFileSystem::PATH_SEPARATOR,
+                                "Render2dTest", VirtualFileSystem::PATH_SEPARATOR, "Expectation",
+                                VirtualFileSystem::PATH_SEPARATOR, _id, ".png")}};
     REQUIRE (expectedReader);
 
     VirtualFileSystem::Reader resultReader {
         VirtualFileSystem::Entry {Testing::ResourceContextHolder::Get ().virtualFileSystem,
                                   EMERGENCE_BUILD_STRING (Testing::ResourceContextHolder::TEST_OUTPUT_DIRECTORY,
-                                                          VirtualFileSystem::PATH_SEPARATOR, _id, ".png")},
-        VirtualFileSystem::OpenMode::BINARY};
+                                                          VirtualFileSystem::PATH_SEPARATOR, _id, ".png")}};
     REQUIRE (resultReader);
 
     Testing::CheckStreamEquality (expectedReader.InputStream (), resultReader.InputStream (), 0.02f);

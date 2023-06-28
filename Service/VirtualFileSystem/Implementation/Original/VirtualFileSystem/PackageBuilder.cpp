@@ -118,7 +118,7 @@ bool PackageBuilder::End () noexcept
         Original::PackageHeaderEntry &headerEntry = header.entries.emplace_back ();
         headerEntry.relativePath = entry.pathInPackage;
         EMERGENCE_ASSERT (entry.entry);
-        Reader reader {entry.entry, OpenMode::BINARY};
+        Reader reader {entry.entry};
 
         if (!reader)
         {
@@ -149,7 +149,7 @@ bool PackageBuilder::End () noexcept
         return false;
     }
 
-    Writer writer {implementationData.output, OpenMode::BINARY};
+    Writer writer {implementationData.output};
     if (!writer)
     {
         EMERGENCE_LOG (ERROR, "VirtualFileSystem::PackageBuilder: Unable to build package \"",
@@ -164,7 +164,7 @@ bool PackageBuilder::End () noexcept
 
     for (const PackageBuilderEntry &entry : implementationData.entries)
     {
-        Reader reader {entry.entry, OpenMode::BINARY};
+        Reader reader {entry.entry};
         if (!reader)
         {
             EMERGENCE_LOG (ERROR, "VirtualFileSystem::PackageBuilder: File \"", entry.entry.GetFullPath (),

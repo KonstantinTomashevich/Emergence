@@ -3,8 +3,8 @@
 #include <cstdio>
 
 #include <imgui.h>
-#include <imgui_impl_sdl.h>
-#include <imgui_impl_sdlrenderer.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
 
 #include <Memory/Recording/Application/Client.hpp>
 
@@ -20,12 +20,11 @@ Client::Client () noexcept
         return;
     }
 
-    auto windowFlags = (SDL_WindowFlags) (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    auto windowFlags = (SDL_WindowFlags) (SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     // TODO: Currently we hardcode window initial size for simplicity.
-    window = SDL_CreateWindow ("Memory Recording Client", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720,
-                               windowFlags);
+    window = SDL_CreateWindow ("Memory Recording Client", 1280, 720, windowFlags);
 
-    renderer = SDL_CreateRenderer (window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer (window, nullptr, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
     if (!renderer)
     {
         SDL_Log ("Error creating SDL_Renderer!");
@@ -38,14 +37,14 @@ Client::Client () noexcept
     ImGui::GetIO ().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
     ImGui::StyleColorsDark ();
-    ImGui_ImplSDL2_InitForSDLRenderer (window, renderer);
-    ImGui_ImplSDLRenderer_Init (renderer);
+    ImGui_ImplSDL3_InitForSDLRenderer (window, renderer);
+    ImGui_ImplSDLRenderer3_Init (renderer);
 }
 
 Client::~Client () noexcept
 {
-    ImGui_ImplSDLRenderer_Shutdown ();
-    ImGui_ImplSDL2_Shutdown ();
+    ImGui_ImplSDLRenderer3_Shutdown ();
+    ImGui_ImplSDL3_Shutdown ();
     ImGui::DestroyContext ();
 
     SDL_DestroyRenderer (renderer);
@@ -71,22 +70,21 @@ int Client::Run () noexcept
         SDL_Event event;
         while (SDL_PollEvent (&event))
         {
-            ImGui_ImplSDL2_ProcessEvent (&event);
-            if (event.type == SDL_QUIT)
+            ImGui_ImplSDL3_ProcessEvent (&event);
+            if (event.type == SDL_EVENT_QUIT)
             {
                 done = true;
             }
 
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
-                event.window.windowID == SDL_GetWindowID (window))
+            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID (window))
             {
                 done = true;
             }
         }
 
         trackHolder.Update ();
-        ImGui_ImplSDLRenderer_NewFrame ();
-        ImGui_ImplSDL2_NewFrame (window);
+        ImGui_ImplSDLRenderer3_NewFrame ();
+        ImGui_ImplSDL3_NewFrame ();
 
         ImGui::NewFrame ();
         ui.Render (*this);
@@ -94,7 +92,7 @@ int Client::Run () noexcept
 
         SDL_SetRenderDrawColor (renderer, 0, 0, 0, 255);
         SDL_RenderClear (renderer);
-        ImGui_ImplSDLRenderer_RenderDrawData (ImGui::GetDrawData ());
+        ImGui_ImplSDLRenderer3_RenderDrawData (ImGui::GetDrawData ());
         SDL_RenderPresent (renderer);
     }
 

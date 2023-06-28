@@ -54,6 +54,9 @@ public:
     /// \brief Append given null terminated string to the buffer.
     StringBuilder &Append (const char *_value) noexcept;
 
+    /// \brief Append given null terminated string to the buffer.
+    StringBuilder &Append (char *_value) noexcept;
+
     /// \brief Append given unique string to the buffer.
     StringBuilder &Append (Memory::UniqueString _value) noexcept;
 

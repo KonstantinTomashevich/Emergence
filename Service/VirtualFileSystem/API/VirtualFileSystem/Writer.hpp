@@ -7,7 +7,6 @@
 #include <API/Common/Shortcuts.hpp>
 
 #include <VirtualFileSystem/Entry.hpp>
-#include <VirtualFileSystem/OpenMode.hpp>
 
 namespace Emergence::VirtualFileSystem
 {
@@ -17,7 +16,8 @@ class Writer final
 public:
     /// \brief Constructs writer for given file entry with given open mode.
     /// \warning Current content of the file will be destroyed by this operation!
-    Writer (const Entry &_entry, OpenMode _openMode) noexcept;
+    /// \warning Currently, all files are opened in binary mode only!
+    Writer (const Entry &_entry) noexcept;
 
     Writer (const Writer &_other) = delete;
 

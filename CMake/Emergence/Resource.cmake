@@ -5,6 +5,11 @@ define_property (TARGET PROPERTY RESOURCE_DIRECTORY_MAPPING
 For each resource usage 3 items are added: global path to source, virtual path for mounting and group name for \
 grouping mount lists. Should only be modified through `register_resource_usage` function.")
 
+# Property for caching deploying target merged resource mapping.
+define_property (TARGET PROPERTY RESOURCE_DIRECTORY_MERGED_MAPPING
+        BRIEF_DOCS "List that describes target all resource directories including linked targets resources."
+        FULL_DOCS "Product of merging own RESOURCE_DIRECTORY_MAPPING with all linked target ones.")
+
 # Registers that given target uses resources at given real path (directory or virtual file system package).
 # In resulting mount configuration this resource will have given virtual target path and will be placed in
 # appropriate mount configuration list (one list per group is created).
@@ -50,6 +55,27 @@ function (private_add_direct_resources_to_merged_mapping TARGET)
     set (MERGED_MAPPING "${LOCAL_MERGED_MAPPING}" PARENT_SCOPE)
 endfunction ()
 
+# File-private function that extracts RESOURCE_DIRECTORY_MERGED_MAPPING from given target.
+# If it is not yet ready, RESOURCE_DIRECTORY_MERGED_MAPPING generation algorithm is executed.
+# Outputs result value to MERGED_MAPPING parent scope variable.
+function (private_request_resource_usage_merged_mapping TARGET)
+    get_target_property (LOCAL_MERGED_MAPPING "${TARGET}" RESOURCE_DIRECTORY_MERGED_MAPPING)
+    if (LOCAL_MERGED_MAPPING STREQUAL "LOCAL_MERGED_MAPPING-NOTFOUND")
+        set (MERGED_MAPPING)
+        private_add_direct_resources_to_merged_mapping ("${TARGET}")
+        sober_find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
+
+        foreach (LINKED_TARGET ${ALL_LINKED_TARGETS})
+            private_add_direct_resources_to_merged_mapping ("${LINKED_TARGET}")
+        endforeach ()
+
+        set (LOCAL_MERGED_MAPPING "${MERGED_MAPPING}")
+        set_target_properties ("${TARGET}" PROPERTIES RESOURCE_DIRECTORY_MERGED_MAPPING "${LOCAL_MERGED_MAPPING}")
+    endif ()
+
+    set (MERGED_MAPPING "${LOCAL_MERGED_MAPPING}" PARENT_SCOPE)
+endfunction ()
+
 # Deploys mount lists for all resources, used by given target and its dependencies, into given deploy directory.
 # One mount list is created for every group: MountCoreResources.yaml, MountTestResources.yaml, etc.
 # Mount grouping makes it easy to mount and unmount resources at runtime using game-specific logic: for example
@@ -57,12 +83,7 @@ endfunction ()
 # resource group all the time).
 function (deploy_resource_mount_lists TARGET DEPLOY_DIRECTORY)
     set (MERGED_MAPPING)
-    private_add_direct_resources_to_merged_mapping ("${TARGET}")
-    sober_find_linked_targets_recursively ("${TARGET}" ALL_LINKED_TARGETS)
-
-    foreach (LINKED_TARGET ${ALL_LINKED_TARGETS})
-        private_add_direct_resources_to_merged_mapping ("${LINKED_TARGET}")
-    endforeach ()
+    private_request_resource_usage_merged_mapping ("${TARGET}")
 
     # Make sure that deploy root exists.
     file (MAKE_DIRECTORY "${DEPLOY_DIRECTORY}")
@@ -201,5 +222,126 @@ function (register_bgfx_shaders SOURCE_DIRECTORY BINARY_DIRECTORY)
 
         unset (OUTPUTS)
         unset (SHADER_COMPILATION_COMMANDS)
+    endforeach ()
+endfunction ()
+
+# Sets up resource cooking targets and distribution packaging targets for given target.
+# Parameters:
+#    TARGET: Target which resources we're cooking and that we're planning to distribute.
+#    COOKER_TARGET: Target executable that is used for cooking resources. Must accept following parameters:
+#        --groupName: Name of the mount group to fetch mount list and correctly name final results.
+#        --mountListDirectory: Path to directory with all mount lists of given target.
+#        --workspace: Path to the workspace directory.
+#    MOUNT_LIST_DIRECTORY: Path to directory where all mount lists of TARGET are stored.
+#    COOKING_WORKSPACE: Path to directory where cooking routines may store intermediate files and final results.
+#    PACKAGING_OUTPUT: Path to directory when packaging result (game and resources) should be stored.
+function (setup_resource_cooking_and_packaging
+        TARGET COOKER_TARGET MOUNT_LIST_DIRECTORY COOKING_WORKSPACE PACKAGING_OUTPUT)
+
+    set (MERGED_MAPPING)
+    private_request_resource_usage_merged_mapping ("${TARGET}")
+    set (GROUPS)
+
+    list (LENGTH MERGED_MAPPING MERGED_MAPPING_LENGTH)
+    if (MERGED_MAPPING_LENGTH GREATER 0)
+        math (EXPR LAST_INDEX "${MERGED_MAPPING_LENGTH} - 3")
+
+        foreach (INDEX RANGE 0 ${LAST_INDEX} 3)
+            math (EXPR "GROUP_INDEX" "${INDEX} + 2")
+            list (GET MERGED_MAPPING ${GROUP_INDEX} GROUP)
+            list (FIND GROUPS "${GROUP}" GROUP_INDEX_IN_LIST)
+
+            if (GROUP_INDEX_IN_LIST EQUAL -1)
+                list (APPEND GROUPS "${GROUP}")
+            endif ()
+        endforeach ()
+    endif ()
+
+    set (COOKING_MAIN_TARGET "${TARGET}AllResourceCooking")
+    add_custom_target (
+            "${COOKING_MAIN_TARGET}"
+            COMMENT "Cooking all resources for target \"${TARGET}\".")
+
+    set (COOKING_MAIN_CLEAN_TARGET "${TARGET}AllResourceCookingClean")
+    add_custom_target (
+            "${COOKING_MAIN_CLEAN_TARGET}"
+            COMMENT "Cleaning cooking workspace of \"${TARGET}\".")
+
+    set (PACKAGING_MAIN_TARGET "${TARGET}Packaging")
+    add_custom_target (
+            "${PACKAGING_MAIN_TARGET}"
+            COMMENT "Packaging target \"${TARGET}\" executable."
+            COMMAND
+            ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${TARGET}> "${PACKAGING_OUTPUT}"
+            VERBATIM)
+    add_dependencies ("${PACKAGING_MAIN_TARGET}" ${TARGET})
+
+    set (PACKAGING_CLEAN_TARGET "${TARGET}PackageClean")
+    add_custom_target (
+            "${PACKAGING_CLEAN_TARGET}"
+            COMMENT "Cleaning packaging output of \"${TARGET}\"."
+            COMMAND ${CMAKE_COMMAND} -E remove_directory "${PACKAGING_OUTPUT}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${PACKAGING_OUTPUT}"
+            VERBATIM)
+
+    foreach (GROUP ${GROUPS})
+        set (COOKING_TARGET "${TARGET}${GROUP}Cooking")
+        add_custom_target (
+                "${COOKING_TARGET}"
+                COMMENT "Cooking resource group \"${GROUP}\" for \"${TARGET}\"."
+                COMMAND
+                $<TARGET_FILE:${COOKER_TARGET}>
+                "--groupName" "${GROUP}"
+                "--mountListDirectory" "${MOUNT_LIST_DIRECTORY}"
+                "--workspace" "${COOKING_WORKSPACE}/${GROUP}"
+                VERBATIM)
+
+        add_dependencies ("${COOKING_TARGET}" "${COOKER_TARGET}")
+        add_dependencies ("${COOKING_MAIN_TARGET}" "${COOKING_TARGET}")
+
+        set (COOKING_CLEAN_TARGET "${TARGET}${GROUP}CookingClean")
+        add_custom_target (
+                "${COOKING_CLEAN_TARGET}"
+                COMMENT "Cleaning cooking workspace for \"${GROUP}\" for \"${TARGET}\"."
+                COMMAND ${CMAKE_COMMAND} -E remove_directory "${COOKING_WORKSPACE}/${GROUP}"
+                VERBATIM)
+        add_dependencies ("${COOKING_MAIN_CLEAN_TARGET}" "${COOKING_CLEAN_TARGET}")
+
+        set (PACKAGING_TARGET "${TARGET}${GROUP}Packaging")
+        add_custom_target (
+                "${PACKAGING_TARGET}"
+                COMMENT "Packaging resource group \"${GROUP}\" for \"${TARGET}\"."
+                COMMAND
+                ${CMAKE_COMMAND} -E copy_directory
+                "${COOKING_WORKSPACE}/${GROUP}/FinalResult" "${PACKAGING_OUTPUT}"
+                VERBATIM)
+
+        add_dependencies ("${PACKAGING_TARGET}" "${PACKAGING_CLEAN_TARGET}" "${COOKING_TARGET}")
+        add_dependencies ("${PACKAGING_MAIN_TARGET}" "${PACKAGING_TARGET}")
+    endforeach ()
+
+    find_required_shared_libraries ("${TARGET}" REQUIRED_LIBRARIES)
+    foreach (LIBRARY_TARGET ${REQUIRED_LIBRARIES})
+        set (PACKAGING_TARGET "${TARGET}${LIBRARY_TARGET}Packaging")
+        string (REPLACE "::" "_" PACKAGING_TARGET "${PACKAGING_TARGET}")
+
+        if (UNIX)
+            add_custom_target (
+                    ${PACKAGING_TARGET}
+                    COMMENT "Packaging \"${LIBRARY_TARGET}\" dependency of \"${TARGET}\"."
+                    COMMAND
+                    ${CMAKE_COMMAND} -E copy $<TARGET_SONAME_FILE:${LIBRARY_TARGET}> "${PACKAGING_OUTPUT}"
+                    VERBATIM)
+        else ()
+            add_custom_target (
+                    ${PACKAGING_TARGET}
+                    COMMENT "Packaging \"${LIBRARY_TARGET}\" dependency of \"${TARGET}\"."
+                    COMMAND
+                    ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${LIBRARY_TARGET}> "${PACKAGING_OUTPUT}"
+                    VERBATIM)
+        endif ()
+
+        add_dependencies ("${PACKAGING_TARGET}" "${PACKAGING_CLEAN_TARGET}")
+        add_dependencies ("${PACKAGING_MAIN_TARGET}" "${PACKAGING_TARGET}")
     endforeach ()
 endfunction ()

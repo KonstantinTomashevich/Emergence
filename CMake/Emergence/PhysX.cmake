@@ -78,6 +78,6 @@ if (DEFINED PHYSX_HOME)
         add_library (PhysX::Extensions STATIC IMPORTED)
         set_target_properties (PhysX::Extensions PROPERTIES IMPORTED_LOCATION "${PHYSX_EXTENSIONS_STATIC}")
 
-        target_link_libraries (PhysX INTERFACE PhysX::Common PhysX::Foundation PhysX::PVD PhysX::Extensions)
+        sober_target_link_libraries (PhysX INTERFACE PhysX::Common PhysX::Foundation PhysX::PVD PhysX::Extensions)
     endif ()
 endif ()

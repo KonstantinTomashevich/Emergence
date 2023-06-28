@@ -1,10 +1,6 @@
 #include <Application/KeyCodeMapping.hpp>
 
-#if defined(__unix__)
-#    include <SDL2/SDL.h>
-#else
-#    include <SDL.h>
-#endif
+#include <SDL3/SDL_keycode.h>
 
 Emergence::Celerity::KeyCodeMapping GetKeyCodeMapping () noexcept
 {

@@ -69,6 +69,30 @@
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."
     },
     {
+      "Prefix": "./Library/Public/ResourceCooking/Resource/Cooking/Context.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 55.0,
+      "Reason": "Large part of this file is error logging and it isn't covered as we have no negative tests for now."
+    },
+    {
+      "Prefix": "./Library/Public/ResourceCooking/Resource/Cooking/Pass",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 50.0,
+      "Reason": "Currently we're only checking pass positive results and do not check error logging, therefore coverage is low. Might be changed later."
+    },
+    {
+      "Prefix": "./Library/Public/ResourceCooking/Resource/Cooking/ResourceList.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 55.0,
+      "Reason": "This class serves as a top-level utility wrapper around record collection and not all its features are needed in the code right now."
+    },
+    {
+      "Prefix": "./Library/Public/ResourceCooking/Resource/Cooking/Result",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 48.0,
+      "Reason": "Currently we're only checking positive results and do not check error logging, therefore coverage is low. Might be changed later."
+    },
+    {
       "Prefix": "./Library/Public/ResourceObject/Resource/Object/LibraryLoader.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 60.0,
@@ -108,6 +132,18 @@
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 65.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're aren't writing negative tests for now."
+    },
+    {
+      "Prefix": "./Service/ResourceProvider/Implementation/Original/Resource/Provider/Original/ResourceProvider.hpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 70.0,
+      "Reason": "Defaulted cursor copy is not yet used anywhere, therefore coverage is lower than 75%."
+    },
+    {
+      "Prefix": "./Service/VirtualFileSystem/API/VirtualFileSystem/Helpers.hpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 20.0,
+      "Reason": "The bigger function is only used in visual tests and therefore is not being executed on CI."
     },
     {
       "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/MountConfiguration.cpp",

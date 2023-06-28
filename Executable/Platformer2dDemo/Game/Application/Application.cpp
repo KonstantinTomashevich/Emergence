@@ -22,20 +22,18 @@
 
 #include <Render/Backend/Configuration.hpp>
 
+#include <Resource/Provider/Helpers.hpp>
+
 #include <Serialization/Yaml.hpp>
 
-#if defined(__unix__)
-#    include <SDL2/SDL.h>
-#    include <SDL2/SDL_syswm.h>
-#else
-#    include <SDL.h>
-#    include <SDL_syswm.h>
-#endif
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_syswm.h>
+#undef CreateDirectory
+#undef ERROR
 
 #include <SyntaxSugar/Time.hpp>
 
-#undef CreateDirectory
-#undef ERROR
+#include <VirtualFileSystem/Helpers.hpp>
 
 using namespace Emergence::Memory::Literals;
 
@@ -58,7 +56,7 @@ Application::Application () noexcept
 
     if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
-        sdlTicksAfterInit = SDL_GetTicks64 ();
+        sdlTicksAfterInit = SDL_GetTicks ();
         sdlInitTimeNs = Emergence::Time::NanosecondsSinceStartup ();
         Emergence::ReportCriticalError ("SDL initialization", __FILE__, __LINE__);
     }
@@ -67,42 +65,24 @@ Application::Application () noexcept
         virtualFileSystem.CreateDirectory (virtualFileSystem.GetRoot (), "Resources")};
 
     Emergence::VirtualFileSystem::MountConfigurationList configurationList;
+    if (!Emergence::VirtualFileSystem::FetchMountConfigurationList (".", "CoreResources", configurationList) &&
+        !Emergence::VirtualFileSystem::FetchMountConfigurationList ("..", "CoreResources", configurationList))
     {
-        std::ifstream input {"../MountCoreResources.yaml"};
-        if (!input)
-        {
-            Emergence::ReportCriticalError ("Failed to open core resources mount list!", __FILE__, __LINE__);
-        }
-
-        if (!Emergence::Serialization::Yaml::DeserializeObject (
-                input, &configurationList, Emergence::VirtualFileSystem::MountConfigurationList::Reflect ().mapping,
-                {}))
-        {
-            Emergence::ReportCriticalError ("Failed to deserialize core resources mount list!", __FILE__, __LINE__);
-        }
+        Emergence::ReportCriticalError ("Failed to fetch \"CoreResources\" mount list!", __FILE__, __LINE__);
     }
 
-    for (const auto &configuration : configurationList.items)
+    if (!Emergence::VirtualFileSystem::MountConfigurationListAt (virtualFileSystem, resourcesDirectory,
+                                                                 configurationList))
     {
-        if (!virtualFileSystem.Mount (resourcesDirectory, configuration))
-        {
-            Emergence::ReportCriticalError (EMERGENCE_BUILD_STRING ("Failed to mount \"", configuration.sourcePath,
-                                                                    "\" into \"", configuration.targetPath, "\"!"),
-                                            __FILE__, __LINE__);
-        }
+        Emergence::ReportCriticalError ("Failed to mount \"CoreResources\" mount list!", __FILE__, __LINE__);
+    }
 
-        const Emergence::Memory::UniqueString mountedSource {EMERGENCE_BUILD_STRING (
-            "Resources", Emergence::VirtualFileSystem::PATH_SEPARATOR, configuration.targetPath)};
-
-        if (Emergence::Resource::Provider::SourceOperationResponse result = resourceProvider.AddSource (mountedSource);
-            result != Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
-        {
-            Emergence::ReportCriticalError (
-                EMERGENCE_BUILD_STRING ("Resource provider initialization error code ",
-                                        static_cast<std::uint16_t> (result), " while trying to add source \"",
-                                        mountedSource, "\"!"),
-                __FILE__, __LINE__);
-        }
+    if (Emergence::Resource::Provider::AddMountedDirectoriesAsSources (resourceProvider, resourcesDirectory,
+                                                                       configurationList) !=
+        Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
+    {
+        Emergence::ReportCriticalError ("Failed to add directories from \"CoreResources\" to resource provider!",
+                                        __FILE__, __LINE__);
     }
 }
 
@@ -156,31 +136,30 @@ void Application::LoadSettings () noexcept
 void Application::InitWindow () noexcept
 {
     EMERGENCE_LOG (INFO, "Application: Initializing window...");
-    std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_ALLOW_HIGHDPI;
+    std::uint64_t windowFlags = SDL_WINDOW_VULKAN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
     if (settings.fullscreen)
     {
         windowFlags |= SDL_WINDOW_FULLSCREEN;
     }
 
-    window = SDL_CreateWindow ("Platformed2dDemo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               static_cast<int> (settings.width), static_cast<int> (settings.height),
-                               static_cast<SDL_WindowFlags> (windowFlags));
+    window = SDL_CreateWindow ("Platformed2dDemo", static_cast<int> (settings.width),
+                               static_cast<int> (settings.height), static_cast<SDL_WindowFlags> (windowFlags));
 
     SDL_SysWMinfo windowsManagerInfo;
-    SDL_VERSION (&windowsManagerInfo.version);
-    SDL_GetWindowWMInfo (window, &windowsManagerInfo);
+    SDL_GetWindowWMInfo (window, &windowsManagerInfo, SDL_SYSWM_CURRENT_VERSION);
 
-#if SDL_VIDEO_DRIVER_X11
+#if defined(SDL_ENABLE_SYSWM_X11)
     void *nativeDisplayType = windowsManagerInfo.info.x11.display;
-    void *nativeWindowHandle = (void *) (std::uintptr_t) windowsManagerInfo.info.x11.window;
-#elif SDL_VIDEO_DRIVER_COCOA
+    auto *nativeWindowHandle =
+        reinterpret_cast<void *> (static_cast<std::uintptr_t> (windowsManagerInfo.info.x11.window));
+#elif defined(SDL_ENABLE_SYSWM_COCOA)
     void *nativeDisplayType = nullptr;
     void *nativeWindowHandle = windowsManagerInfo.info.cocoa.window;
-#elif SDL_VIDEO_DRIVER_WINDOWS
+#elif defined(SDL_ENABLE_SYSWM_WINDOWS)
     void *nativeDisplayType = nullptr;
     void *nativeWindowHandle = windowsManagerInfo.info.win.window;
-#elif SDL_VIDEO_DRIVER_VIVANTE
+#elif defined(SDL_ENABLE_SYSWM_VIVANTE)
     void *nativeDisplayType = windowsManagerInfo.info.vivante.display;
     void *nativeWindowHandle = windowsManagerInfo.info.vivante.window;
 #endif
@@ -226,24 +205,24 @@ void Application::EventLoop () noexcept
 
         while (SDL_PollEvent (&event))
         {
-            if (event.type == SDL_QUIT ||
-                (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
-                 event.window.windowID == SDL_GetWindowID (window)))
+            if (event.type == SDL_EVENT_QUIT ||
+                (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID (window)))
             {
                 running = false;
             }
-            else if ((event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) && !event.key.repeat)
+            else if ((event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) && !event.key.repeat)
             {
                 Emergence::Celerity::KeyboardEvent inputEvent {
                     static_cast<Emergence::Celerity::KeyCode> (event.key.keysym.sym),
                     static_cast<Emergence::Celerity::ScanCode> (event.key.keysym.scancode),
                     static_cast<Emergence::Celerity::QualifiersMask> (event.key.keysym.mod),
-                    event.type == SDL_KEYDOWN ? Emergence::Celerity::KeyState::DOWN : Emergence::Celerity::KeyState::UP,
+                    event.type == SDL_EVENT_KEY_DOWN ? Emergence::Celerity::KeyState::DOWN :
+                                                       Emergence::Celerity::KeyState::UP,
                 };
 
                 inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
             }
-            else if (event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP)
+            else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP)
             {
                 Emergence::Celerity::MouseButton button = Emergence::Celerity::MouseButton::LEFT;
                 switch (event.button.button)
@@ -266,42 +245,42 @@ void Application::EventLoop () noexcept
                 }
 
                 Emergence::Celerity::MouseButtonEvent inputEvent {
-                    event.button.x,
-                    event.button.y,
+                    static_cast<std::int32_t> (event.button.x),
+                    static_cast<std::int32_t> (event.button.y),
                     button,
-                    event.type == SDL_MOUSEBUTTONDOWN ? Emergence::Celerity::KeyState::DOWN :
-                                                        Emergence::Celerity::KeyState::UP,
+                    event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? Emergence::Celerity::KeyState::DOWN :
+                                                                Emergence::Celerity::KeyState::UP,
                     event.button.clicks,
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                inputAccumulator->RecordEvent ({SDLTicksToTime (event.button.timestamp), inputEvent});
             }
-            else if (event.type == SDL_MOUSEMOTION)
+            else if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
                 Emergence::Celerity::MouseMotionEvent inputEvent {
-                    event.motion.x - event.motion.xrel,
-                    event.motion.y - event.motion.yrel,
-                    event.motion.x,
-                    event.motion.y,
+                    static_cast<std::int32_t> (event.motion.x - event.motion.xrel),
+                    static_cast<std::int32_t> (event.motion.y - event.motion.yrel),
+                    static_cast<std::int32_t> (event.motion.x),
+                    static_cast<std::int32_t> (event.motion.y),
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                inputAccumulator->RecordEvent ({SDLTicksToTime (event.motion.timestamp), inputEvent});
             }
-            else if (event.type == SDL_MOUSEWHEEL)
+            else if (event.type == SDL_EVENT_MOUSE_WHEEL)
             {
                 Emergence::Celerity::MouseWheelEvent inputEvent {
-                    event.wheel.preciseX,
-                    event.wheel.preciseY,
+                    event.wheel.x,
+                    event.wheel.y,
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                inputAccumulator->RecordEvent ({SDLTicksToTime (event.wheel.timestamp), inputEvent});
             }
-            else if (event.type == SDL_TEXTINPUT)
+            else if (event.type == SDL_EVENT_TEXT_INPUT)
             {
                 Emergence::Celerity::TextInputEvent inputEvent;
                 static_assert (sizeof (inputEvent.utf8Value) >= sizeof (event.text.text));
                 strcpy (inputEvent.utf8Value.data (), event.text.text);
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                inputAccumulator->RecordEvent ({SDLTicksToTime (event.text.timestamp), inputEvent});
             }
         }
 

@@ -42,6 +42,43 @@ ResourceProvider::ObjectRegistryCursor::ObjectRegistryCursor (std::array<std::ui
         std::move (block_cast<Original::ResourceProvider::ObjectRegistryCursor> (_data)));
 }
 
+ResourceProvider::ThirdPartyRegistryCursor::ThirdPartyRegistryCursor (
+    const ResourceProvider::ThirdPartyRegistryCursor &_other) noexcept
+{
+    new (&data) Original::ResourceProvider::ThirdPartyRegistryCursor (
+        block_cast<Original::ResourceProvider::ThirdPartyRegistryCursor> (_other.data));
+}
+
+ResourceProvider::ThirdPartyRegistryCursor::ThirdPartyRegistryCursor (
+    ResourceProvider::ThirdPartyRegistryCursor &&_other) noexcept
+{
+    new (&data) Original::ResourceProvider::ThirdPartyRegistryCursor (
+        std::move (block_cast<Original::ResourceProvider::ThirdPartyRegistryCursor> (_other.data)));
+}
+
+ResourceProvider::ThirdPartyRegistryCursor::~ThirdPartyRegistryCursor () noexcept
+{
+    block_cast<Original::ResourceProvider::ThirdPartyRegistryCursor> (data).~ThirdPartyRegistryCursor ();
+}
+
+Memory::UniqueString ResourceProvider::ThirdPartyRegistryCursor::operator* () const noexcept
+{
+    return *block_cast<Original::ResourceProvider::ThirdPartyRegistryCursor> (data);
+}
+
+ResourceProvider::ThirdPartyRegistryCursor &ResourceProvider::ThirdPartyRegistryCursor::operator++ () noexcept
+{
+    ++block_cast<Original::ResourceProvider::ThirdPartyRegistryCursor> (data);
+    return *this;
+}
+
+ResourceProvider::ThirdPartyRegistryCursor::ThirdPartyRegistryCursor (
+    std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
+{
+    new (&data) Original::ResourceProvider::ThirdPartyRegistryCursor (
+        std::move (block_cast<Original::ResourceProvider::ThirdPartyRegistryCursor> (_data)));
+}
+
 struct InternalData final
 {
     Memory::Heap heap {Memory::Profiler::AllocationGroup {Memory::UniqueString {"ResourceProvider"}}};
@@ -94,11 +131,12 @@ SourceOperationResponse ResourceProvider::AddSource (Memory::UniqueString _path)
     return internal.resourceProvider->AddSource (_path);
 }
 
-SourceOperationResponse ResourceProvider::SaveSourceIndex (Memory::UniqueString _sourcePath) const noexcept
+SourceOperationResponse ResourceProvider::SaveSourceIndex (Memory::UniqueString _sourcePath,
+                                                           const VirtualFileSystem::Entry &_output) const noexcept
 {
     const auto &internal = block_cast<InternalData> (data);
     EMERGENCE_ASSERT (internal.resourceProvider);
-    return internal.resourceProvider->SaveSourceIndex (_sourcePath);
+    return internal.resourceProvider->SaveSourceIndex (_sourcePath, _output);
 }
 
 SourceOperationResponse ResourceProvider::RemoveSource (Memory::UniqueString _path) noexcept
@@ -134,5 +172,36 @@ ResourceProvider::ObjectRegistryCursor ResourceProvider::FindObjectsByType (
     EMERGENCE_ASSERT (internal.resourceProvider);
     Original::ResourceProvider::ObjectRegistryCursor cursor = internal.resourceProvider->FindObjectsByType (_type);
     return ObjectRegistryCursor (array_cast (cursor));
+}
+
+ResourceProvider::ThirdPartyRegistryCursor ResourceProvider::VisitAllThirdParty () const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    EMERGENCE_ASSERT (internal.resourceProvider);
+    Original::ResourceProvider::ThirdPartyRegistryCursor cursor = internal.resourceProvider->VisitAllThirdParty ();
+    return ThirdPartyRegistryCursor (array_cast (cursor));
+}
+
+ObjectFormat ResourceProvider::GetObjectFormat (const StandardLayout::Mapping &_type,
+                                                Memory::UniqueString _id) const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    EMERGENCE_ASSERT (internal.resourceProvider);
+    return internal.resourceProvider->GetObjectFormat (_type, _id);
+}
+
+VirtualFileSystem::Entry ResourceProvider::GetObjectEntry (const StandardLayout::Mapping &_type,
+                                                           Memory::UniqueString _id) const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    EMERGENCE_ASSERT (internal.resourceProvider);
+    return internal.resourceProvider->GetObjectEntry (_type, _id);
+}
+
+VirtualFileSystem::Entry ResourceProvider::GetThirdPartyEntry (Memory::UniqueString _id) const noexcept
+{
+    const auto &internal = block_cast<InternalData> (data);
+    EMERGENCE_ASSERT (internal.resourceProvider);
+    return internal.resourceProvider->GetThirdPartyEntry (_id);
 }
 } // namespace Emergence::Resource::Provider
