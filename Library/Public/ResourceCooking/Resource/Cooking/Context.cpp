@@ -12,11 +12,11 @@
 
 namespace Emergence::Resource::Cooking
 {
-static const char *INPUT = "Input";
-static const char *INTERMEDIATE = "Intermediate";
-static const char *REAL = "Real";
-static const char *VIRTUAL = "Virtual";
-static const char *FINAL_RESULT = "FinalResult";
+static const char *const INPUT = "Input";
+static const char *const INTERMEDIATE = "Intermediate";
+static const char *const REAL = "Real";
+static const char *const VIRTUAL = "Virtual";
+static const char *const FINAL_RESULT = "FinalResult";
 
 Context::Context (Container::MappingRegistry _objectTypesRegistry,
                   Container::MappingRegistry _patchableTypesRegistry) noexcept

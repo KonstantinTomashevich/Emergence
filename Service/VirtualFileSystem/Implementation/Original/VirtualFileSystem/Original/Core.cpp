@@ -330,7 +330,7 @@ VirtualFileSystem::Cursor &VirtualFileSystem::Cursor::operator++ () noexcept
 }
 
 // Internal static, because should not normally be used by user: only appears as a result of full path usage.
-static const char *ROOT_SELECTOR = "~";
+static const char *const ROOT_SELECTOR = "~";
 
 VirtualFileSystem::VirtualFileSystem () noexcept
     : entries (Entry::Reflect ().mapping),

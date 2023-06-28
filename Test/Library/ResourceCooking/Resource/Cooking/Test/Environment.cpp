@@ -12,9 +12,9 @@
 
 namespace Emergence::Resource::Cooking::Test
 {
-static const char *ENVIRONMENT_ROOT = "Environment";
-static const char *INPUT_ROOT = "Input";
-static const char *WORKSPACE_ROOT = "Workspace";
+static const char *const ENVIRONMENT_ROOT = "Environment";
+static const char *const INPUT_ROOT = "Input";
+static const char *const WORKSPACE_ROOT = "Workspace";
 
 const FirstObjectType::Reflection &FirstObjectType::Reflect () noexcept
 {
