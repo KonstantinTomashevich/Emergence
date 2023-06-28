@@ -76,16 +76,16 @@ bool Context::Setup (const VirtualFileSystem::MountConfigurationList &_inputMoun
     const VirtualFileSystem::Entry inputDirectory = GetInputDirectory ();
     if (!Emergence::VirtualFileSystem::MountConfigurationListAt (virtualFileSystem, inputDirectory, _inputMount))
     {
-        Emergence::ReportCriticalError ("Resource::Cooking: Failed to mount given input mount list!", __FILE__,
-                                        __LINE__);
+        EMERGENCE_LOG (ERROR, "Resource::Cooking: Failed to mount given input mount list!");
+        return false;
     }
 
     if (Emergence::Resource::Provider::AddMountedDirectoriesAsSources (resourceProvider, inputDirectory, _inputMount) !=
         Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
     {
-        Emergence::ReportCriticalError (
-            "Resource::Cooking: Failed to add directories from given mount list as resource provider sources!",
-            __FILE__, __LINE__);
+        EMERGENCE_LOG (
+            ERROR, "Resource::Cooking: Failed to add directories from given mount list as resource provider sources!");
+        return false;
     }
 
     return true;
