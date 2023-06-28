@@ -52,8 +52,8 @@ TEST_CASE (AllResourceFlatIndex)
              Emergence::Resource::Provider::LoadingOperationResponse::SUCCESSFUL);
 
     Emergence::Memory::Heap heap {Emergence::Memory::Profiler::AllocationGroup::Top ()};
-    std::uint8_t *content;
-    std::uint64_t size;
+    std::uint8_t *content = nullptr;
+    std::uint64_t size = 0u;
 
     REQUIRE (checkProvider.LoadThirdPartyResource ("Something.someformat"_us, heap, size, content) ==
              Emergence::Resource::Provider::LoadingOperationResponse::SUCCESSFUL);
