@@ -87,6 +87,54 @@ static std::uint64_t SettingsToFlags (const TextureSettings &_settings)
     return flags;
 }
 
+static std::size_t GetFormatElementSize (TextureFormat _format) noexcept
+{
+    switch (_format)
+    {
+    case TextureFormat::RGB8:
+        return 3u;
+
+    case TextureFormat::RGBA8:
+        return 4u;
+
+    case TextureFormat::D16:
+        return 2u;
+
+    case TextureFormat::D24:
+        return 3u;
+
+    case TextureFormat::D32:
+        return 4u;
+    }
+
+    EMERGENCE_ASSERT (false);
+    return 1u;
+}
+
+static bgfx::TextureFormat::Enum ToBgfxFormat (TextureFormat _format)
+{
+    switch (_format)
+    {
+    case TextureFormat::RGB8:
+        return bgfx::TextureFormat::RGB8;
+
+    case TextureFormat::RGBA8:
+        return bgfx::TextureFormat::RGBA8;
+
+    case TextureFormat::D16:
+        return bgfx::TextureFormat::D16;
+
+    case TextureFormat::D24:
+        return bgfx::TextureFormat::D24;
+
+    case TextureFormat::D32:
+        return bgfx::TextureFormat::D32;
+    }
+
+    EMERGENCE_ASSERT (false);
+    return bgfx::TextureFormat::RGBA8;
+}
+
 const TextureSettings::Reflection &TextureSettings::Reflect () noexcept
 {
     static const Reflection reflection = [] ()
@@ -101,9 +149,9 @@ const TextureSettings::Reflection &TextureSettings::Reflect () noexcept
     return reflection;
 }
 
-Texture::Texture () noexcept
+Texture Texture::CreateInvalid () noexcept
 {
-    block_cast<std::uint16_t> (data) = bgfx::kInvalidHandle;
+    return {array_cast<std::uint16_t, sizeof (data)> (bgfx::kInvalidHandle)};
 }
 
 static void ImageReleaseCallback (void * /*unused*/, void *_userData)
@@ -111,21 +159,20 @@ static void ImageReleaseCallback (void * /*unused*/, void *_userData)
     bimg::imageFree (static_cast<bimg::ImageContainer *> (_userData));
 }
 
-Texture::Texture (const std::uint8_t *_data, const std::uint64_t _size, const TextureSettings &_settings) noexcept
+Texture Texture::CreateFromFile (const std::uint8_t *_data,
+                                 std::uint64_t _size,
+                                 const TextureSettings &_settings) noexcept
 {
-    auto &resultHandle = block_cast<std::uint16_t> (data);
-    resultHandle = bgfx::kInvalidHandle;
-
     bimg::ImageContainer *imageContainer =
         bimg::imageParse (GetCurrentAllocator (), _data, static_cast<std::uint32_t> (_size));
 
     if (!imageContainer)
     {
         EMERGENCE_LOG (ERROR, "Render::Backend: Unable to parse texture data!");
-        return;
+        return CreateInvalid ();
     }
 
-    // TODO: Support cube maps and mips in future.
+    // TODO: Support cube maps and mips in the future.
     EMERGENCE_ASSERT (!imageContainer->m_cubeMap);
     EMERGENCE_ASSERT (imageContainer->m_depth == 1u);
 
@@ -134,7 +181,7 @@ Texture::Texture (const std::uint8_t *_data, const std::uint64_t _size, const Te
                                BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE))
     {
         EMERGENCE_LOG (ERROR, "Render::Backend: Unable to parse texture, because it's data is invalid.");
-        return;
+        return CreateInvalid ();
     }
 
     const bgfx::Memory *memory =
@@ -148,31 +195,48 @@ Texture::Texture (const std::uint8_t *_data, const std::uint64_t _size, const Te
     if (!bgfx::isValid (handle))
     {
         EMERGENCE_LOG (ERROR, "Render::Backend: Failed to create texture!");
-        return;
+        return CreateInvalid ();
     }
 
-    resultHandle = handle.idx;
+    return {array_cast<std::uint16_t, sizeof (data)> (handle.idx)};
 }
 
-Texture::Texture (const std::uint8_t *_data,
-                  std::uint64_t _width,
-                  std::uint64_t _height,
-                  const TextureSettings &_settings) noexcept
+Texture Texture::CreateFromRaw (std::uint64_t _width,
+                                std::uint64_t _height,
+                                TextureFormat _format,
+                                const std::uint8_t *_data,
+                                const TextureSettings &_settings) noexcept
 {
-    auto &resultHandle = block_cast<std::uint16_t> (data);
-    resultHandle = bgfx::kInvalidHandle;
-    bgfx::TextureHandle handle =
-        bgfx::createTexture2D (static_cast<std::uint16_t> (_width), static_cast<std::uint16_t> (_height), false, 1u,
-                               bgfx::TextureFormat::BGRA8, SettingsToFlags (_settings),
-                               bgfx::copy (_data, static_cast<std::uint32_t> (_width * _height * 4u)));
+    bgfx::TextureHandle handle = bgfx::createTexture2D (
+        static_cast<std::uint16_t> (_width), static_cast<std::uint16_t> (_height), false, 1u, ToBgfxFormat (_format),
+        SettingsToFlags (_settings),
+        bgfx::copy (_data, static_cast<std::uint32_t> (_width * _height * GetFormatElementSize (_format))));
 
     if (!bgfx::isValid (handle))
     {
         EMERGENCE_LOG (ERROR, "Render::Backend: Failed to create texture!");
-        return;
+        return CreateInvalid ();
     }
 
-    resultHandle = handle.idx;
+    return {array_cast<std::uint16_t, sizeof (data)> (handle.idx)};
+}
+
+Texture Texture::CreateRenderTarget (std::uint64_t _width,
+                                     std::uint64_t _height,
+                                     TextureFormat _format,
+                                     const TextureSettings &_settings) noexcept
+{
+    bgfx::TextureHandle handle =
+        bgfx::createTexture2D (static_cast<std::uint16_t> (_width), static_cast<std::uint16_t> (_height), false, 1u,
+                               ToBgfxFormat (_format), SettingsToFlags (_settings));
+
+    if (!bgfx::isValid (handle))
+    {
+        EMERGENCE_LOG (ERROR, "Render::Backend: Failed to create texture!");
+        return CreateInvalid ();
+    }
+
+    return {array_cast<std::uint16_t, sizeof (data)> (handle.idx)};
 }
 
 Texture::Texture (Texture &&_other) noexcept
@@ -208,5 +272,10 @@ Texture &Texture::operator= (Texture &&_other) noexcept
     }
 
     return *this;
+}
+
+Texture::Texture (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept
+    : data (_data)
+{
 }
 } // namespace Emergence::Render::Backend
