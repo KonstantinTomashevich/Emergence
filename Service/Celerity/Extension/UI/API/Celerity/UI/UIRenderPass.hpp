@@ -26,7 +26,7 @@ struct UIRenderPass final
     /// \brief Texture for default font atlas.
     /// \details Most UI frameworks provide inbuilt default font, that will be used if no other
     ///          font is selected. This texture is used to upload this font atlas to GPU.
-    Render::Backend::Texture defaultFontTexture;
+    Render::Backend::Texture defaultFontTexture = Render::Backend::Texture::CreateInvalid ();
 
     struct Reflection final
     {

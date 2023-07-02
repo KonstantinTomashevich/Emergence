@@ -2,20 +2,20 @@
 
 #include <Memory/UniqueString.hpp>
 
-#include <Render/Backend/Texture.hpp>
+#include <Render/Backend/FrameBuffer.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
-/// \brief Represents successfully loaded texture asset.
-struct Texture final
+/// \brief Holds constructed frame buffer instance. Uses Asset framework for reference counting.
+struct FrameBuffer final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
 
     /// \brief Underlying implementation object.
-    Render::Backend::Texture texture = Render::Backend::Texture::CreateInvalid ();
+    Render::Backend::FrameBuffer frameBuffer;
 
     struct Reflection final
     {

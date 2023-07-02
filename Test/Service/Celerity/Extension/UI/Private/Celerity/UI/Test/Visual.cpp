@@ -6,6 +6,7 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Asset/Events.hpp>
+#include <Celerity/Asset/Render/Foundation/FrameBufferManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Asset/UI/FontManagement.hpp>
@@ -187,6 +188,7 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
     PipelineBuilder pipelineBuilder {world.GetRootView ()};
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
+    FrameBufferManagement::AddToNormalUpdate (pipelineBuilder);
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (_frames));
     FontManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                        assetReferenceBindingEventMap);

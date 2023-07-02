@@ -122,9 +122,10 @@ AssetState Manager::TryFinishLoading (TextureLoadingState *_loadingState) noexce
         return _loadingState->sharedState->state;
     }
 
-    Render::Backend::Texture nativeTexture {_loadingState->sharedState->textureData,
-                                            _loadingState->sharedState->textureDataSize,
-                                            _loadingState->sharedState->asset.settings};
+    Render::Backend::Texture nativeTexture = Render::Backend::Texture::CreateFromFile (
+        _loadingState->sharedState->textureData, _loadingState->sharedState->textureDataSize,
+        _loadingState->sharedState->asset.settings);
+
     if (!nativeTexture.IsValid ())
     {
         EMERGENCE_LOG (ERROR, "TextureManagement: Failed to load texture \"", _loadingState->assetId, "\" from data.");

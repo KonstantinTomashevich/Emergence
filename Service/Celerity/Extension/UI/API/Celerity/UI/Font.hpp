@@ -22,7 +22,7 @@ struct Font final
     Memory::UniqueString assetId;
 
     /// \brief Texture that contains loaded font atlas.
-    Render::Backend::Texture atlasTexture;
+    Render::Backend::Texture atlasTexture = Render::Backend::Texture::CreateInvalid ();
 
     /// \brief Implementation specific handle, if any.
     void *nativeHandle = nullptr;

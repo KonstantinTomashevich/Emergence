@@ -36,6 +36,7 @@
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/World.hpp>
+#include <Celerity/Asset/Render/Foundation/FrameBufferManagement.hpp>
 
 #include <Render/Backend/Configuration.hpp>
 
@@ -469,6 +470,7 @@ void ExecuteScenario (Scenario _scenario) noexcept
 
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
+    FrameBufferManagement::AddToNormalUpdate (pipelineBuilder);
     TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
     MaterialInstanceManagement::AddToNormalUpdate (
         pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider, assetReferenceBindingEventMap);

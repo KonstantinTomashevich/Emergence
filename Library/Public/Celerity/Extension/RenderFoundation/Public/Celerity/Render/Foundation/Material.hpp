@@ -29,9 +29,7 @@ struct Material final
     Memory::UniqueString fragmentShader;
 
     /// \brief Underlying implementation object.
-    /// \details Field is mutable, because render backend objects are technically handles and by modifying them
-    ///          we work with underlying implementation that operates under different read-write ruleset.
-    mutable Render::Backend::Program program;
+    Render::Backend::Program program;
 
     struct Reflection final
     {

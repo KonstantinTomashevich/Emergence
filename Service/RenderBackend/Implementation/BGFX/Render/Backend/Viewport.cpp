@@ -24,6 +24,7 @@ Viewport::Viewport (class Renderer &_context) noexcept
 Viewport::Viewport (Viewport &&_other) noexcept
     : data (_other.data)
 {
+    block_cast<std::uint64_t> (_other.data) = std::numeric_limits<std::uint64_t>::max ();
 }
 
 Viewport::~Viewport () noexcept = default;

@@ -240,8 +240,8 @@ Texture Texture::CreateRenderTarget (std::uint64_t _width,
 }
 
 Texture::Texture (Texture &&_other) noexcept
+    : data (_other.data)
 {
-    data = _other.data;
     block_cast<std::uint16_t> (_other.data) = bgfx::kInvalidHandle;
 }
 

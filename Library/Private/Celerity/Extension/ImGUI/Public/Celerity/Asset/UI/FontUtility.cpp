@@ -12,12 +12,16 @@ Render::Backend::Texture BakeFontAtlas (ImFontAtlas *_atlas)
     _atlas->GetTexDataAsRGBA32 (&textureData, &textureWidth, &textureHeight);
     EMERGENCE_ASSERT (textureData);
 
-    Render::Backend::Texture texture (textureData, textureWidth, textureHeight, {});
+    Render::Backend::Texture texture = Render::Backend::Texture::CreateFromRaw (
+        textureWidth, textureHeight, Render::Backend::TextureFormat::RGBA8, textureData, {});
+
     const Render::Backend::TextureId atlasTextureId = texture.GetId ();
     static_assert (sizeof (Render::Backend::TextureId) == sizeof (ImTextureID));
+
     BEGIN_MUTING_STRING_ALIASING_WARNINGS
     _atlas->SetTexID (*reinterpret_cast<const ImTextureID *> (&atlasTextureId));
     END_MUTING_WARNINGS
+
     return texture;
 }
 } // namespace Emergence::Celerity

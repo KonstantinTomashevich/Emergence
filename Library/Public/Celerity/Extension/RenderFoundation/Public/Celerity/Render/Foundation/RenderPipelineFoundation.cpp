@@ -1,5 +1,6 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/FrameBuffer.hpp>
 #include <Celerity/Render/Foundation/RenderFoundationSingleton.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
@@ -21,6 +22,7 @@ public:
 private:
     FetchSingletonQuery fetchRenderFoundation;
     FetchValueQuery fetchViewportByName;
+    FetchValueQuery fetchFrameBufferById;
 
     FetchSequenceQuery fetchViewportAddedNormalEvent;
     FetchSequenceQuery fetchViewportAddedCustomEvent;
@@ -32,6 +34,7 @@ ViewportSynchronizer::ViewportSynchronizer (TaskConstructor &_constructor) noexc
 
       fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
       fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
+      fetchFrameBufferById (FETCH_VALUE_1F (FrameBuffer, assetId)),
 
       fetchViewportAddedNormalEvent (FETCH_SEQUENCE (ViewportAddedNormalEvent)),
       fetchViewportAddedCustomEvent (FETCH_SEQUENCE (ViewportAddedCustomToNormalEvent)),
@@ -47,6 +50,19 @@ void ViewportSynchronizer::Execute () noexcept
 {
     auto renderFoundationCursor = fetchRenderFoundation.Execute ();
     const auto *renderFoundation = static_cast<const RenderFoundationSingleton *> (*renderFoundationCursor);
+    const Render::Backend::FrameBuffer invalidFrameBuffer = Render::Backend::FrameBuffer::CreateInvalid ();
+
+    auto fetchFrameBuffer =
+        [this, &invalidFrameBuffer] (Memory::UniqueString _frameBufferId) -> const Render::Backend::FrameBuffer &
+    {
+        if (auto cursor = fetchFrameBufferById.Execute (&_frameBufferId);
+            const auto *frameBuffer = static_cast<const FrameBuffer *> (*cursor))
+        {
+            return frameBuffer->frameBuffer;
+        }
+
+        return invalidFrameBuffer;
+    };
 
     for (auto eventCursor = fetchViewportAddedNormalEvent.Execute ();
          const auto *event = static_cast<const ViewportAddedNormalEvent *> (*eventCursor); ++eventCursor)
@@ -55,8 +71,9 @@ void ViewportSynchronizer::Execute () noexcept
         if (const auto *viewport = static_cast<const Viewport *> (*cursor))
         {
             viewport->viewport = Render::Backend::Viewport {renderFoundation->renderer};
-            viewport->viewport.SubmitConfiguration (viewport->x, viewport->y, viewport->width, viewport->height,
-                                                    viewport->sortMode, viewport->clearColor);
+            viewport->viewport.SubmitConfiguration (fetchFrameBuffer (viewport->targetFrameBuffer), viewport->x,
+                                                    viewport->y, viewport->width, viewport->height, viewport->sortMode,
+                                                    viewport->clearColor);
         }
     }
 
@@ -67,8 +84,9 @@ void ViewportSynchronizer::Execute () noexcept
         if (const auto *viewport = static_cast<const Viewport *> (*cursor))
         {
             viewport->viewport = Render::Backend::Viewport {renderFoundation->renderer};
-            viewport->viewport.SubmitConfiguration (viewport->x, viewport->y, viewport->width, viewport->height,
-                                                    viewport->sortMode, viewport->clearColor);
+            viewport->viewport.SubmitConfiguration (fetchFrameBuffer (viewport->targetFrameBuffer), viewport->x,
+                                                    viewport->y, viewport->width, viewport->height, viewport->sortMode,
+                                                    viewport->clearColor);
         }
     }
 
@@ -78,8 +96,9 @@ void ViewportSynchronizer::Execute () noexcept
         auto cursor = fetchViewportByName.Execute (&event->name);
         if (const auto *viewport = static_cast<const Viewport *> (*cursor))
         {
-            viewport->viewport.SubmitConfiguration (viewport->x, viewport->y, viewport->width, viewport->height,
-                                                    viewport->sortMode, viewport->clearColor);
+            viewport->viewport.SubmitConfiguration (fetchFrameBuffer (viewport->targetFrameBuffer), viewport->x,
+                                                    viewport->y, viewport->width, viewport->height, viewport->sortMode,
+                                                    viewport->clearColor);
         }
     }
 }

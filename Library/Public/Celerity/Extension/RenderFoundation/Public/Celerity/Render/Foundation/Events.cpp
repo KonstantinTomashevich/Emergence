@@ -23,6 +23,7 @@ void RegisterRenderFoundationEvents (EventRegistrar &_registrar) noexcept
     _registrar.OnChangeEvent ({{ViewportChangedNormalEvent::Reflect ().mapping, EventRoute::NORMAL},
                                Viewport::Reflect ().mapping,
                                {
+                                   Viewport::Reflect ().targetFrameBuffer,
                                    Viewport::Reflect ().x,
                                    Viewport::Reflect ().y,
                                    Viewport::Reflect ().width,
