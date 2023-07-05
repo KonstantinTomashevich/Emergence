@@ -24,11 +24,13 @@ Viewport::Viewport (class Renderer &_context) noexcept
 Viewport::Viewport (Viewport &&_other) noexcept
     : data (_other.data)
 {
+    block_cast<std::uint64_t> (_other.data) = std::numeric_limits<std::uint64_t>::max ();
 }
 
 Viewport::~Viewport () noexcept = default;
 
-void Viewport::SubmitConfiguration (std::uint32_t _x,
+void Viewport::SubmitConfiguration (const FrameBuffer &_frameBuffer,
+                                    std::uint32_t _x,
                                     std::uint32_t _y,
                                     std::uint32_t _width,
                                     std::uint32_t _height,
@@ -64,6 +66,7 @@ void Viewport::SubmitConfiguration (std::uint32_t _x,
     }
 
     bgfx::setViewClear (nativeId, clearFlags, _clearColor, 0.0f, 0u);
+    bgfx::setViewFrameBuffer (nativeId, {static_cast<std::uint16_t> (_frameBuffer.GetId ())});
 }
 
 void Viewport::SubmitOrthographicView (const Math::Transform2d &_view,

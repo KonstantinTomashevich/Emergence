@@ -139,18 +139,14 @@ auto DoWithCorrectComparator (const StandardLayout::Field &_field, const Callbac
         return _callback (UniqueStringValueComparator {});
     }
 
+    // _field should be leaf-field, not intermediate nested object.
     case StandardLayout::FieldArchetype::NESTED_OBJECT:
-    {
-        // _field should be leaf-field, not intermediate nested object.
-        EMERGENCE_ASSERT (false);
-        break;
-    }
 
+    // Vectors, patches and external strings aren't supported for indexing.
     case StandardLayout::FieldArchetype::UTF8_STRING:
     case StandardLayout::FieldArchetype::VECTOR:
     case StandardLayout::FieldArchetype::PATCH:
     {
-        // Vectors, patches and external strings aren't supported for indexing.
         EMERGENCE_ASSERT (false);
         break;
     }

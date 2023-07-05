@@ -16,6 +16,21 @@ enum class TextureSampling
     SHIFT
 };
 
+/// \brief Describes which data is stored inside texture and how it is stored.
+enum class TextureFormat
+{
+    // No alpha.
+    RGB8 = 0,
+
+    // Full color.
+    RGBA8,
+
+    // Depth,
+    D16,
+    D24,
+    D32,
+};
+
 /// \brief Contains various supported settings that dictate how texture should be used.
 struct TextureSettings final
 {
@@ -46,18 +61,26 @@ using TextureId = std::uint64_t;
 class Texture final
 {
 public:
-    /// \brief Constructs default invalid instance.
-    Texture () noexcept;
+    static Texture CreateInvalid () noexcept;
 
-    /// \brief Constructs texture from given data. Data format is implementation-dependant.
-    Texture (const std::uint8_t *_data, std::uint64_t _size, const TextureSettings &_settings) noexcept;
+    /// \brief Creates texture from file data.
+    /// \details PNG must be supported by any implementation, other formats are optional as of now.
+    static Texture CreateFromFile (const std::uint8_t *_data,
+                                   std::uint64_t _size,
+                                   const TextureSettings &_settings) noexcept;
 
-    /// \brief Constructs texture from given RGBA32 data.
-    /// \details Data ownership is not transferred to texture. Instead, data is copied.
-    Texture (const std::uint8_t *_data,
-             std::uint64_t _width,
-             std::uint64_t _height,
-             const TextureSettings &_settings) noexcept;
+    /// \brief Creates texture from raw data: array of pixels in the same format as texture should be.
+    static Texture CreateFromRaw (std::uint64_t _width,
+                                  std::uint64_t _height,
+                                  TextureFormat _format,
+                                  const std::uint8_t *_data,
+                                  const TextureSettings &_settings) noexcept;
+
+    /// \brief Creates texture as frame buffer render target.
+    static Texture CreateRenderTarget (std::uint64_t _width,
+                                       std::uint64_t _height,
+                                       TextureFormat _format,
+                                       const TextureSettings &_settings) noexcept;
 
     Texture (const Texture &_other) = delete;
 
@@ -76,8 +99,8 @@ public:
     Texture &operator= (Texture &&_other) noexcept;
 
 private:
-    friend class Uniform;
-
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t));
+
+    Texture (const std::array<std::uint8_t, DATA_MAX_SIZE> &_data) noexcept;
 };
 } // namespace Emergence::Render::Backend

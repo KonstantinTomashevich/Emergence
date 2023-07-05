@@ -8,14 +8,16 @@
 
 namespace Emergence::Celerity
 {
-// TODO: Rework viewports into fully fledged render target system?
-
 /// \brief Configures output surface for rendering. Having multiple viewports is supported.
 struct Viewport final
 {
     /// \brief Readable name for this viewport.
     /// \invariant Must be unique among other viewports.
     Memory::UniqueString name;
+
+    /// \brief Identifier of frame buffer that is used as output for this viewport.
+    /// \details If left empty, output window will be considered viewport output.
+    Memory::UniqueString targetFrameBuffer;
 
     /// \brief Used to sort viewports in case of overlap.
     std::uint16_t sortIndex = 0u;
@@ -48,6 +50,7 @@ struct Viewport final
     struct Reflection final
     {
         StandardLayout::FieldId name;
+        StandardLayout::FieldId targetFrameBuffer;
         StandardLayout::FieldId sortIndex;
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;

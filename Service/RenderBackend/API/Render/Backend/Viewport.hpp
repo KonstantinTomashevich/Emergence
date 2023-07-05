@@ -4,6 +4,8 @@
 
 #include <Math/Transform2d.hpp>
 
+#include <Render/Backend/FrameBuffer.hpp>
+
 namespace Emergence::Render::Backend
 {
 /// \brief Unique identifier used to reference existing Viewport.
@@ -22,7 +24,7 @@ enum class ViewportSortMode
     DEPTH_DESCENDING,
 };
 
-/// \brief Represents a render surface on output window to which geometries can be submitted.
+/// \brief Represents a render surface on target framebuffer to which geometries can be submitted.
 /// \details Working with different viewports from different threads is thread safe,
 ///          but working with one viewport from multiple threads is not.
 class Viewport final
@@ -41,13 +43,15 @@ public:
     ~Viewport () noexcept; // NOLINT(performance-trivially-destructible): Implementation-specific.
 
     /// \brief Submits viewport configuration.
+    /// \param _frameBuffer Target frame buffer, if invalid frame buffer is passed, then target is output window.
     /// \param _x Leftmost coordinate in window coordinate system.
     /// \param _y Topmost coordinate in window coordinate system.
     /// \param _width Viewport width in window coordinate system.
     /// \param _height Viewport height in window coordinate system.
     /// \param _sortMode Sorting algorithm for viewport drawables.
     /// \param _clearColor Color that will be used to clear viewport. Passing 0 disables viewport clearing.
-    void SubmitConfiguration (std::uint32_t _x,
+    void SubmitConfiguration (const FrameBuffer &_frameBuffer,
+                              std::uint32_t _x,
                               std::uint32_t _y,
                               std::uint32_t _width,
                               std::uint32_t _height,
@@ -65,8 +69,6 @@ public:
     Viewport &operator= (Viewport &&_other) noexcept;
 
 private:
-    friend class Renderer;
-
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t));
 };
 } // namespace Emergence::Render::Backend

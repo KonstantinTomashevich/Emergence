@@ -20,10 +20,15 @@ constexpr std::uint32_t HEIGHT = 300u;
 
 namespace Tasks
 {
+struct CreateScreenLikeFrameBuffer final
+{
+    Memory::UniqueString name;
+};
+
 struct CreateViewport final
 {
     Memory::UniqueString name;
-    UniqueId cameraObjectId = INVALID_UNIQUE_ID;
+    Memory::UniqueString targetFrameBuffer;
     std::uint32_t x = 0u;
     std::uint32_t y = 0u;
     std::uint32_t width = 0u;
@@ -35,7 +40,7 @@ struct CreateViewport final
 struct UpdateViewport final
 {
     Memory::UniqueString name;
-    UniqueId cameraObjectId = INVALID_UNIQUE_ID;
+    Memory::UniqueString targetFrameBuffer;
     std::uint32_t x = 0u;
     std::uint32_t y = 0u;
     std::uint32_t width = 0u;
@@ -47,6 +52,24 @@ struct UpdateViewport final
 struct DeleteViewport final
 {
     Memory::UniqueString name;
+};
+
+struct CreatePostProcessRenderPass final
+{
+    Memory::UniqueString name;
+    Memory::UniqueString materialInstanceId;
+};
+
+struct CreateWorldRenderPass final
+{
+    Memory::UniqueString name;
+    UniqueId cameraObjectId = INVALID_UNIQUE_ID;
+};
+
+struct UpdateWorldRenderPass final
+{
+    Memory::UniqueString name;
+    UniqueId cameraObjectId = INVALID_UNIQUE_ID;
 };
 
 struct CreateCamera
@@ -168,9 +191,13 @@ struct DeleteSpriteAnimation final
 };
 }; // namespace Tasks
 
-using Task = Container::Variant<Tasks::CreateViewport,
+using Task = Container::Variant<Tasks::CreateScreenLikeFrameBuffer,
+                                Tasks::CreateViewport,
                                 Tasks::UpdateViewport,
                                 Tasks::DeleteViewport,
+                                Tasks::CreatePostProcessRenderPass,
+                                Tasks::CreateWorldRenderPass,
+                                Tasks::UpdateWorldRenderPass,
                                 Tasks::CreateCamera,
                                 Tasks::UpdateCamera,
                                 Tasks::DeleteCamera,

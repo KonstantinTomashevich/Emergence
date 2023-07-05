@@ -593,6 +593,7 @@ void PartitioningTree<Dimensions>::DeleteNodeWithChildren (Node *_node)
 }
 
 template <std::size_t Dimensions>
+// NOLINTNEXTLINE(modernize-use-equals-default): It's actually not default when asserts are enabled.
 PartitioningTree<Dimensions>::Node::~Node () noexcept
 {
 #if defined(EMERGENCE_ASSERT_ENABLED)

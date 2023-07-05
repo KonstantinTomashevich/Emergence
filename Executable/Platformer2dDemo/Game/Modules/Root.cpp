@@ -2,6 +2,7 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render/2d/Sprite2dUvAnimationManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/FrameBufferManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
@@ -84,6 +85,7 @@ void Initializer (GameState &_gameState,
                                                              assetReferenceBindingEventMap);
     Emergence::Celerity::FontManagement::AddToNormalUpdate (pipelineBuilder, _gameState.GetResourceProvider (),
                                                             assetReferenceBindingEventMap);
+    Emergence::Celerity::FrameBufferManagement::AddToNormalUpdate (pipelineBuilder);
     Emergence::Celerity::Localization::AddToNormalUpdate (pipelineBuilder, _gameState.GetResourceProvider ());
     Emergence::Celerity::MaterialInstanceManagement::AddToNormalUpdate (
         pipelineBuilder, _gameState.GetResourceProvider (), assetReferenceBindingEventMap);

@@ -252,8 +252,7 @@ void UIRenderer::ProcessRenderPass (const UIRenderPass *_renderPass,
 
         if (availableVertices != totalVertices || availableIndices != totalIndices)
         {
-            EMERGENCE_LOG (WARNING,
-                           "Celerity::UI: Unable to submit all draw calls due to being unable to allocate buffers.");
+            EMERGENCE_LOG (WARNING, "UI: Unable to submit all draw calls due to being unable to allocate buffers.");
             break;
         }
 

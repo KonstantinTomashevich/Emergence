@@ -9,6 +9,7 @@
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/Asset/Render/2d/Sprite2dUvAnimation.hpp>
 #include <Celerity/Asset/Render/2d/Sprite2dUvAnimationManagement.hpp>
+#include <Celerity/Asset/Render/Foundation/FrameBufferManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/Material.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstance.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialInstanceManagement.hpp>
@@ -29,6 +30,10 @@
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/Foundation/AssetUsage.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/ManualFrameBufferConstructor.hpp>
+#include <Celerity/Render/Foundation/ManualTextureConstructor.hpp>
+#include <Celerity/Render/Foundation/PostProcess.hpp>
+#include <Celerity/Render/Foundation/PostProcessRenderPass.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Transform/Events.hpp>
@@ -83,8 +88,10 @@ private:
     ModifySingletonQuery modifyRender;
 
     InsertLongTermQuery insertViewport;
-    InsertLongTermQuery insertWorldPass;
     ModifyValueQuery modifyViewport;
+
+    InsertLongTermQuery insertPostProcessPass;
+    InsertLongTermQuery insertWorldPass;
     ModifyValueQuery modifyWorldPass;
 
     InsertLongTermQuery insertCamera;
@@ -101,6 +108,10 @@ private:
 
     InsertLongTermQuery insertSpriteAnimation;
     ModifyValueQuery modifySpriteAnimation;
+
+    ManualAssetConstructor manualAssetConstructor;
+    ManualFrameBufferConstructor manualFrameBufferConstructor;
+    ManualTextureConstructor manualTextureConstructor;
 
     std::size_t currentPointIndex = 0u;
     Scenario scenario;
@@ -121,8 +132,10 @@ ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _sce
       modifyRender (MODIFY_SINGLETON (Render2dSingleton)),
 
       insertViewport (INSERT_LONG_TERM (Viewport)),
-      insertWorldPass (INSERT_LONG_TERM (World2dRenderPass)),
       modifyViewport (MODIFY_VALUE_1F (Viewport, name)),
+
+      insertPostProcessPass (INSERT_LONG_TERM (PostProcessRenderPass)),
+      insertWorldPass (INSERT_LONG_TERM (World2dRenderPass)),
       modifyWorldPass (MODIFY_VALUE_1F (World2dRenderPass, name)),
 
       insertCamera (INSERT_LONG_TERM (Camera2dComponent)),
@@ -139,6 +152,10 @@ ScenarioExecutor::ScenarioExecutor (TaskConstructor &_constructor, Scenario _sce
 
       insertSpriteAnimation (INSERT_LONG_TERM (Sprite2dUvAnimationComponent)),
       modifySpriteAnimation (MODIFY_VALUE_1F (Sprite2dUvAnimationComponent, spriteId)),
+
+      manualAssetConstructor (_constructor),
+      manualFrameBufferConstructor (_constructor),
+      manualTextureConstructor (_constructor),
 
       scenario (std::move (_scenario)),
       finishedOutput (_finishedOutput)
@@ -222,6 +239,19 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
             [this] (const auto &_task)
             {
                 using Type = std::decay_t<decltype (_task)>;
+                if constexpr (std::is_same_v<Type, Tasks::CreateScreenLikeFrameBuffer>)
+                {
+                    LOG ("Creating screen-like frame buffer \"", _task.name, "\".");
+                    Memory::UniqueString textureId {EMERGENCE_BUILD_STRING ("T_", _task.name)};
+
+                    manualTextureConstructor.ConstructManualTexture (
+                        manualAssetConstructor, textureId,
+                        Render::Backend::Texture::CreateRenderTarget (WIDTH, HEIGHT,
+                                                                      Render::Backend::TextureFormat::RGBA8, {}));
+
+                    manualFrameBufferConstructor.ConstructManualFrameBuffer (manualAssetConstructor, _task.name,
+                                                                             {textureId});
+                }
                 if constexpr (std::is_same_v<Type, Tasks::CreateViewport>)
                 {
                     LOG ("Creating viewport \"", _task.name, "\".");
@@ -229,18 +259,13 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     auto *viewport = static_cast<Viewport *> (++cursor);
 
                     viewport->name = _task.name;
+                    viewport->targetFrameBuffer = _task.targetFrameBuffer;
                     viewport->x = _task.x;
                     viewport->y = _task.y;
                     viewport->width = _task.width;
                     viewport->height = _task.height;
                     viewport->clearColor = _task.clearColor;
                     viewport->sortIndex = _task.sortIndex;
-
-                    auto passCursor = insertWorldPass.Execute ();
-                    auto *pass = static_cast<World2dRenderPass *> (++passCursor);
-
-                    pass->name = viewport->name;
-                    pass->cameraObjectId = _task.cameraObjectId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::UpdateViewport>)
                 {
@@ -248,16 +273,13 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     auto cursor = modifyViewport.Execute (&_task.name);
                     auto *viewport = static_cast<Viewport *> (*cursor);
 
+                    viewport->targetFrameBuffer = _task.targetFrameBuffer;
                     viewport->x = _task.x;
                     viewport->y = _task.y;
                     viewport->width = _task.width;
                     viewport->height = _task.height;
                     viewport->clearColor = _task.clearColor;
                     viewport->sortIndex = _task.sortIndex;
-
-                    auto passCursor = modifyWorldPass.Execute (&_task.name);
-                    auto *pass = static_cast<World2dRenderPass *> (*passCursor);
-                    pass->cameraObjectId = _task.cameraObjectId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::DeleteViewport>)
                 {
@@ -265,6 +287,31 @@ void ScenarioExecutor::ExecuteTasks (TaskPoint *_point) noexcept
                     auto cursor = modifyViewport.Execute (&_task.name);
                     REQUIRE (*cursor);
                     ~cursor;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreatePostProcessRenderPass>)
+                {
+                    LOG ("Creating post process pass \"", _task.name, "\".");
+                    auto passCursor = insertPostProcessPass.Execute ();
+                    auto *pass = static_cast<PostProcessRenderPass *> (++passCursor);
+
+                    pass->name = _task.name;
+                    pass->materialInstanceId = _task.materialInstanceId;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::CreateWorldRenderPass>)
+                {
+                    LOG ("Creating world render pass \"", _task.name, "\".");
+                    auto passCursor = insertWorldPass.Execute ();
+                    auto *pass = static_cast<World2dRenderPass *> (++passCursor);
+
+                    pass->name = _task.name;
+                    pass->cameraObjectId = _task.cameraObjectId;
+                }
+                else if constexpr (std::is_same_v<Type, Tasks::UpdateWorldRenderPass>)
+                {
+                    LOG ("Updating world render pass \"", _task.name, "\".");
+                    auto passCursor = modifyWorldPass.Execute (&_task.name);
+                    auto *pass = static_cast<World2dRenderPass *> (*passCursor);
+                    pass->cameraObjectId = _task.cameraObjectId;
                 }
                 else if constexpr (std::is_same_v<Type, Tasks::CreateCamera>)
                 {
@@ -469,11 +516,13 @@ void ExecuteScenario (Scenario _scenario) noexcept
 
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
+    FrameBufferManagement::AddToNormalUpdate (pipelineBuilder);
     TransformHierarchyCleanup::Add2dToNormalUpdate (pipelineBuilder);
     MaterialInstanceManagement::AddToNormalUpdate (
         pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider, assetReferenceBindingEventMap);
     MaterialManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                            assetReferenceBindingEventMap);
+    PostProcess::AddToNormalUpdate (pipelineBuilder);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     Rendering2d::AddToNormalUpdate (pipelineBuilder, worldBox);
     Sprite2dUvAnimationManagement::AddToNormalUpdate (

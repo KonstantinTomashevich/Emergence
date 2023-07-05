@@ -15,7 +15,8 @@ TEST_CASE (TranslateCamera)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {{2.0f, 1.0f}}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -31,7 +32,8 @@ TEST_CASE (RotateCamera)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {{0.0f, 0.0f}, -Emergence::Math::PI / 6.0f}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -47,7 +49,8 @@ TEST_CASE (ScaleCamera)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {{0.0f, 0.0f}, 0.0f, {2.0f, 1.5f}}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -63,7 +66,8 @@ TEST_CASE (SwitchCamera)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {{2.0f, 0.0f}}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -76,7 +80,7 @@ TEST_CASE (SwitchCamera)
         AssetWaitPoint {},
         ScreenShotPoint {"SwitchCameraFirst"_us},
         TaskPoint {
-            UpdateViewport {"GameWorld"_us, 1u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            UpdateWorldRenderPass {"GameWorld"_us, 1u},
         },
         ScreenShotPoint {"SwitchCameraSecond"_us},
     });

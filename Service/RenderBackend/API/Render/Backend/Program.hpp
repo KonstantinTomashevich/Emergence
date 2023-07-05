@@ -45,8 +45,6 @@ public:
     Program &operator= (Program &&_other) noexcept;
 
 private:
-    friend class Renderer;
-
     EMERGENCE_BIND_IMPLEMENTATION_INPLACE (sizeof (std::uint64_t));
 };
 } // namespace Emergence::Render::Backend

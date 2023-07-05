@@ -2,11 +2,13 @@
 
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
+#include <Celerity/Asset/Render/Foundation/FrameBufferManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/MaterialManagement.hpp>
 #include <Celerity/Asset/Render/Foundation/TextureManagement.hpp>
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Locale/Localization.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/PostProcess.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/UI/AssetUsage.hpp>
@@ -75,10 +77,12 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     PipelineBuilder pipelineBuilder {world.GetRootView ()};
     pipelineBuilder.Begin ("NormalUpdate"_us, PipelineType::NORMAL);
     AssetManagement::AddToNormalUpdate (pipelineBuilder, binding, assetReferenceBindingEventMap);
+    FrameBufferManagement::AddToNormalUpdate (pipelineBuilder);
     ControlManagement::AddToNormalUpdate (pipelineBuilder, std::move (controlManagementFrames));
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
     MaterialManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                            assetReferenceBindingEventMap);
+    PostProcess::AddToNormalUpdate (pipelineBuilder);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     TextureManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                           assetReferenceBindingEventMap);
