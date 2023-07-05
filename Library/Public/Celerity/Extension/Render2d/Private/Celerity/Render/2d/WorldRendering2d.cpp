@@ -4,17 +4,14 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Batching2d.hpp>
 #include <Celerity/Render/2d/Batching2dSingleton.hpp>
-#include <Celerity/Render/2d/BoundsCalculation2d.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
 #include <Celerity/Render/2d/DebugShape2dComponent.hpp>
 #include <Celerity/Render/2d/RenderObject2dComponent.hpp>
 #include <Celerity/Render/2d/Sprite2dComponent.hpp>
 #include <Celerity/Render/2d/WorldRendering2d.hpp>
-#include <Celerity/Render/Foundation/Material.hpp>
-#include <Celerity/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Render/Foundation/MaterialInstanceSubmitter.hpp>
 #include <Celerity/Render/Foundation/RenderFoundationSingleton.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
-#include <Celerity/Render/Foundation/Texture.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
@@ -59,25 +56,19 @@ public:
     void Execute () noexcept;
 
 private:
-    void SubmitBatch (Render::Backend::SubmissionAgent &_agent,
-                      const Viewport *_viewport,
-                      const Batch2d &_batch) noexcept;
-
     void SubmitSprites (Render::Backend::SubmissionAgent &_agent,
                         const Viewport *_viewport,
-                        const Render::Backend::Program &_program,
+                        const Render::Backend::ProgramId &_programId,
                         const Batch2d &_batch) noexcept;
 
     void SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
                             const Viewport *_viewport,
-                            const Render::Backend::Program &_program,
+                            const Render::Backend::ProgramId &_programId,
                             const Batch2d &_batch) noexcept;
 
     ModifySingletonQuery modifyBatching;
     FetchSingletonQuery fetchRenderFoundation;
-
     FetchValueQuery fetchViewportByName;
-    FetchValueQuery fetchCameraById;
 
     FetchValueQuery fetchTransformById;
     Transform2dWorldAccessor transformWorldAccessor;
@@ -85,19 +76,10 @@ private:
     FetchValueQuery fetchSpriteBySpriteId;
     FetchValueQuery fetchDebugShapeByDebugShapeId;
 
-    FetchValueQuery fetchAssetById;
-    FetchValueQuery fetchMaterialInstanceById;
-    FetchValueQuery fetchMaterialById;
-    FetchValueQuery fetchTextureById;
-
-    FetchValueQuery fetchUniformByAssetIdAndName;
-    FetchValueQuery fetchUniformVector4fByInstanceId;
-    FetchValueQuery fetchUniformMatrix3x3fByInstanceId;
-    FetchValueQuery fetchUniformMatrix4x4fByInstanceId;
-    FetchValueQuery fetchUniformSamplerByInstanceId;
-
     Render::Backend::VertexLayout rectVertexLayout;
     Render::Backend::VertexLayout lineVertexLayout;
+
+    MaterialInstanceSubmitter materialInstanceSubmitter;
 };
 
 WorldRenderer::WorldRenderer (TaskConstructor &_constructor) noexcept
@@ -106,24 +88,12 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor) noexcept
       modifyBatching (MODIFY_SINGLETON (Batching2dSingleton)),
       fetchRenderFoundation (FETCH_SINGLETON (RenderFoundationSingleton)),
       fetchViewportByName (FETCH_VALUE_1F (Viewport, name)),
-      fetchCameraById (FETCH_VALUE_1F (Camera2dComponent, objectId)),
 
       fetchTransformById (FETCH_VALUE_1F (Transform2dComponent, objectId)),
       transformWorldAccessor (_constructor),
 
       fetchSpriteBySpriteId (FETCH_VALUE_1F (Sprite2dComponent, spriteId)),
       fetchDebugShapeByDebugShapeId (FETCH_VALUE_1F (DebugShape2dComponent, debugShapeId)),
-
-      fetchAssetById (FETCH_VALUE_1F (Asset, id)),
-      fetchMaterialInstanceById (FETCH_VALUE_1F (MaterialInstance, assetId)),
-      fetchMaterialById (FETCH_VALUE_1F (Material, assetId)),
-      fetchTextureById (FETCH_VALUE_1F (Texture, assetId)),
-
-      fetchUniformByAssetIdAndName (FETCH_VALUE_2F (Uniform, assetId, name)),
-      fetchUniformVector4fByInstanceId (FETCH_VALUE_1F (UniformVector4fValue, assetId)),
-      fetchUniformMatrix3x3fByInstanceId (FETCH_VALUE_1F (UniformMatrix3x3fValue, assetId)),
-      fetchUniformMatrix4x4fByInstanceId (FETCH_VALUE_1F (UniformMatrix4x4fValue, assetId)),
-      fetchUniformSamplerByInstanceId (FETCH_VALUE_1F (UniformSamplerValue, assetId)),
 
       rectVertexLayout (
           Render::Backend::VertexLayoutBuilder {}
@@ -135,7 +105,9 @@ WorldRenderer::WorldRenderer (TaskConstructor &_constructor) noexcept
       lineVertexLayout (Render::Backend::VertexLayoutBuilder {}
                             .Begin ()
                             .Add (Render::Backend::Attribute::POSITION, Render::Backend::AttributeType::FLOAT, 2u)
-                            .End ())
+                            .End ()),
+
+      materialInstanceSubmitter (_constructor)
 {
     _constructor.DependOn (Batching2d::Checkpoint::FINISHED);
     _constructor.DependOn (Checkpoint::STARTED);
@@ -168,7 +140,12 @@ void WorldRenderer::Execute () noexcept
 
         for (const Batch2d &batch : viewportInfo.batches)
         {
-            SubmitBatch (agent, viewport, batch);
+            if (Container::Optional<Render::Backend::ProgramId> programId =
+                    materialInstanceSubmitter.Submit (agent, batch.materialInstanceId))
+            {
+                SubmitSprites (agent, viewport, programId.value (), batch);
+                SubmitDebugShapes (agent, viewport, programId.value (), batch);
+            }
         }
 
         agent.Touch (viewport->viewport.GetId ());
@@ -177,128 +154,9 @@ void WorldRenderer::Execute () noexcept
     batching->Reset ();
 }
 
-void WorldRenderer::SubmitBatch (Render::Backend::SubmissionAgent &_agent,
-                                 const Viewport *_viewport,
-                                 const Batch2d &_batch) noexcept
-{
-    auto assetCursor = fetchAssetById.Execute (&_batch.materialInstanceId);
-    const auto *asset = static_cast<const Asset *> (*assetCursor);
-
-    if (!asset || asset->state != AssetState::READY)
-    {
-        EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance \"", _batch.materialInstanceId,
-                       "\" cannot be submitted as it is not loaded.");
-        return;
-    }
-
-    auto materialInstanceCursor = fetchMaterialInstanceById.Execute (&_batch.materialInstanceId);
-    const auto *materialInstance = static_cast<const MaterialInstance *> (*materialInstanceCursor);
-    EMERGENCE_ASSERT (materialInstance);
-
-    auto materialCursor = fetchMaterialById.Execute (&materialInstance->materialId);
-    const auto *material = static_cast<const Material *> (*materialCursor);
-    EMERGENCE_ASSERT (material);
-
-    struct
-    {
-        Memory::UniqueString assetId;
-        Memory::UniqueString name;
-    } uniformQuery;
-
-    for (auto valueCursor = fetchUniformVector4fByInstanceId.Execute (&_batch.materialInstanceId);
-         const auto *value = static_cast<const UniformVector4fValue *> (*valueCursor); ++valueCursor)
-    {
-        uniformQuery.assetId = material->assetId;
-        uniformQuery.name = value->uniformName;
-
-        if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
-            const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
-        {
-            _agent.SetVector4f (uniform->uniform.GetId (), value->value);
-        }
-        else
-        {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
-                           ".", value->uniformName, "\" cannot be submitted as it is not registered in material.");
-        }
-    }
-
-    for (auto valueCursor = fetchUniformMatrix3x3fByInstanceId.Execute (&_batch.materialInstanceId);
-         const auto *value = static_cast<const UniformMatrix3x3fValue *> (*valueCursor); ++valueCursor)
-    {
-        uniformQuery.assetId = material->assetId;
-        uniformQuery.name = value->uniformName;
-
-        if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
-            const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
-        {
-            _agent.SetMatrix3x3f (uniform->uniform.GetId (), value->value);
-        }
-        else
-        {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
-                           ".", value->uniformName, "\" cannot be submitted as it is not registered in material.");
-        }
-    }
-
-    for (auto valueCursor = fetchUniformMatrix4x4fByInstanceId.Execute (&_batch.materialInstanceId);
-         const auto *value = static_cast<const UniformMatrix4x4fValue *> (*valueCursor); ++valueCursor)
-    {
-        uniformQuery.assetId = material->assetId;
-        uniformQuery.name = value->uniformName;
-
-        if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
-            const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
-        {
-            _agent.SetMatrix4x4f (uniform->uniform.GetId (), value->value);
-        }
-        else
-        {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
-                           ".", value->uniformName, "\" cannot be submitted as it is not registered in material.");
-        }
-    }
-
-    for (auto valueCursor = fetchUniformSamplerByInstanceId.Execute (&_batch.materialInstanceId);
-         const auto *value = static_cast<const UniformSamplerValue *> (*valueCursor); ++valueCursor)
-    {
-        auto textureAssetCursor = fetchAssetById.Execute (&value->textureId);
-        const auto *textureAsset = static_cast<const Asset *> (*textureAssetCursor);
-
-        if (!textureAsset || textureAsset->state != AssetState::READY)
-        {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
-                           ".", value->uniformName,
-                           "\" cannot be submitted as required texture is not loaded. Skipping material submit.");
-            return;
-        }
-
-        auto textureCursor = fetchTextureById.Execute (&value->textureId);
-        const auto *texture = static_cast<const Texture *> (*textureCursor);
-        EMERGENCE_ASSERT (texture);
-
-        uniformQuery.assetId = material->assetId;
-        uniformQuery.name = value->uniformName;
-
-        if (auto uniformCursor = fetchUniformByAssetIdAndName.Execute (&uniformQuery);
-            const auto *uniform = static_cast<const Uniform *> (*uniformCursor))
-        {
-            _agent.SetSampler (uniform->uniform.GetId (), uniform->textureStage, texture->texture.GetId ());
-        }
-        else
-        {
-            EMERGENCE_LOG (WARNING, "Celerity::Render2d: Material instance uniform value \"", _batch.materialInstanceId,
-                           ".", value->uniformName, "\" cannot be submitted as it is not registered in material.");
-        }
-    }
-
-    SubmitSprites (_agent, _viewport, material->program, _batch);
-    SubmitDebugShapes (_agent, _viewport, material->program, _batch);
-}
-
 void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
                                    const Viewport *_viewport,
-                                   const Render::Backend::Program &_program,
+                                   const Render::Backend::ProgramId &_programId,
                                    const Batch2d &_batch) noexcept
 {
     if (_batch.sprites.empty ())
@@ -317,8 +175,7 @@ void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
 
     if (availableVertices != totalVertices || availableIndices != totalIndices)
     {
-        EMERGENCE_LOG (WARNING,
-                       "Celerity::Render2d: Unable to submit all rects due to being unable to allocate buffers.");
+        EMERGENCE_LOG (WARNING, "Render2d: Unable to submit all rects due to being unable to allocate buffers.");
     }
 
     const std::uint32_t maxRects = std::min (availableVertices / 4u, availableIndices / 6u);
@@ -379,12 +236,12 @@ void WorldRenderer::SubmitSprites (Render::Backend::SubmissionAgent &_agent,
                      Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA |
                      Render::Backend::STATE_PRIMITIVE_TRIANGLES);
 
-    _agent.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
+    _agent.SubmitGeometry (_viewport->viewport.GetId (), _programId, vertexBuffer, indexBuffer);
 }
 
 void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
                                        const Viewport *_viewport,
-                                       const Render::Backend::Program &_program,
+                                       const Render::Backend::ProgramId &_programId,
                                        const Batch2d &_batch) noexcept
 {
     if (_batch.debugShapes.empty ())
@@ -433,8 +290,7 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
 
     if (availableVertices != totalVertices || availableIndices != totalIndices)
     {
-        EMERGENCE_LOG (WARNING,
-                       "Celerity::Render2d: Unable to submit all lines due to being unable to allocate buffers.");
+        EMERGENCE_LOG (WARNING, "Render2d: Unable to submit all lines due to being unable to allocate buffers.");
     }
 
     const std::uint32_t maxLines = std::min (availableVertices / 2u, availableIndices / 2u);
@@ -545,7 +401,7 @@ void WorldRenderer::SubmitDebugShapes (Render::Backend::SubmissionAgent &_agent,
                      Render::Backend::STATE_CULL_CW | Render::Backend::STATE_MSAA |
                      Render::Backend::STATE_PRIMITIVE_LINES);
 
-    _agent.SubmitGeometry (_viewport->viewport.GetId (), _program.GetId (), vertexBuffer, indexBuffer);
+    _agent.SubmitGeometry (_viewport->viewport.GetId (), _programId, vertexBuffer, indexBuffer);
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept

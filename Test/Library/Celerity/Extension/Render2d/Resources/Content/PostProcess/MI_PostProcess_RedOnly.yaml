@@ -1,0 +1,6 @@
+# MaterialInstanceAsset
+material: M_PostProcess_RedOnly
+uniforms:
+  - name: screenTexture
+    type: 3
+    textureId: T_GameWorldBuffer

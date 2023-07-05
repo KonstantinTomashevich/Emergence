@@ -15,7 +15,7 @@ struct FrameBuffer final
     Memory::UniqueString assetId;
 
     /// \brief Underlying implementation object.
-    Render::Backend::FrameBuffer frameBuffer;
+    Render::Backend::FrameBuffer frameBuffer = Render::Backend::FrameBuffer::CreateInvalid ();
 
     struct Reflection final
     {

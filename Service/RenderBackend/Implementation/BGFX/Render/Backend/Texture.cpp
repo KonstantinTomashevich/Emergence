@@ -228,7 +228,7 @@ Texture Texture::CreateRenderTarget (std::uint64_t _width,
 {
     bgfx::TextureHandle handle =
         bgfx::createTexture2D (static_cast<std::uint16_t> (_width), static_cast<std::uint16_t> (_height), false, 1u,
-                               ToBgfxFormat (_format), SettingsToFlags (_settings));
+                               ToBgfxFormat (_format), SettingsToFlags (_settings) | BGFX_TEXTURE_RT);
 
     if (!bgfx::isValid (handle))
     {

@@ -13,7 +13,8 @@ TEST_CASE (ClearColor)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0xAAAAAAFF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0xAAAAAAFF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
         },
@@ -26,19 +27,23 @@ TEST_CASE (Several)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld1"_us, 0u, 0u, 0u, WIDTH / 2u, HEIGHT / 2u, 0x000000FF},
+            CreateViewport {"GameWorld1"_us, ""_us, 0u, 0u, WIDTH / 2u, HEIGHT / 2u, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld1"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {{2.0f, 0.0f}}},
             CreateCamera {0u, 2.0f, ~0u},
 
-            CreateViewport {"GameWorld2"_us, 1u, WIDTH / 2u, 0u, WIDTH / 2u, HEIGHT / 2u, 0x000000FF},
+            CreateViewport {"GameWorld2"_us, ""_us, WIDTH / 2u, 0u, WIDTH / 2u, HEIGHT / 2u, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld2"_us, 1u},
             CreateTransform {1u, INVALID_UNIQUE_ID, {{-2.0f, 0.0f}}},
             CreateCamera {1u, 2.0f, ~0u},
 
-            CreateViewport {"GameWorld3"_us, 2u, 0u, HEIGHT / 2u, WIDTH / 2u, HEIGHT / 2u, 0x000000FF},
+            CreateViewport {"GameWorld3"_us, ""_us, 0u, HEIGHT / 2u, WIDTH / 2u, HEIGHT / 2u, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld3"_us, 2u},
             CreateTransform {2u, INVALID_UNIQUE_ID, {{0.0f, 1.0f}}},
             CreateCamera {2u, 2.0f, ~0u},
 
-            CreateViewport {"GameWorld4"_us, 3u, WIDTH / 2u, HEIGHT / 2u, WIDTH / 2u, HEIGHT / 2u, 0x000000FF},
+            CreateViewport {"GameWorld4"_us, ""_us, WIDTH / 2u, HEIGHT / 2u, WIDTH / 2u, HEIGHT / 2u, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld4"_us, 3u},
             CreateTransform {3u, INVALID_UNIQUE_ID, {{0.0f, -1.0f}}},
             CreateCamera {3u, 2.0f, ~0u},
 
@@ -54,11 +59,13 @@ TEST_CASE (Overlap)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF, 0u},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF, 0u},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, 1u},
 
-            CreateViewport {"GameWorldOverlap"_us, 1u, 0u, 0u, WIDTH, HEIGHT, 0x00000000, 1u},
+            CreateViewport {"GameWorldOverlap"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x00000000, 1u},
+            CreateWorldRenderPass {"GameWorld"_us, 1u},
             CreateTransform {1u, INVALID_UNIQUE_ID, {}},
             CreateCamera {1u, 2.0f, 2u},
 

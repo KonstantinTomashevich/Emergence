@@ -25,6 +25,7 @@ public:
     EMERGENCE_DELETE_ASSIGNMENT (ManualAssetConstructor);
 
 private:
+    ModifySingletonQuery modifyAssetManager;
     InsertLongTermQuery insertAsset;
 };
 } // namespace Emergence::Celerity

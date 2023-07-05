@@ -13,7 +13,8 @@ TEST_CASE (SpriteAnimationTick)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -39,7 +40,8 @@ TEST_CASE (SpriteAnimationNoTick)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -61,7 +63,8 @@ TEST_CASE (SpriteAnimationOverrideTime)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -85,7 +88,8 @@ TEST_CASE (SpriteAnimationLoop)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -111,7 +115,8 @@ TEST_CASE (SpriteAnimationNoLoop)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -137,7 +142,8 @@ TEST_CASE (SpriteAnimationFlipU)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
 
@@ -154,7 +160,8 @@ TEST_CASE (SpriteAnimationFlipV)
 {
     ExecuteScenario ({
         TaskPoint {
-            CreateViewport {"GameWorld"_us, 0u, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateViewport {"GameWorld"_us, ""_us, 0u, 0u, WIDTH, HEIGHT, 0x000000FF},
+            CreateWorldRenderPass {"GameWorld"_us, 0u},
             CreateTransform {0u, INVALID_UNIQUE_ID, {}},
             CreateCamera {0u, 2.0f, ~0u},
 
