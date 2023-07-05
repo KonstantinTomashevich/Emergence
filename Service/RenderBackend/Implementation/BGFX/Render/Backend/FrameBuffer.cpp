@@ -76,6 +76,7 @@ FrameBufferBuilder::~FrameBufferBuilder () noexcept
     block_cast<FrameBufferBuilderInternal> (data).~FrameBufferBuilderInternal ();
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): Not for all implementations, also there is assertion.
 void FrameBufferBuilder::Begin () noexcept
 {
     EMERGENCE_ASSERT (block_cast<FrameBufferBuilderInternal> (data).renderTargets.empty ());

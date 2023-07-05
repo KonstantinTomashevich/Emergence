@@ -27,6 +27,7 @@ CargoDeck::CargoDeck (Memory::UniqueString _name) noexcept
 {
 }
 
+// NOLINTNEXTLINE(modernize-use-equals-default): Its not actually default unless assertions are disabled.
 CargoDeck::~CargoDeck () noexcept
 {
     // Assert that all containers are either detached or exist only due to garbage collection disabled flag.

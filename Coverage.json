@@ -19,6 +19,11 @@
       "Reason": "It's impossible to fully cover `DoWithCorrectComparator` because of asserts and breaks that will be reached only if something really bad happens."
     },
     {
+      "Prefix": "./Library/Public/Celerity/Extension/Asset/Celerity/Asset/ManualAssetConstructor.cpp",
+      "Action": "Exclude",
+      "Reason": "Manual asset constructor logic is covered only by GPU dependant tests, therefore there is no coverage on CI."
+    },
+    {
       "Prefix": "./Library/Public/Celerity/Extension/Input/Celerity/Input/FrameInputAccumulator.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 50.0,
