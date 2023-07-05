@@ -23,7 +23,7 @@ public:
     /// \brief Attempts to submit values for all uniforms of material instance.
     /// \return Program id of used material or null option in case of errors.
     Container::Optional<Render::Backend::ProgramId> Submit (Render::Backend::SubmissionAgent &_agent,
-                 Memory::UniqueString _materialInstanceId) noexcept;
+                                                            Memory::UniqueString _materialInstanceId) noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (MaterialInstanceSubmitter);
 
