@@ -40,13 +40,13 @@ void ManualFrameBufferConstructor::ConstructManualFrameBuffer (
             }
             else
             {
-                EMERGENCE_LOG (ERROR, "RenderFoundation: Texture \"", textureId, "\" used to create frame buffer \"",
-                               _assetId, "\" is invalid.");
+                EMERGENCE_LOG (ERROR, "ManualFrameBufferConstructor: Texture \"", textureId,
+                               "\" used to create frame buffer \"", _assetId, "\" is invalid.");
             }
         }
         else
         {
-            EMERGENCE_LOG (ERROR, "RenderFoundation: Failed to fetch texture \"", textureId,
+            EMERGENCE_LOG (ERROR, "ManualFrameBufferConstructor: Failed to fetch texture \"", textureId,
                            "\" to create frame buffer \"", _assetId, "\".");
         }
     }

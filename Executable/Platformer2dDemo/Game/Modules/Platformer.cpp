@@ -8,6 +8,7 @@
 #include <Celerity/Physics2d/Simulation.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/Render/2d/Rendering2d.hpp>
+#include <Celerity/Render/Foundation/PostProcess.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
@@ -95,6 +96,7 @@ void Initializer (GameState &_gameState,
     Emergence::Celerity::Assembly::AddToNormalUpdate (mainPipelineBuilder, GetAssemblerCustomKeys (),
                                                       GetNormalAssemblerTypes (), MAX_ASSEMBLY_TIME_NS);
     Emergence::Celerity::Input::AddToNormalUpdate (mainPipelineBuilder, _gameState.GetFrameInputAccumulator ());
+    Emergence::Celerity::PostProcess::AddToNormalUpdate (mainPipelineBuilder);
     Emergence::Celerity::RenderPipelineFoundation::AddToNormalUpdate (mainPipelineBuilder);
     Emergence::Celerity::Rendering2d::AddToNormalUpdate (mainPipelineBuilder, worldBox);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToNormalUpdate (mainPipelineBuilder);

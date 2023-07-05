@@ -8,8 +8,6 @@
 
 namespace Emergence::Celerity
 {
-// TODO: Rework viewports into fully fledged render target system?
-
 /// \brief Configures output surface for rendering. Having multiple viewports is supported.
 struct Viewport final
 {

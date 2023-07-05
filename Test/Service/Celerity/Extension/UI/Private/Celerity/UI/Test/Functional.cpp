@@ -8,6 +8,7 @@
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Locale/Localization.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/PostProcess.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/UI/AssetUsage.hpp>
@@ -81,6 +82,7 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     Input::AddToNormalUpdate (pipelineBuilder, &inputAccumulator);
     MaterialManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                            assetReferenceBindingEventMap);
+    PostProcess::AddToNormalUpdate (pipelineBuilder);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     TextureManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                           assetReferenceBindingEventMap);

@@ -15,6 +15,7 @@
 #include <Celerity/Locale/Localization.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/Foundation/Events.hpp>
+#include <Celerity/Render/Foundation/PostProcess.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/UI/AssetUsage.hpp>
@@ -196,6 +197,7 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
     Localization::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider);
     MaterialManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                            assetReferenceBindingEventMap);
+    PostProcess::AddToNormalUpdate (pipelineBuilder);
     RenderPipelineFoundation::AddToNormalUpdate (pipelineBuilder);
     TextureManagement::AddToNormalUpdate (pipelineBuilder, &Testing::ResourceContextHolder::Get ().resourceProvider,
                                           assetReferenceBindingEventMap);
