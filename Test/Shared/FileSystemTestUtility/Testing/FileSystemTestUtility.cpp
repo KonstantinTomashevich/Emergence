@@ -1,3 +1,4 @@
+#include <array>
 #include <fstream>
 
 #include <Testing/FileSystemTestUtility.hpp>

@@ -13,183 +13,183 @@
       "Reason": "There is no sense to scan dependency coverage."
     },
     {
-      "Prefix": "./Library/Private/Pegasus/Private/Pegasus/RecordUtility.hpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 65.0,
-      "Reason": "It's impossible to fully cover `DoWithCorrectComparator` because of asserts and breaks that will be reached only if something really bad happens."
+      "Prefix": "./Unit/Assert/Implementation/",
+      "Action": "Exclude",
+      "Reason": "Assert should not be triggered during tests, therefore its coverage will be zero."
     },
     {
-      "Prefix": "./Library/Public/Celerity/Extension/Asset/Celerity/Asset/ManualAssetConstructor.cpp",
+      "Prefix": "./Unit/CelerityAsset/Celerity/Asset/ManualAssetConstructor.cpp",
       "Action": "Exclude",
       "Reason": "Manual asset constructor logic is covered only by GPU dependant tests, therefore there is no coverage on CI."
     },
     {
-      "Prefix": "./Library/Public/Celerity/Extension/Input/Celerity/Input/FrameInputAccumulator.cpp",
+      "Prefix": "./Unit/CelerityInput/Celerity/Input/FrameInputAccumulator.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 50.0,
       "Reason": "Frame input accumulator logic is covered by GPU dependant tests, therefore coverage on CI is low."
     },
     {
-      "Prefix": "./Library/Public/Celerity/Extension/Input/Celerity/Input/FrameInputAccumulator.hpp",
+      "Prefix": "./Unit/CelerityInput/Celerity/Input/FrameInputAccumulator.hpp",
       "Action": "Exclude",
       "Reason": "Frame input accumulator logic is covered by GPU dependant tests, therefore coverage on CI is low."
     },
     {
-      "Prefix": "./Library/Public/Celerity/Extension/Input/Celerity/Input/InputAction.cpp",
+      "Prefix": "./Unit/CelerityInput/Celerity/Input/InputAction.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
       "Reason": "Input action equality logic is covered by GPU dependant tests, therefore coverage on CI is low."
     },
     {
-      "Prefix": "./Library/Public/Celerity/Public/Celerity/Pipeline.cpp",
+      "Prefix": "./Unit/Celerity/Public/Celerity/Pipeline.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 24.0,
       "Reason": "Uncovered code is used only for logging human readable errors. Might be fixed later by adding negative tests."
     },
     {
-      "Prefix": "./Library/Public/Celerity/Public/Celerity/PipelineBuilder.cpp",
+      "Prefix": "./Unit/Celerity/Public/Celerity/PipelineBuilder.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 74.0,
       "Reason": "Coverage requirement is met when GPU-dependant tests are executed too. But we cannot execute them on CI."
     },
     {
-      "Prefix": "./Library/Public/Celerity/Public/Celerity/Query",
+      "Prefix": "./Unit/Celerity/Public/Celerity/Query",
       "Action": "Exclude",
       "Reason": "Currently these queries just wrap Warehouse queries, therefore there is no need to cover them fully."
     },
     {
-      "Prefix": "./Library/Public/Container/Container/BoostExceptionMock.hpp",
+      "Prefix": "./Unit/Container/Container/BoostExceptionMock.hpp",
       "Action": "Exclude",
       "Reason": "We expect our tests to never throw exceptions, therefore exception mock is uncovered."
     },
     {
-      "Prefix": "./Library/Public/Container/Container/MappingRegistry.cpp",
+      "Prefix": "./Unit/Container/Container/MappingRegistry.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 60.0,
       "Reason": "For now, only simple returns are uncovered (file is very small), therefore it is ok to lower coverage requirement."
     },
     {
-      "Prefix": "./Library/Public/Math",
+      "Prefix": "./Unit/Math",
       "Action": "Exclude",
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."
     },
     {
-      "Prefix": "./Library/Public/ResourceCooking/Resource/Cooking/Context.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 55.0,
-      "Reason": "Large part of this file is error logging and it isn't covered as we have no negative tests for now."
-    },
-    {
-      "Prefix": "./Library/Public/ResourceCooking/Resource/Cooking/Pass",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 50.0,
-      "Reason": "Currently we're only checking pass positive results and do not check error logging, therefore coverage is low. Might be changed later."
-    },
-    {
-      "Prefix": "./Library/Public/ResourceCooking/Resource/Cooking/ResourceList.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 55.0,
-      "Reason": "This class serves as a top-level utility wrapper around record collection and not all its features are needed in the code right now."
-    },
-    {
-      "Prefix": "./Library/Public/ResourceCooking/Resource/Cooking/Result",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 48.0,
-      "Reason": "Currently we're only checking positive results and do not check error logging, therefore coverage is low. Might be changed later."
-    },
-    {
-      "Prefix": "./Library/Public/ResourceObject/Resource/Object/LibraryLoader.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 60.0,
-      "Reason": "Huge part of library loader is error logging and it isn't covered as we have no negative tests for now."
-    },
-    {
-      "Prefix": "./Library/Public/ResourceObject/Resource/Object/TypeManifest.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 60.0,
-      "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when class is used properly."
-    },
-    {
-      "Prefix": "./Library/Public/Serialization/Serialization/Binary.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 69.0,
-      "Reason": "This file contains lots of error handling and trivial type specific logic that is difficult to cover fully."
-    },
-    {
-      "Prefix": "./Library/Public/Serialization/Serialization/Yaml.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 69.0,
-      "Reason": "This file contains lots of error handling and trivial type specific logic that is difficult to cover fully."
-    },
-    {
-      "Prefix": "./Service/Assert/Implementation/",
-      "Action": "Exclude",
-      "Reason": "Assert should not be triggered during tests, therefore its coverage will be zero."
-    },
-    {
-      "Prefix": "./Service/MemoryProfiler/Implementation/Original/Memory/Profiler/Original/EventManager.hpp",
+      "Prefix": "./Unit/MemoryProfilerOriginal/Memory/Profiler/Original/EventManager.hpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 49.0,
       "Reason": "Default destructor call isn't covered for some reason, perhaps because it has only one static instance."
     },
     {
-      "Prefix": "./Service/ResourceProvider/Implementation/Original/Resource/Provider/Original/ResourceProvider.cpp",
+      "Prefix": "./Unit/Pegasus/Private/Pegasus/RecordUtility.hpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 65.0,
+      "Reason": "It's impossible to fully cover `DoWithCorrectComparator` because of asserts and breaks that will be reached only if something really bad happens."
+    },
+    {
+      "Prefix": "./Unit/ResourceCooking/Resource/Cooking/Context.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 55.0,
+      "Reason": "Large part of this file is error logging and it isn't covered as we have no negative tests for now."
+    },
+    {
+      "Prefix": "./Unit/ResourceCooking/Resource/Cooking/Pass",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 50.0,
+      "Reason": "Currently we're only checking pass positive results and do not check error logging, therefore coverage is low. Might be changed later."
+    },
+    {
+      "Prefix": "./Unit/ResourceCooking/Resource/Cooking/ResourceList.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 55.0,
+      "Reason": "This class serves as a top-level utility wrapper around record collection and not all its features are needed in the code right now."
+    },
+    {
+      "Prefix": "./Unit/ResourceCooking/Resource/Cooking/Result",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 48.0,
+      "Reason": "Currently we're only checking positive results and do not check error logging, therefore coverage is low. Might be changed later."
+    },
+    {
+      "Prefix": "./Unit/ResourceObject/Resource/Object/LibraryLoader.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "Huge part of library loader is error logging and it isn't covered as we have no negative tests for now."
+    },
+    {
+      "Prefix": "./Unit/ResourceObject/Resource/Object/TypeManifest.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when class is used properly."
+    },
+    {
+      "Prefix": "./Unit/ResourceProviderOriginal/Resource/Provider/Original/ResourceProvider.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 65.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're aren't writing negative tests for now."
     },
     {
-      "Prefix": "./Service/ResourceProvider/Implementation/Original/Resource/Provider/Original/ResourceProvider.hpp",
+      "Prefix": "./Unit/ResourceProviderOriginal/Resource/Provider/Original/ResourceProvider.hpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
       "Reason": "Defaulted cursor copy is not yet used anywhere, therefore coverage is lower than 75%."
     },
     {
-      "Prefix": "./Service/VirtualFileSystem/API/VirtualFileSystem/Helpers.hpp",
+      "Prefix": "./Unit/Serialization/Serialization/Binary.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 69.0,
+      "Reason": "This file contains lots of error handling and trivial type specific logic that is difficult to cover fully."
+    },
+    {
+      "Prefix": "./Unit/Serialization/Serialization/Yaml.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 69.0,
+      "Reason": "This file contains lots of error handling and trivial type specific logic that is difficult to cover fully."
+    },
+    {
+      "Prefix": "./Unit/VirtualFileSystem/VirtualFileSystem/Helpers.hpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 20.0,
       "Reason": "The bigger function is only used in visual tests and therefore is not being executed on CI."
     },
     {
-      "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/MountConfiguration.cpp",
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/MountConfiguration.cpp",
       "Action": "Exclude",
       "Reason": "This file contains only reflection registration that is not used inside tests and should be trivial enough to be uncovered."
     },
     {
-      "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/PackageBuilder.cpp",
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/PackageBuilder.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 65.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
     },
     {
-      "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/Reader.cpp",
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/Reader.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 65.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
     },
     {
-      "Prefix": "./Service/VirtualFileSystem/Implementation/Original/VirtualFileSystem/Writer.cpp",
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/Writer.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 50.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
     },
     {
-      "Prefix": "./Test/Library/ResourceObject/Resource/Object/Test/Helpers.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 60.0,
-      "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when tests are passing."
-    },
-    {
-      "Prefix": "./Test/Service/Log/Driver/Log/Test/Main.cpp",
+      "Prefix": "./Test/Unit/Log/Driver/Log/Test/Main.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
       "Reason": "Error-logging code can not be covered if tests are not failing."
     },
     {
-      "Prefix": "./Test/Service/Log/Shared/Log/Test/Shared.cpp",
+      "Prefix": "./Test/Unit/Log/Shared/Log/Test/Shared.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
       "Reason": "Error-checking code can not be covered if tests are not failing."
+    },
+    {
+      "Prefix": "./Test/Unit/ResourceObject/Resource/Object/Test/Helpers.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "Error logging is almost 40% of this file lines, therefore coverage cannot be achieved when tests are passing."
     },
     {
       "Prefix": "./ThirdParty/",

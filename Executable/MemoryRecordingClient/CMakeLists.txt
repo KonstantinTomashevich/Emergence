@@ -1,34 +1,17 @@
-sober_library_begin (MemoryRecordingClient OBJECT)
-    file (GLOB_RECURSE HEADERS *.hpp)
-    file (GLOB_RECURSE SOURCES *.cpp)
-    list (APPEND SOURCES ${HEADERS})
+register_concrete (MemoryRecordingClientApplication)
+concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+concrete_sources ("*.cpp")
+concrete_require (SCOPE PRIVATE ABSTRACT Log CONCRETE_INTERFACE MemoryRecording THIRD_PARTY SDL3::SDL3 SDL3ImGUI)
 
-    sober_library_set_sources ("${SOURCES}")
-    sober_library_include_directory (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+register_executable (MemoryRecordingClient)
+executable_include (
+        ABSTRACT
+        Assert=SDL3 CPUProfiler=None Log=SPDLog Memory=Original
+        MemoryProfiler=Original StandardLayoutMapping=Original
 
-    sober_naming_variant_target (Container Original CONTAINER_LIBRARY_TARGET)
-    sober_naming_variant_target (MemoryRecording Original MEMORY_RECORDING_LIBRARY_TARGET)
+        CONCRETE Container Handling MemoryRecording MemoryRecordingClientApplication Serialization SyntaxSugar)
+executable_verify ()
+executable_copy_linked_artefacts ()
 
-    sober_library_link_library (PRIVATE ${CONTAINER_LIBRARY_TARGET})
-    sober_library_link_library (PRIVATE ${MEMORY_RECORDING_LIBRARY_TARGET})
-    sober_library_link_library (PRIVATE SDL3::SDL3)
-    sober_library_link_library (PRIVATE SDL3ImGUI)
-
-    sober_library_use_service (SHARED PRIVATE Assert)
-    sober_library_use_service (SHARED PRIVATE CPUProfiler)
-    sober_library_use_service (SHARED PRIVATE Log)
-    sober_library_use_service (SHARED PRIVATE Memory)
-    sober_library_use_service (SHARED PRIVATE MemoryProfiler)
-    sober_library_use_service (SHARED PRIVATE StandardLayoutMapping)
-
-    sober_variant_begin (Original)
-    sober_variant_end ()
-sober_library_end ()
-
-add_executable (MemoryRecordingClientLauncher "${SOBER_TEST_RUNNER_STUB_SOURCE}")
-sober_naming_variant_target (MemoryRecordingClient Original CLIENT_TARGET)
-sober_target_link_libraries (MemoryRecordingClientLauncher PUBLIC "${CLIENT_TARGET}")
-
-set_target_properties (MemoryRecordingClientLauncher PROPERTIES
+set_target_properties (MemoryRecordingClient PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Tools/MemoryRecordingClient")
-copy_required_shared_libraries (MemoryRecordingClientLauncher)

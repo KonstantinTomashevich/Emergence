@@ -1,29 +1,59 @@
 set (GAME_NAME "Platformer2dDemo")
+option (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING "Whether Platformer2dDemo game should be built in shipping variant." OFF)
 set (GAME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Games/${GAME_NAME}")
-set (GAME_RESOURCES_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
-set (GAME_RESOURCES_COMPILED "${CMAKE_CURRENT_BINARY_DIR}/Resources")
 
-file (GLOB_RECURSE GAME_SHADERS "${GAME_RESOURCES_SOURCE}/*.sc")
-add_library ("${GAME_NAME}Shaders" INTERFACE ${GAME_SHADERS})
+file (MAKE_DIRECTORY "${GAME_OUTPUT_DIRECTORY}")
+file (MAKE_DIRECTORY "${GAME_OUTPUT_DIRECTORY}Packaged")
+add_subdirectory (Unit)
 
-add_subdirectory (Game)
-add_subdirectory (Logic)
-add_subdirectory (Model)
-add_subdirectory (ResourceCooker)
+# TODO: Try to move common content into a shared library.
 
-file (MAKE_DIRECTORY "${GAME_RESOURCES_COMPILED}")
-register_bgfx_shaders ("${GAME_RESOURCES_SOURCE}/Shaders" "${GAME_RESOURCES_COMPILED}/Shaders")
+register_executable (${GAME_NAME}ResourceCooker)
+executable_include (
+        ABSTRACT
+        Assert=SDL3 CelerityPhysics2d=Box2d CelerityUI=ImGUI CPUProfiler=None Hashing=XXHash JobDispatcher=Original
+        Log=SPDLog Memory=Original MemoryProfiler=Original RecordCollection=Pegasus RenderBackend=BGFX
+        ResourceProvider=Original StandardLayoutMapping=Original TaskExecutor=Parallel VirtualFileSystem=Original
+        Warehouse=Galleon
 
-register_resource_usage ("${GAME_NAME}GameLauncher"
-        "${GAME_RESOURCES_COMPILED}" "Game/Compiled" "CoreResources")
+        CONCRETE
+        ${GAME_NAME}Logic ${GAME_NAME}Model ${GAME_NAME}ResourceCookerApplication ${GAME_NAME}Resources Celerity
+        CelerityAsset CelerityAssembly CelerityInput CelerityLocale CelerityPhysics2dDebugDraw CelerityRenderFoundation
+        CelerityResourceConfig CelerityRender2d CelerityResourceObject CelerityTransform CommandLine Container Flow
+        Handling Math RecordCollectionVisualization ResourceCooking ResourceObject Serialization SyntaxSugar
+        TaskCollection VisualGraph)
 
-register_resource_usage ("${GAME_NAME}GameLauncher"
-        "${GAME_RESOURCES_SOURCE}/Content" "Game/Raw" "CoreResources")
+executable_verify ()
+executable_copy_linked_artefacts ()
+set_target_properties ("${GAME_NAME}ResourceCooker" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}")
 
-deploy_resource_mount_lists ("${GAME_NAME}GameLauncher" "${GAME_OUTPUT_DIRECTORY}/Game")
-setup_resource_cooking_and_packaging (
-        "${GAME_NAME}GameLauncher"
-        "${GAME_NAME}ResourceCookerLauncher"
-        "${GAME_OUTPUT_DIRECTORY}/Game"
-        "${GAME_OUTPUT_DIRECTORY}/Game/CookingWorkspace"
-        "${GAME_OUTPUT_DIRECTORY}/Game/Packaged")
+register_executable (${GAME_NAME}Game)
+executable_include (
+        ABSTRACT
+        Assert=SDL3 CelerityPhysics2d=Box2d CelerityUI=ImGUI Hashing=XXHash JobDispatcher=Original Log=SPDLog
+        Memory=Original RecordCollection=Pegasus RenderBackend=BGFX ResourceProvider=Original
+        StandardLayoutMapping=Original TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
+
+        CONCRETE
+        ${GAME_NAME}Logic ${GAME_NAME}Model ${GAME_NAME}GameApplication ${GAME_NAME}Resources Celerity
+        CelerityAsset CelerityAssembly CelerityInput CelerityLocale CelerityPhysics2dDebugDraw CelerityRenderFoundation
+        CelerityResourceConfig CelerityRender2d CelerityResourceObject CelerityTransform Container Flow Handling Math
+        MemoryRecording RecordCollectionVisualization ResourceObject Serialization SyntaxSugar TaskCollection
+        VisualGraph)
+
+if (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING)
+    executable_include (ABSTRACT CPUProfiler=None MemoryProfiler=None)
+else ()
+    executable_include (ABSTRACT CPUProfiler=Tracy MemoryProfiler=Original)
+endif ()
+
+executable_verify ()
+executable_copy_linked_artefacts ()
+
+executable_deploy_resource_mount_lists ("${GAME_OUTPUT_DIRECTORY}")
+executable_setup_resource_cooking_and_packaging (
+        COOKER ${GAME_NAME}ResourceCooker
+        COOKING_WORKSPACE "${GAME_OUTPUT_DIRECTORY}/CookingWorkspace"
+        MOUNT_LIST_DIRECTORY ${GAME_OUTPUT_DIRECTORY}
+        PACKAGING_OUTPUT ${GAME_OUTPUT_DIRECTORY}Packaged)
+set_target_properties ("${GAME_NAME}Game" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}")

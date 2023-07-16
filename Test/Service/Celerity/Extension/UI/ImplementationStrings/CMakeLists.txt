@@ -1,5 +1,0 @@
-sober_service_begin (TestCelerityUIImplementationStrings)
-    sober_service_include_directory ("${CMAKE_CURRENT_SOURCE_DIR}/API")
-    sober_service_add_implementation ("${CMAKE_CURRENT_SOURCE_DIR}/Implementation/ImGUI")
-    sober_service_set_default_implementation (ImGUI)
-sober_service_end ()

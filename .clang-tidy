@@ -66,7 +66,7 @@ Checks: >
   -readability-uppercase-literal-suffix,
   -readability-use-anyofallof
 FormatStyle: file
-HeaderFilterRegex: "Executable|Library|Service|Test"
+HeaderFilterRegex: "Executable|Test|Unit"
 WarningsAsErrors: '*'
 CheckOptions:
   # We are silencing CRT Secure warnings.

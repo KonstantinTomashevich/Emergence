@@ -1,0 +1,6 @@
+register_concrete (CelerityPhysics2dDebugDraw)
+concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public")
+concrete_sources ("Public/*.cpp" "Resources/Shaders/*.sc")
+concrete_require (SCOPE PUBLIC CONCRETE_INTERFACE Celerity)
+concrete_require (SCOPE PRIVATE ABSTRACT CelerityPhysics2d Log CONCRETE_INTERFACE CelerityRender2d)
+register_default_resource_usage_scheme ()

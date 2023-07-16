@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include <Container/String.hpp>
-
 namespace Emergence::Testing
 {
 /// \brief Compares contents of given binary streams and fails test if their lengths
