@@ -1,5 +1,7 @@
 #pragma once
 
+#include <HashingApi.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -8,7 +10,7 @@
 namespace Emergence::Hashing
 {
 /// \brief Stateful hasher for byte sequences.
-class ByteHasher final
+class HashingApi ByteHasher final
 {
 public:
     ByteHasher () noexcept;

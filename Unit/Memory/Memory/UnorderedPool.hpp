@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Memory
 {
 /// \brief Allocator, that manages memory chunks with fixed size. Optimized for allocation and deallocation performance.
-class UnorderedPool final
+class MemoryApi UnorderedPool final
 {
 public:
     /// \param _chunkSize Fixed chunk size.

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ResourceCookingApi.hpp>
+
 #include <Resource/Cooking/ResourceList.hpp>
 
 #include <Resource/Provider/ResourceProvider.hpp>
@@ -41,7 +43,7 @@ namespace Emergence::Resource::Cooking
 /// after all passes have been finished. This is a simple and straightforward solution, but it is easy to understand,
 /// easy to extend and easy to modify.
 /// \endparblock
-class Context final
+class ResourceCookingApi Context final
 {
 public:
     /// \brief Constructs context with given object types registry and patchable types registry for ResourceProvider.

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Math/Matrix3x3f.hpp>
@@ -51,7 +53,7 @@ constexpr std::uint64_t STATE_PRIMITIVE_LINES = 0x0002000000000000u;
 ///          For example, one thread will do the world rendering while another one will do UI
 ///          rendering. Submission agents provide means to achieve this with minimal locking.
 /// \invariant Submission agents should never be cached and should be properly destructed after use.
-class SubmissionAgent final
+class RenderBackendApi SubmissionAgent final
 {
 public:
     SubmissionAgent (const SubmissionAgent &_other) = delete;
@@ -114,7 +116,7 @@ private:
 };
 
 /// \brief Stores render state and provides API for submitting geometries to rendering.
-class Renderer final
+class RenderBackendApi Renderer final
 {
 public:
     Renderer () noexcept;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <VirtualFileSystemApi.hpp>
+
 #include <cstdint>
 #include <iostream>
 
@@ -9,7 +11,7 @@
 namespace Emergence::VirtualFileSystem
 {
 /// \brief Provides API for reading files through virtual file system.
-class Reader final
+class VirtualFileSystemApi Reader final
 {
 public:
     /// \brief Constructs reader for given file entry with given open mode.

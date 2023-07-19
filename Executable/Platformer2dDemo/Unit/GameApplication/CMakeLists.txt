@@ -8,4 +8,5 @@ concrete_require (SCOPE PRIVATE
         ${GAME_NAME}Logic ${GAME_NAME}Model ${GAME_NAME}Resources CelerityLocale CelerityPhysics2dDebugDraw
         CelerityRender2d CelerityRenderFoundation CelerityResourceObject CelerityTransform MemoryRecording
         Serialization
+        INTERFACE ResourceProviderHelpers VirtualFileSystemHelpers
         THIRD_PARTY SDL3::SDL3)

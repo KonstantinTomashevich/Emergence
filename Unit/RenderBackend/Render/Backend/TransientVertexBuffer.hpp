@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -12,7 +14,7 @@ namespace Emergence::Render::Backend
 /// \brief Temporary vertex buffer that will be automatically destructed after frame is rendered.
 /// \details Useful for drawing geometry that might change every frame. For example, batched 2d sprites or UI.
 ///          Must be thread safe.
-class TransientVertexBuffer
+class RenderBackendApi TransientVertexBuffer
 {
 public:
     /// \brief If there is not enough space to allocate buffer for required count, returns maximum possible count.

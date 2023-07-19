@@ -1,5 +1,7 @@
 #pragma once
 
+#include <FlowApi.hpp>
+
 #include <functional>
 #include <limits>
 
@@ -21,7 +23,7 @@ namespace Emergence::Flow
 Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept;
 
 /// \brief Contains all useful information about task.
-struct Task
+struct FlowApi Task
 {
     /// \brief Task name is used for dependency connection, logging and debugging.
     /// \invariant Must be unique among tasks and checkpoints.
@@ -52,7 +54,7 @@ struct Task
 
 /// \brief Allows user to register tasks and export result as task collection or visual graph.
 /// \details Registration order doesn't matter: all verification will be done during ::ExportCollection.
-class TaskRegister final
+class FlowApi TaskRegister final
 {
 public:
     // We use classic strings here, because there is no need to waste unique string stack for visualization-only data.
@@ -74,7 +76,7 @@ public:
     using UnwrappedDependencyMap = Container::HashMap<Memory::UniqueString, Container::HashSet<Memory::UniqueString>>;
 
     /// \brief RAII token for managing visualization groups.
-    class VisualGroupNodePlaced final
+    class FlowApi VisualGroupNodePlaced final
     {
     public:
         VisualGroupNodePlaced (const VisualGroupNodePlaced &_other) = delete;

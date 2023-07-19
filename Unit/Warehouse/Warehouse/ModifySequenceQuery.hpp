@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WarehouseApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -8,11 +10,11 @@
 namespace Emergence::Warehouse
 {
 /// \brief Prepared query, used to gain readwrite access to all objects of selected type.
-class ModifySequenceQuery final
+class WarehouseApi ModifySequenceQuery final
 {
 public:
     /// \brief Provides readwrite access to all objects without any guaranteed order.
-    class Cursor final
+    class WarehouseApi Cursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (Cursor);

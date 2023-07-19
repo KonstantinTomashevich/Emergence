@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Platformer2dDemoLogicApi.hpp>
+
 #include <Celerity/Asset/AssetReferenceBinding.hpp>
 
-void GetGameAssetUsage (Emergence::Celerity::AssetReferenceBindingList &_output) noexcept;
+Platformer2dDemoLogicApi void GetGameAssetUsage (Emergence::Celerity::AssetReferenceBindingList &_output) noexcept;

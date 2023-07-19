@@ -1,10 +1,12 @@
 #pragma once
 
+#include <SyntaxSugarApi.hpp>
+
 #include <cstdint>
 
 namespace Emergence
 {
-class Time final
+class SyntaxSugarApi Time final
 {
 public:
     Time () = delete;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Input/InputAction.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 #include <Celerity/UI/ContainerControl.hpp>
@@ -14,7 +16,7 @@ namespace Emergence::Celerity
 {
 /// \brief Represents window: special instance of ContainerControl that is always a toplevel node of hierarchy.
 /// \invariant Windows and only windows can be controls of toplevel nodes.
-struct WindowControl final
+struct CelerityUIApi WindowControl final
 {
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
@@ -76,7 +78,7 @@ struct WindowControl final
     /// \brief Dispatch type for ::onClosedAction.
     InputActionDispatchType onClosedActionDispatch = InputActionDispatchType::NORMAL;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId viewportName;

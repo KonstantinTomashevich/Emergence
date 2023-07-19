@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WarehouseApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Iterator.hpp>
 
@@ -8,7 +10,7 @@
 namespace Emergence::Warehouse
 {
 /// \brief Provides iteration over key fields of queries, that have multiple key fields.
-class KeyFieldIterator final
+class WarehouseApi KeyFieldIterator final
 {
 public:
     EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (KeyFieldIterator, StandardLayout::Field);

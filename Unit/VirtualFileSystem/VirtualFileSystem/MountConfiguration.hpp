@@ -1,5 +1,7 @@
 #pragma once
 
+#include <VirtualFileSystemApi.hpp>
+
 #include <Container/String.hpp>
 #include <Container/Vector.hpp>
 
@@ -18,7 +20,7 @@ enum class MountSource : uint8_t
 };
 
 /// \brief Describes parameters for single mount operation.
-struct MountConfiguration final
+struct VirtualFileSystemApi MountConfiguration final
 {
     /// \brief Describes the source of data for mounting it into virtual file system.
     MountSource source = MountSource::FILE_SYSTEM;
@@ -33,7 +35,7 @@ struct MountConfiguration final
 
     [[nodiscard]] bool operator!= (const MountConfiguration &_other) const noexcept = default;
 
-    struct Reflection final
+    struct VirtualFileSystemApi Reflection final
     {
         StandardLayout::FieldId source;
         StandardLayout::FieldId sourcePath;
@@ -45,7 +47,7 @@ struct MountConfiguration final
 };
 
 /// \brief Convenience structure for storing multiple mount configurations as file on drive.
-struct MountConfigurationList final
+struct VirtualFileSystemApi MountConfigurationList final
 {
     Container::Vector<MountConfiguration> items {
         Memory::Profiler::AllocationGroup {Memory::UniqueString {"MountConfigurationList"}}};
@@ -54,7 +56,7 @@ struct MountConfigurationList final
 
     [[nodiscard]] bool operator!= (const MountConfigurationList &_other) const noexcept = default;
 
-    struct Reflection final
+    struct VirtualFileSystemApi Reflection final
     {
         StandardLayout::FieldId items;
         StandardLayout::Mapping mapping;

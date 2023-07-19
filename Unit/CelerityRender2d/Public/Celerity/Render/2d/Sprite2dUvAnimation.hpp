@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRender2dApi.hpp>
+
 #include <Container/Vector.hpp>
 
 #include <Math/AxisAlignedBox2d.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Describes single frame of an Sprite2dUvAnimation.
-struct Sprite2dUvAnimationFrame final
+struct CelerityRender2dApi Sprite2dUvAnimationFrame final
 {
     /// \brief Value for Sprite2dComponent::uv while this frame is active.
     Math::AxisAlignedBox2d uv {{0.0f, 0.0f}, {1.0f, 1.0f}};
@@ -20,7 +22,7 @@ struct Sprite2dUvAnimationFrame final
     /// \brief Moment of animation time after which this frame becomes active.
     std::uint64_t startTimeNs = 0u;
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId uv;
         StandardLayout::FieldId durationNs;
@@ -44,7 +46,7 @@ struct Sprite2dUvAnimation final
     ///          because we need a fast access with strict order.
     Container::Vector<Sprite2dUvAnimationFrame> frames {Memory::Profiler::AllocationGroup::Top ()};
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId materialInstanceId;

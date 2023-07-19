@@ -1,5 +1,7 @@
 #pragma once
 
+
+#include <CelerityPhysics2dApi.hpp>
 #include <array>
 #include <thread>
 
@@ -10,7 +12,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Contains common parameters of physics simulation.
-struct PhysicsWorld2dSingleton final
+struct CelerityPhysics2dApi PhysicsWorld2dSingleton final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (PhysicsWorld2dSingleton);
 
@@ -57,7 +59,7 @@ struct PhysicsWorld2dSingleton final
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
     [[nodiscard]] std::uintptr_t GenerateTriggerContactId () const noexcept;
 
-    struct Reflection final
+    struct CelerityPhysics2dApi Reflection final
     {
         StandardLayout::FieldId enableMemoryProfiling;
         StandardLayout::FieldId gravity;

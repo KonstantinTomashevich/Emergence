@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -12,7 +14,7 @@ namespace Emergence::Memory
 /// \warning Heap is just wrapper for malloc-free, therefore, unlike other allocators,
 ///          it's object destruction does not lead to deallocation of records. But it
 ///          also means that this allocator is thread safe.
-class Heap final
+class MemoryApi Heap final
 {
 public:
     explicit Heap (Profiler::AllocationGroup _group) noexcept;
@@ -151,11 +153,11 @@ private:
 } // namespace Emergence::Memory
 
 /// \brief Shortcut for DefaultAllocationGroup specialization for given type.
-#define EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP(Type)                                                                \
+#define EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP(Api, Type)                                                                \
     namespace Emergence::Memory                                                                                        \
     {                                                                                                                  \
     template <>                                                                                                        \
-    struct DefaultAllocationGroup<Type>                                                                                \
+    struct Api DefaultAllocationGroup<Type>                                                                                \
     {                                                                                                                  \
         static Profiler::AllocationGroup Get () noexcept;                                                              \
     };                                                                                                                 \

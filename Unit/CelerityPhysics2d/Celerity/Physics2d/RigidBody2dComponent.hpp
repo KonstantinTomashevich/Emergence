@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics2dApi.hpp>
+
 #include <API/Common/Shortcuts.hpp>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -24,7 +26,7 @@ enum class RigidBody2dType
 };
 
 /// \brief Represents rigid body attached to an object.
-struct RigidBody2dComponent final
+struct CelerityPhysics2dApi RigidBody2dComponent final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (RigidBody2dComponent);
 
@@ -77,7 +79,7 @@ struct RigidBody2dComponent final
     /// \brief Pointer to implementation-specific object.
     void *implementationHandle = nullptr;
 
-    struct Reflection final
+    struct CelerityPhysics2dApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId type;

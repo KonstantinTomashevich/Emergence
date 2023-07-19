@@ -1,11 +1,13 @@
 #pragma once
 
+#include <CelerityPhysics2dDebugDrawApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::Physics2dDebugDraw
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToFixedUpdate.
-struct Checkpoint final
+struct CelerityPhysics2dDebugDrawApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -17,5 +19,5 @@ struct Checkpoint final
 };
 
 /// \brief Adds tasks that manage debug draw shapes for physics collision shapes.
-void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityPhysics2dDebugDrawApi void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace Emergence::Celerity::Physics2dDebugDraw

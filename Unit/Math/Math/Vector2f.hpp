@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MathApi.hpp>
+
 #include <type_traits>
 
 #include <Math/NoInitializationFlag.hpp>
@@ -8,7 +10,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (float) Vector2f final
+struct alignas (float) MathApi Vector2f final
 {
     static const Vector2f ZERO;
     static const Vector2f ONE;
@@ -76,7 +78,7 @@ struct alignas (float) Vector2f final
         };
     };
 
-    struct Reflection final
+    struct MathApi Reflection final
     {
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
@@ -92,13 +94,13 @@ static_assert (std::is_trivially_destructible_v<Vector2f>);
 static_assert (std::is_trivially_copy_assignable_v<Vector2f>);
 static_assert (std::is_trivially_move_assignable_v<Vector2f>);
 
-float Dot (const Vector2f &_first, const Vector2f &_second) noexcept;
+MathApi float Dot (const Vector2f &_first, const Vector2f &_second) noexcept;
 
-float SignedAngle (const Vector2f &_from, const Vector2f &_to) noexcept;
+MathApi float SignedAngle (const Vector2f &_from, const Vector2f &_to) noexcept;
 
-Vector2f Lerp (const Vector2f &_begin, const Vector2f &_end, float _t) noexcept;
+MathApi Vector2f Lerp (const Vector2f &_begin, const Vector2f &_end, float _t) noexcept;
 
-bool NearlyEqual (const Vector2f &_first, const Vector2f &_second) noexcept;
+MathApi bool NearlyEqual (const Vector2f &_first, const Vector2f &_second) noexcept;
 
-Vector2f Rotate (const Vector2f &_vector, float _angleRad) noexcept;
+MathApi Vector2f Rotate (const Vector2f &_vector, float _angleRad) noexcept;
 } // namespace Emergence::Math

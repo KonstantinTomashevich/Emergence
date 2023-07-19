@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <cstdint>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
@@ -20,7 +22,7 @@ enum class MultiSampleAntiAliasingType
 };
 
 /// \brief Contains configurable parameters that must be supported by 2d rendering backend.
-struct Config final
+struct RenderBackendApi Config final
 {
     /// \brief Window width in pixels.
     std::uint32_t width = 0u;
@@ -42,25 +44,25 @@ struct Config final
 };
 
 /// \return Allocation group, used for all allocations made by render backend.
-Memory::Profiler::AllocationGroup GetSharedAllocationGroup () noexcept;
+RenderBackendApi Memory::Profiler::AllocationGroup GetSharedAllocationGroup () noexcept;
 
 /// \brief Initializes rendering backend.
 /// \invariant Must be called only once per application execution.
-bool Init (const Config &_config, void *_nativeWindowHandle, void *_nativeDisplayType, bool _profileMemory) noexcept;
+RenderBackendApi bool Init (const Config &_config, void *_nativeWindowHandle, void *_nativeDisplayType, bool _profileMemory) noexcept;
 
 /// \return Last config passed to ::Init or ::Update.
-const Config &GetCurrentConfig () noexcept;
+RenderBackendApi const Config &GetCurrentConfig () noexcept;
 
 /// \brief Updates backend configuration and applies new parameters.
 /// \invariant ::Init returned `true`.
-bool Update (const Config &_config) noexcept;
+RenderBackendApi bool Update (const Config &_config) noexcept;
 
 /// \brief Takes screenshot of the whole window and saves it to the given path in PNG format.
 /// \invariant ::Init returned `true`.
-void TakePngScreenshot (const char *_outputFilePath) noexcept;
+RenderBackendApi void TakePngScreenshot (const char *_outputFilePath) noexcept;
 
 /// \brief Destructs rendering backend and deallocates its data.
 /// \brief Must be called only once per application execution.
 /// \invariant ::Init returned `true`.
-void Shutdown () noexcept;
+RenderBackendApi void Shutdown () noexcept;
 } // namespace Emergence::Render::Backend

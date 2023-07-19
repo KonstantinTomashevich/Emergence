@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Render/Backend/Texture.hpp>
@@ -13,7 +15,7 @@ namespace Emergence::Celerity
 constexpr char FONT_SIZE_SEPARATOR = '#';
 
 /// \brief Represents loaded font asset with specific font size.
-struct Font final
+struct CelerityUIApi Font final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (Font);
 
@@ -27,7 +29,7 @@ struct Font final
     /// \brief Implementation specific handle, if any.
     void *nativeHandle = nullptr;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId size;

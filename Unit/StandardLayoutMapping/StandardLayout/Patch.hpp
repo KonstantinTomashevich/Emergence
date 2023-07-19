@@ -1,5 +1,7 @@
 #pragma once
 
+#include <StandardLayoutMappingApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -12,18 +14,18 @@ namespace Emergence::StandardLayout
 ///
 /// \details PatchBuilder should be used to construct patches.
 ///          Patches should be implemented as handles to the real data to make copying as lightweight as possible.
-class Patch final
+class StandardLayoutMappingApi Patch final
 {
 public:
     /// \brief Describes change info that can be retrieved during iteration using Iterator.
-    struct ChangeInfo
+    struct StandardLayoutMappingApi ChangeInfo
     {
         FieldId field;
         const void *newValue = nullptr;
     };
 
     /// \brief Allows iteration over Patch transformation changelist.
-    class Iterator final
+    class StandardLayoutMappingApi Iterator final
     {
     public:
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (Iterator, ChangeInfo);
@@ -103,8 +105,8 @@ private:
 };
 
 /// \brief Wraps Patch::Begin for foreach sentences.
-Patch::Iterator begin (const Patch &_patch) noexcept;
+StandardLayoutMappingApi Patch::Iterator begin (const Patch &_patch) noexcept;
 
 /// \brief Wraps Patch::End for foreach sentences.
-Patch::Iterator end (const Patch &_patch) noexcept;
+StandardLayoutMappingApi Patch::Iterator end (const Patch &_patch) noexcept;
 } // namespace Emergence::StandardLayout

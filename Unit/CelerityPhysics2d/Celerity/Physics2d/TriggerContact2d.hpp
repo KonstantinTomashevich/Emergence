@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics2dApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/Vector2f.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Contains information about ongoing contact between trigger shape and usual collision shape.
-struct TriggerContact2d final
+struct CelerityPhysics2dApi TriggerContact2d final
 {
     /// \brief Unique id of this trigger contact.
     UniqueId triggerContactId = INVALID_UNIQUE_ID;
@@ -28,7 +30,7 @@ struct TriggerContact2d final
 
     bool operator== (const TriggerContact2d &_other) const = default;
 
-    struct Reflection final
+    struct CelerityPhysics2dApi Reflection final
     {
         StandardLayout::FieldId triggerContactId;
         StandardLayout::FieldId triggerObjectId;

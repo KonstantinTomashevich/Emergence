@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Platformer2dDemoLogicApi.hpp>
+
 #include <functional>
 
 #include <Celerity/Input/FrameInputAccumulator.hpp>
@@ -13,20 +15,20 @@ class GameState;
 using ModuleInitializer =
     std::function<void (GameState &, Emergence::Celerity::World &, Emergence::Celerity::WorldView &)>;
 
-struct ModuleDefinition final
+struct Platformer2dDemoLogicApi ModuleDefinition final
 {
     Emergence::Memory::UniqueString coreViewName;
     Emergence::Celerity::WorldViewConfig coreViewConfig;
     ModuleInitializer initializer;
 };
 
-struct WorldStateDefinition final
+struct Platformer2dDemoLogicApi WorldStateDefinition final
 {
     Emergence::Memory::UniqueString name;
     Emergence::Container::Vector<ModuleDefinition> modules {Emergence::Memory::Profiler::AllocationGroup::Top ()};
 };
 
-class WorldStateRedirectionHandle final
+class Platformer2dDemoLogicApi WorldStateRedirectionHandle final
 {
 public:
     void RequestRedirect (Emergence::Memory::UniqueString _targetWorldStateName) noexcept;
@@ -39,7 +41,7 @@ private:
     GameState *gameState = nullptr;
 };
 
-class ViewDropHandle final
+class Platformer2dDemoLogicApi ViewDropHandle final
 {
 public:
     void RequestViewDrop (Emergence::Celerity::WorldView *_view) noexcept;
@@ -52,7 +54,7 @@ private:
     GameState *gameState = nullptr;
 };
 
-class GameState final
+class Platformer2dDemoLogicApi GameState final
 {
 public:
     static const Emergence::Memory::UniqueString TERMINATION_REDIRECT;

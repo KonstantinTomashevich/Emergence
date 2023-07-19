@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/String.hpp>
@@ -32,7 +34,7 @@ enum class ContainerControlLayout
 };
 
 /// \brief Control that groups child UINode's and handles their placement and visibility.
-struct ContainerControl final
+struct CelerityUIApi ContainerControl final
 {
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
@@ -71,7 +73,7 @@ struct ContainerControl final
     /// \invariant Only applicable for ContainerType::COMBO_PANEL.
     Container::Utf8String preview;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId type;

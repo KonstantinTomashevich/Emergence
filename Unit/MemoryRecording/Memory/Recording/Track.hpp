@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryRecordingApi.hpp>
+
 #include <memory>
 
 #include <API/Common/Iterator.hpp>
@@ -15,11 +17,11 @@
 namespace Emergence::Memory::Recording
 {
 /// \brief Stores state of AllocationGroup at current moment of owner Track.
-class RecordedAllocationGroup final
+class MemoryRecordingApi RecordedAllocationGroup final
 {
 public:
     /// \brief Provides iteration over RecordedAllocationGroup children.
-    class Iterator final
+    class MemoryRecordingApi Iterator final
     {
     public:
         EMERGENCE_FORWARD_ITERATOR_OPERATIONS (Iterator, const RecordedAllocationGroup *);
@@ -100,7 +102,7 @@ private:
 ///        group state at any moment of time, selected through current event pointer.
 /// \details Events could be reported through any ReporterBase derived class, like RuntimeReporter
 ///          or StreamDeserializer. Event addition never invalidates iterators.
-class Track final
+class MemoryRecordingApi Track final
 {
 private:
     /// \brief Internal class for storing position in sequence along with event data.

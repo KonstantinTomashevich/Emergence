@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity
@@ -19,7 +21,7 @@ namespace Emergence::Celerity
 //               .DependOn (Checkpoint::ASSEMBLY_FINISHED)
 //               .DependOn (Checkpoint::MOVEMENT_STARTED);
 ///          ```
-class CascadeRemover final : public TaskExecutorBase<CascadeRemover>
+class CelerityApi CascadeRemover final : public TaskExecutorBase<CascadeRemover>
 {
 public:
     CascadeRemover (TaskConstructor &_constructor,

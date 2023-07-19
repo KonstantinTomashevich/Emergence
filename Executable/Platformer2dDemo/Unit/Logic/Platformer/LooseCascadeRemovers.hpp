@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Platformer2dDemoLogicApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace LooseCascadeRemovers
 {
-void AddToFixedPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
+Platformer2dDemoLogicApi void AddToFixedPipeline (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace LooseCascadeRemovers

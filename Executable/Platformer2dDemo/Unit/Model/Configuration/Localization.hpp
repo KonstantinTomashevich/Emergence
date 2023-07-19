@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Memory/UniqueString.hpp>
 
-struct Localization final
+struct Platformer2dDemoModelApi Localization final
 {
     Localization () = delete;
 

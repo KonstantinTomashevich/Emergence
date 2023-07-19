@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityTransformApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 #include <Math/Transform2d.hpp>
@@ -9,7 +11,7 @@ namespace Emergence::Celerity
 {
 /// \brief Encapsulates query, required for Transform3dComponent world transform access.
 template <typename Transform>
-class TransformWorldAccessor final
+class CelerityTransformApi TransformWorldAccessor final
 {
 public:
     TransformWorldAccessor (TaskConstructor &_constructor) noexcept;

@@ -123,6 +123,8 @@ This architecture aims to:
   units, buildings, etc.) in YAML or binary with single inheritance support.
 - [ResourceProvider<sup>Abstract</sup>](./Unit/ResourceProvider/README.md): provides out-of-the-box resource discovery
   solution that supports multiple resource sources.
+- [ResourceProviderHelpers<sup>Interface</sup>](./Unit/ResourceProviderHelpers/README.md): inline helper functions that
+  make usage of the service above easier.
 - [ResourceProviderOriginal<sup>Concrete</sup>](./Unit/ResourceProviderOriginal/README.md): original implementation of
   abstract unit above.
 - [Serialization<sup>Concrete</sup>](./Unit/Serialization/README.md): toolset for serializing and deserializing data
@@ -146,6 +148,8 @@ This architecture aims to:
   framework-agnostic macros.
 - [VirtualFileSystem<sup>Abstract</sup>](./Unit/VirtualFileSystem/README.md): provides file system abstraction layer
   that supports mounting of real file system directories and read-only binary packages (for optimized reading).
+- [VirtualFileSystemHelpers<sup>Interface</sup>](./Unit/VirtualFileSystemHelpers/README.md): inline helper functions
+  that make usage of the service above easier.
 - [VirtualFileSystemOriginal<sup>Concrete</sup>](./Unit/VirtualFileSystemOriginal/README.md): original implementation of
   abstract unit above.
 - [VisualGraph<sup>Concrete</sup>](./Unit/VisualGraph/README.md): data structure for runtime state representation in a

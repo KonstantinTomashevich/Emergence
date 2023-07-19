@@ -1,12 +1,14 @@
 #pragma once
 
+#include <CelerityAssetApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity
 {
 /// \brief Utility class for systems that need to manually construct
 ///        assets instead of constructing them through references.
-class ManualAssetConstructor final
+class CelerityAssetApi ManualAssetConstructor final
 {
 public:
     /// \brief Initializes internal queries using given task constructor,

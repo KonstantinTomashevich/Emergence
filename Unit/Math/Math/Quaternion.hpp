@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MathApi.hpp>
+
 #include <type_traits>
 
 #include <Math/NoInitializationFlag.hpp>
@@ -9,7 +11,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (sizeof (float) * 4u) Quaternion final
+struct alignas (sizeof (float) * 4u) MathApi Quaternion final
 {
     static const Quaternion IDENTITY;
 
@@ -61,7 +63,7 @@ struct alignas (sizeof (float) * 4u) Quaternion final
         };
     };
 
-    struct Reflection final
+    struct MathApi Reflection final
     {
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
@@ -79,15 +81,15 @@ static_assert (std::is_trivially_destructible_v<Quaternion>);
 static_assert (std::is_trivially_copy_assignable_v<Quaternion>);
 static_assert (std::is_trivially_move_assignable_v<Quaternion>);
 
-Quaternion Lerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept;
+MathApi Quaternion Lerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept;
 
-Quaternion NLerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept;
+MathApi Quaternion NLerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept;
 
-Quaternion SLerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept;
+MathApi Quaternion SLerp (const Quaternion &_begin, const Quaternion &_end, float _t) noexcept;
 
-Quaternion ForwardRotation (const Vector3f &_forward, const Vector3f &_up = Vector3f::UP) noexcept;
+MathApi Quaternion ForwardRotation (const Vector3f &_forward, const Vector3f &_up = Vector3f::UP) noexcept;
 
-Vector3f Rotate (const Vector3f &_vector, const Quaternion &_rotation) noexcept;
+MathApi Vector3f Rotate (const Vector3f &_vector, const Quaternion &_rotation) noexcept;
 
-bool NearlyEqual (const Quaternion &_first, const Quaternion &_second) noexcept;
+MathApi bool NearlyEqual (const Quaternion &_first, const Quaternion &_second) noexcept;
 } // namespace Emergence::Math

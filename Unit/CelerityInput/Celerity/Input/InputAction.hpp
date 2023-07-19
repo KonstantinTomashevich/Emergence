@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityInputApi.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -27,7 +29,7 @@ enum class InputActionDispatchType : std::uint8_t
 };
 
 /// \brief Describes input action with gameplay-specific id and optional discrete or real parameters.
-struct InputAction final
+struct CelerityInputApi InputAction final
 {
     /// \brief Maximum count of discrete parameters.
     static constexpr const std::size_t MAX_DISCRETE_PARAMETERS = 3u;
@@ -79,7 +81,7 @@ struct InputAction final
 
     InputAction &operator= (InputAction &&_other) noexcept;
 
-    struct Reflection final
+    struct CelerityInputApi Reflection final
     {
         StandardLayout::FieldId group;
         StandardLayout::FieldId id;

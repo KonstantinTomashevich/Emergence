@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Memory/UniqueString.hpp>
 
 #include <Render/Backend/Texture.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Represents successfully loaded texture asset.
-struct Texture final
+struct CelerityRenderFoundationApi Texture final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
@@ -17,7 +19,7 @@ struct Texture final
     /// \brief Underlying implementation object.
     Render::Backend::Texture texture = Render::Backend::Texture::CreateInvalid ();
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::Mapping mapping;

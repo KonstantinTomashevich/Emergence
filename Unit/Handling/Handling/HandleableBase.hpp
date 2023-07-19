@@ -1,5 +1,7 @@
 #pragma once
 
+#include <HandlingApi.hpp>
+
 #include <atomic>
 
 namespace Emergence::Handling
@@ -7,7 +9,7 @@ namespace Emergence::Handling
 /// \brief Default implementation of Handleable concept.
 ///
 /// \details Simplifies integration with Handle mechanism: allows Handle usage for any derived class.
-class HandleableBase
+class HandlingApi HandleableBase
 {
 public:
     /// It doesn't make sense to copy references counters.

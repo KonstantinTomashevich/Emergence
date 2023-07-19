@@ -1,10 +1,12 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
-struct SpawnComponent final
+struct Platformer2dDemoModelApi SpawnComponent final
 {
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
@@ -20,7 +22,7 @@ struct SpawnComponent final
 
     bool respawn = true;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId objectId;
         Emergence::StandardLayout::FieldId prototypeId;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/Vector.hpp>
@@ -21,7 +23,7 @@ constexpr char MATERIAL_INSTANCE_RUNTIME_ID_SEPARATOR = '#';
 /// \brief Contains parameters for rendering with associated Material.
 /// \details Material instances support inheritance on asset level, but it is flattened
 ///          during loading, therefore there is no data about inheritance in runtime objects.
-struct MaterialInstance final
+struct CelerityRenderFoundationApi MaterialInstance final
 {
     /// \brief Id used to bind to Asset instance.
     /// \details If ::assetId contains MATERIAL_INSTANCE_RUNTIME_ID_SEPARATOR, material instance is considered to
@@ -32,7 +34,7 @@ struct MaterialInstance final
     /// \brief Id of the material, parameters to which this instance contains.
     Memory::UniqueString materialId;
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId materialId;
@@ -43,7 +45,7 @@ struct MaterialInstance final
 };
 
 /// \brief Contains value for Render::Backend::UniformType::VECTOR_4F parameter. Part of MaterialInstance asset.
-struct UniformVector4fValue final
+struct CelerityRenderFoundationApi UniformVector4fValue final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
@@ -54,7 +56,7 @@ struct UniformVector4fValue final
     /// \brief Value to be sent.
     Math::Vector4f value = Math::Vector4f::ZERO;
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId uniformName;
@@ -66,7 +68,7 @@ struct UniformVector4fValue final
 };
 
 /// \brief Contains value for Render::Backend::UniformType::MATRIX_3X3F parameter. Part of MaterialInstance asset.
-struct UniformMatrix3x3fValue final
+struct CelerityRenderFoundationApi UniformMatrix3x3fValue final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
@@ -77,7 +79,7 @@ struct UniformMatrix3x3fValue final
     /// \brief Value to be sent.
     Math::Matrix3x3f value = Math::Matrix3x3f::ZERO;
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId uniformName;
@@ -89,7 +91,7 @@ struct UniformMatrix3x3fValue final
 };
 
 /// \brief Contains value for Render::Backend::UniformType::MATRIX_4X4F parameter. Part of MaterialInstance asset.
-struct UniformMatrix4x4fValue final
+struct CelerityRenderFoundationApi UniformMatrix4x4fValue final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
@@ -100,7 +102,7 @@ struct UniformMatrix4x4fValue final
     /// \brief Value to be sent.
     Math::Matrix4x4f value = Math::Matrix4x4f::ZERO;
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId uniformName;
@@ -112,7 +114,7 @@ struct UniformMatrix4x4fValue final
 };
 
 /// \brief Contains value for Render::Backend::UniformType::SAMPLER parameter. Part of MaterialInstance asset.
-struct UniformSamplerValue final
+struct CelerityRenderFoundationApi UniformSamplerValue final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
@@ -120,10 +122,10 @@ struct UniformSamplerValue final
     /// \brief Name of the uniform that should receive this value.
     Memory::UniqueString uniformName;
 
-    /// \brief Id of the texture asset that should be sent as value.
     Memory::UniqueString textureId;
+    /// \brief Id of the texture asset that should be sent as value.
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId uniformName;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Container/Vector.hpp>
@@ -10,7 +12,7 @@ namespace Emergence::Render::Backend
 using ProgramId = std::uint64_t;
 
 /// \brief Represents linked render program for rendering geometries.
-class Program final
+class RenderBackendApi Program final
 {
 public:
     /// \brief Implementation-dependant suffix for shader files.

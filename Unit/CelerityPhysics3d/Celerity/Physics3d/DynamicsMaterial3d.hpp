@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics3dApi.hpp>
+
 #include <API/Common/Shortcuts.hpp>
 
 #include <Memory/UniqueString.hpp>
@@ -11,7 +13,7 @@ namespace Emergence::Celerity
 /// \brief Contains physical properties of a material needed to execute dynamics simulation.
 /// \warning Dynamics material removal causes removal of all associated shapes,
 ///          because shapes can not exist without material.
-struct DynamicsMaterial3d final
+struct CelerityPhysics3dApi DynamicsMaterial3d final
 {
     DynamicsMaterial3d () noexcept;
 
@@ -45,7 +47,7 @@ struct DynamicsMaterial3d final
     /// \brief Pointer to implementation-specific object.
     void *implementationHandle = nullptr;
 
-    struct Reflection final
+    struct CelerityPhysics3dApi Reflection final
     {
         StandardLayout::FieldId id;
         StandardLayout::FieldId dynamicFriction;

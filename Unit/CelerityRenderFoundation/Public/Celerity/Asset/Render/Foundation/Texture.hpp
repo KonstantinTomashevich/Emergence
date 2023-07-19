@@ -1,9 +1,11 @@
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Render/Backend/Texture.hpp>
 
 namespace Emergence::Celerity
 {
 /// \brief Content of texture asset file that contains info about texture source and texture settings.
-struct TextureAsset final
+struct CelerityRenderFoundationApi TextureAsset final
 {
     /// \brief Id of file with third party format that contains texture data, like "Crate.png".
     Memory::UniqueString textureId;
@@ -11,7 +13,7 @@ struct TextureAsset final
     /// \brief Settings for loading this texture.
     Render::Backend::TextureSettings settings;
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId textureId;
         StandardLayout::FieldId settings;

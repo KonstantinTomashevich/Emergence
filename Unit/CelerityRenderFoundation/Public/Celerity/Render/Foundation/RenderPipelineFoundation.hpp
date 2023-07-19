@@ -1,11 +1,13 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::RenderPipelineFoundation
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToNormalUpdate.
-struct Checkpoint final
+struct CelerityRenderFoundationApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -25,5 +27,5 @@ struct Checkpoint final
 };
 
 /// \brief Adds tasks that update rendering data and perform rendering.
-void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityRenderFoundationApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace Emergence::Celerity::RenderPipelineFoundation

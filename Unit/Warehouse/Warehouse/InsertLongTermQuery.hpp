@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WarehouseApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -8,11 +10,11 @@
 namespace Emergence::Warehouse
 {
 /// \brief Prepared query, used to start insertion transaction for objects with long lifetime.
-class InsertLongTermQuery final
+class WarehouseApi InsertLongTermQuery final
 {
 public:
     /// \brief Allows user to allocate new objects and insert them into registry.
-    class Cursor final
+    class WarehouseApi Cursor final
     {
     public:
         Cursor (const Cursor &_other) = delete;

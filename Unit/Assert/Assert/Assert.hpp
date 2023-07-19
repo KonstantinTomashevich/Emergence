@@ -1,15 +1,17 @@
 #pragma once
 
+#include <AssertApi.hpp>
+
 #include <cstdint>
 #include <cstdlib>
 
 namespace Emergence
 {
 /// \brief Set whether failed asserts should show interactive message boxes.
-void SetIsAssertInteractive (bool _interactive) noexcept;
+AssertApi void SetIsAssertInteractive (bool _interactive) noexcept;
 
 /// \brief Reports critical error by logging it and prompting user to choose action if interactive mode is enabled.
-void ReportCriticalError (const char *_expression, const char *_file, std::size_t _line) noexcept;
+AssertApi void ReportCriticalError (const char *_expression, const char *_file, std::size_t _line) noexcept;
 } // namespace Emergence
 
 #if !defined(NDEBUG)

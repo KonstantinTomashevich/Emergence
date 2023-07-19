@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityTransformApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::TransformHierarchyCleanup
@@ -11,7 +13,7 @@ namespace Emergence::Celerity::TransformHierarchyCleanup
 ///          cleaned up too. TransformHierarchyCleanup implements this feature for transforms and leaves space
 ///          for users to insert cleaners for their own components between ::CLEANUP_STARTED and ::FINISHED
 ///          checkpoints. That provides centralized way to apply transform hierarchy cleanups.
-struct Checkpoint final
+struct CelerityTransformApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -26,14 +28,14 @@ struct Checkpoint final
 };
 
 /// \brief Adds tasks required to cleanup detached transform 2d hierarchy to fixed update pipeline.
-void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityTransformApi void Add2dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 
 /// \brief Adds tasks required to cleanup detached transform 2d hierarchy to normal update pipeline.
-void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityTransformApi void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 
 /// \brief Adds tasks required to cleanup detached transform 3d hierarchy to fixed update pipeline.
-void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityTransformApi void Add3dToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 
 /// \brief Adds tasks required to cleanup detached transform 3d hierarchy to normal update pipeline.
-void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityTransformApi void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace Emergence::Celerity::TransformHierarchyCleanup

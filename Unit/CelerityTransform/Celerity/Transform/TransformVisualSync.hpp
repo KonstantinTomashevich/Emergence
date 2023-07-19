@@ -1,11 +1,13 @@
 #pragma once
 
+#include <CelerityTransformApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::TransformVisualSync
 {
 /// \brief Contains checkpoints, supported by tasks from ::Add2dToNormalUpdate and ::Add3dToNormalUpdate.
-struct Checkpoint final
+struct CelerityTransformApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -18,9 +20,9 @@ struct Checkpoint final
 
 /// \brief Adds tasks required to sync and interpolate visual 2d transforms from logical 2d transforms.
 /// \see TransformComponent
-void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityTransformApi void Add2dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 
 /// \brief Adds tasks required to sync and interpolate visual 3d transforms from logical 3d transforms.
 /// \see TransformComponent
-void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityTransformApi void Add3dToNormalUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace Emergence::Celerity::TransformVisualSync

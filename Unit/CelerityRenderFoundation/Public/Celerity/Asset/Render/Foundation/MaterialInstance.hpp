@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
@@ -13,7 +15,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Item of uniform values array inside material instance file.
-struct UniformValueDescription final
+struct CelerityRenderFoundationApi UniformValueDescription final
 {
     UniformValueDescription () noexcept;
 
@@ -60,7 +62,7 @@ struct UniformValueDescription final
         Memory::UniqueString textureId;
     };
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId name;
         StandardLayout::FieldId type;
@@ -75,7 +77,7 @@ struct UniformValueDescription final
 };
 
 /// \brief Content of material instance file that stores all the information about material instance.
-struct MaterialInstanceAsset final
+struct CelerityRenderFoundationApi MaterialInstanceAsset final
 {
     /// \brief Parent material instances id if parent exists for this instance.
     /// \details Material instance inheritance feature allows material instances to inherit and override values
@@ -89,7 +91,7 @@ struct MaterialInstanceAsset final
     Container::Vector<UniformValueDescription> uniforms {
         Memory::Profiler::AllocationGroup {Memory::UniqueString {"MaterialInstanceUniforms"}}};
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId parent;
         StandardLayout::FieldId material;

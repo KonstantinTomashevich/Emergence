@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityAssemblyApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/HashMap.hpp>
@@ -30,7 +32,7 @@ enum class AssemblyState : std::uint8_t
 ///        order to store transient data used to assemble the prototype.
 /// \details Normally, the only thing user needs to know about this component is that if there are no components of
 ///          this type, then all assembly requests were addressed. It is useful to check whether loading is done.
-struct PrototypeAssemblyComponent final
+struct CelerityAssemblyApi PrototypeAssemblyComponent final
 {
     /// \brief Id of the object to which this component is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
@@ -57,7 +59,7 @@ struct PrototypeAssemblyComponent final
     Container::Vector<Container::HashMap<UniqueId, UniqueId>> intermediateIdReplacement {
         Memory::Profiler::AllocationGroup::Top ()};
 
-    struct Reflection final
+    struct CelerityAssemblyApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId fixedAssemblyState;

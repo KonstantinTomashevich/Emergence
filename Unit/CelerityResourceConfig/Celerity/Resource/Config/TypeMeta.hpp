@@ -1,11 +1,13 @@
 #pragma once
 
+#include <CelerityResourceConfigApi.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
 /// \brief Contains meta information about config type that is needed for resource config processing.
-struct ResourceConfigTypeMeta final
+struct CelerityResourceConfigApi ResourceConfigTypeMeta final
 {
     /// \brief Type of a config.
     StandardLayout::Mapping mapping;
@@ -15,4 +17,4 @@ struct ResourceConfigTypeMeta final
 };
 } // namespace Emergence::Celerity
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Celerity::ResourceConfigTypeMeta)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (CelerityResourceConfigApi, Celerity::ResourceConfigTypeMeta)

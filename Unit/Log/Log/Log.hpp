@@ -1,5 +1,7 @@
 #pragma once
 
+#include <LogApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -27,24 +29,24 @@ enum class Level
 namespace Sinks
 {
 /// \brief Common sink fields.
-struct Base
+struct LogApi Base
 {
     /// \brief Only messages with equal or greater level are printed.
     Level minimumAcceptedLevel = Level::VERBOSE;
 };
 
 /// \brief Prints messages to standard output.
-struct StandardOut final : public Base
+struct LogApi StandardOut final : public Base
 {
 };
 
 /// \brief Prints messages to standard error output.
-struct StandardError final : public Base
+struct LogApi StandardError final : public Base
 {
 };
 
 /// \brief Prints messages to file with given name.
-struct File final : public Base
+struct LogApi File final : public Base
 {
     /// \brief Name of target file.
     Container::String fileName;
@@ -58,7 +60,7 @@ struct File final : public Base
 using Sink = Container::Variant<Sinks::StandardOut, Sinks::StandardError, Sinks::File>;
 
 /// \brief Allows logging messages to given set of sinks.
-class Logger final
+class LogApi Logger final
 {
 public:
     /// \brief Constructs logger, that prints messages to given sinks.
@@ -89,16 +91,16 @@ namespace GlobalLogger
 {
 /// \brief Initializes shared global logger instance.
 /// \invariant Should not be called more than once.
-void Init (Level _forceFlushOn = Level::ERROR,
-           const Container::Vector<Sink> &_sinks = {Sinks::StandardOut {{}}}) noexcept;
+LogApi void Init (Level _forceFlushOn = Level::ERROR,
+                  const Container::Vector<Sink> &_sinks = {Sinks::StandardOut {{}}}) noexcept;
 
 /// \brief Executes Logger::Log using global logger instance.
 /// \details If ::Init was not called previously, it would be called with default arguments.
-void Log (Level _level, const char *_message) noexcept;
+LogApi void Log (Level _level, const char *_message) noexcept;
 }; // namespace GlobalLogger
 } // namespace Emergence::Log
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::Log::Sink)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (LogApi, Emergence::Log::Sink)
 
 /// \brief Shortcut for convenient logging through GlobalLogger using StringBuilder for concatenation.
 #define EMERGENCE_LOG(LogLevel, ...)                                                                                   \

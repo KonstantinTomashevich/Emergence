@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <Celerity/Event/EventTrigger.hpp>
 
 #include <Warehouse/ModifySingletonQuery.hpp>
@@ -7,11 +9,11 @@
 namespace Emergence::Celerity
 {
 /// \brief Wrapper for Warehouse::ModifySingletonQuery, that integrates modification with Celerity events.
-class ModifySingletonQuery final
+class CelerityApi ModifySingletonQuery final
 {
 public:
     /// \brief Provides readwrite access to singleton instance.
-    class Cursor final
+    class CelerityApi Cursor final
     {
     public:
         Cursor (const Cursor &_other) = delete;

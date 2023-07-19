@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RecordCollectionApi.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -27,12 +29,12 @@ namespace Emergence::RecordCollection
 ///       records. It means that implementations are highly likely to be designed to process signaled to unsignaled
 ///       transaction when edition was done through SignalRepresentation::EditCursor as fast as possible while
 ///       sacrificing performance for the cases when this change is done through other means.
-class SignalRepresentation final
+class RecordCollectionApi SignalRepresentation final
 {
 public:
     /// \brief Allows user to read signaled records.
     /// \details All ReadCursor operations are thread safe.
-    class ReadCursor final
+    class RecordCollectionApi ReadCursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (ReadCursor);
@@ -47,7 +49,7 @@ public:
     };
 
     /// \brief Allows user to read, modify and delete signaled records.
-    class EditCursor final
+    class RecordCollectionApi EditCursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (EditCursor);

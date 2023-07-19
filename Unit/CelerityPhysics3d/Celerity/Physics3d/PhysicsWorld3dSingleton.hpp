@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics3dApi.hpp>
+
 #include <array>
 #include <thread>
 
@@ -10,7 +12,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Contains common parameters of physics simulation.
-struct PhysicsWorld3dSingleton final
+struct CelerityPhysics3dApi PhysicsWorld3dSingleton final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (PhysicsWorld3dSingleton);
 
@@ -66,7 +68,7 @@ struct PhysicsWorld3dSingleton final
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
     std::uintptr_t GenerateShapeId () const noexcept;
 
-    struct Reflection final
+    struct CelerityPhysics3dApi Reflection final
     {
         StandardLayout::FieldId toleranceLength;
         StandardLayout::FieldId toleranceSpeed;

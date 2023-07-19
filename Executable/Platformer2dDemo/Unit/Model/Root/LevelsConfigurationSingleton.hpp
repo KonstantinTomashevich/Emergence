@@ -1,15 +1,17 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
-struct LevelsConfigurationSingleton final
+struct Platformer2dDemoModelApi LevelsConfigurationSingleton final
 {
     Emergence::Memory::UniqueString tutorialLevelName;
     Emergence::Memory::UniqueString campaignLevelPrefix;
     std::uint32_t campaignLevelCount = 0u;
     bool loaded = false;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId tutorialLevelName;
         Emergence::StandardLayout::FieldId campaignLevelPrefix;

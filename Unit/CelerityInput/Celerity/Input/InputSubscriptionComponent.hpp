@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityInputApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -7,7 +9,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Subscribes its object to all input actions of given group.
-struct InputSubscriptionComponent final
+struct CelerityInputApi InputSubscriptionComponent final
 {
     /// \brief Id of the object that will receive actions.
     UniqueId objectId = INVALID_UNIQUE_ID;
@@ -17,7 +19,7 @@ struct InputSubscriptionComponent final
     ///          equal to at least one of the InputSubscriptionComponent::group will be added.
     Memory::UniqueString group;
 
-    struct Reflection final
+    struct CelerityInputApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId group;

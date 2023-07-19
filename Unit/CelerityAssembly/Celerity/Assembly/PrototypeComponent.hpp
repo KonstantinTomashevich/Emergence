@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityAssemblyApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/HashMap.hpp>
@@ -10,7 +12,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Enables assembly routine for this object by connecting it with assembly descriptor.
-struct PrototypeComponent final
+struct CelerityAssemblyApi PrototypeComponent final
 {
     /// \brief Id of the object to which this component is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
@@ -31,7 +33,7 @@ struct PrototypeComponent final
     /// \brief Whether assembly process was started for this component. For internal use only.
     bool assemblyStarted = false;
 
-    struct Reflection final
+    struct CelerityAssemblyApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId descriptorId;

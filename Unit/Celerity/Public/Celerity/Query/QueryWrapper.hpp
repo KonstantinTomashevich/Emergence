@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <SyntaxSugar/MuteWarnings.hpp>
 
 #include <API/Common/Cursor.hpp>
@@ -18,10 +20,10 @@
 #define EMERGENCE_CELERITY_WRITE_QUERY_WRAPPER_DECLARATION(QueryClass, BaseClass, EditableReadModifier,                \
                                                            ConstReadModifier, DeleteModifier, ...)                     \
     /** \brief Wrapper for BaseClass, that integrates insertion with Celerity events. */                               \
-    class QueryClass final                                                                                             \
+    class CelerityApi QueryClass final                                                                                 \
     {                                                                                                                  \
     public:                                                                                                            \
-        class Cursor final                                                                                             \
+        class CelerityApi Cursor final                                                                                 \
         {                                                                                                              \
         public:                                                                                                        \
             /*!                                                                                                        \

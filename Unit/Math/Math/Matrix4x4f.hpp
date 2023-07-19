@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MathApi.hpp>
+
 #include <array>
 
 #include <Math/NoInitializationFlag.hpp>
@@ -11,7 +13,7 @@ namespace Emergence::Math
 {
 struct Transform3d;
 
-struct alignas (sizeof (float) * 4u) Matrix4x4f final
+struct alignas (sizeof (float) * 4u) MathApi Matrix4x4f final
 {
     static const Matrix4x4f ZERO;
     static const Matrix4x4f IDENTITY;
@@ -78,7 +80,7 @@ struct alignas (sizeof (float) * 4u) Matrix4x4f final
         };
     };
 
-    struct Reflection final
+    struct MathApi Reflection final
     {
         StandardLayout::FieldId m00;
         StandardLayout::FieldId m01;
@@ -103,5 +105,5 @@ struct alignas (sizeof (float) * 4u) Matrix4x4f final
 };
 
 /// \brief Special multiplication for transform matrices, that is slightly faster that usual multiplication.
-Matrix4x4f MultiplyTransformMatrices (const Matrix4x4f &_left, const Matrix4x4f &_right) noexcept;
+MathApi Matrix4x4f MultiplyTransformMatrices (const Matrix4x4f &_left, const Matrix4x4f &_right) noexcept;
 } // namespace Emergence::Math

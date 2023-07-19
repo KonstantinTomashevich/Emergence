@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityInputApi.hpp>
+
 #include <Celerity/Input/InputAction.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -10,7 +12,7 @@ namespace Emergence::Celerity
 /// \details Stored in short term container because holders lifetime usually ends when action is dispatched,
 ///          unless it is an InputActionDispatchType::FIXED_PERSISTENT. Fixed persistent holders are removed
 ///          during next normal frame after being dispatched.
-struct InputActionHolder final
+struct CelerityInputApi InputActionHolder final
 {
     /// \brief Action to be dispatched.
     InputAction action;
@@ -28,7 +30,7 @@ struct InputActionHolder final
 
     bool operator!= (const InputActionHolder &_other) const;
 
-    struct Reflection final
+    struct CelerityInputApi Reflection final
     {
         StandardLayout::FieldId action;
         StandardLayout::FieldId dispatchType;

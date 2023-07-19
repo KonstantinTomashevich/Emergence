@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ResourceObjectApi.hpp>
+
 #include <Container/HashMap.hpp>
 #include <Container/Vector.hpp>
 
@@ -13,7 +15,7 @@ namespace Emergence::Resource::Object
 using UniqueId = std::uint64_t;
 
 /// \brief Contains metadata attached to register object part type.
-struct TypeInfo final
+struct ResourceObjectApi TypeInfo final
 {
     /// \brief Field that contains unique id value for object part of this type.
     /// \details Id must be unique among all parts of the same type, but parts of different types may have equal ids.
@@ -26,7 +28,7 @@ struct TypeInfo final
 ///          Injected object data is not directly added to owner changelist, instead injected object type
 ///          is loaded into object library like any other object, so user instantiation library can implement
 ///          composition by manually instantiating injected object from found injector instances.
-struct DependencyInjectionInfo final
+struct ResourceObjectApi DependencyInjectionInfo final
 {
     /// \brief Type of an object part, that contains field with injection.
     StandardLayout::Mapping injectorType;
@@ -36,7 +38,7 @@ struct DependencyInjectionInfo final
 };
 
 /// \brief Contains metadata for all types, instances of which can be used as object parts.
-class TypeManifest final
+class ResourceObjectApi TypeManifest final
 {
 public:
     /// \brief Enables injection feature for given type and field.

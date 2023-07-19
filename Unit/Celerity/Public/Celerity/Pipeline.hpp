@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <CPU/Profiler.hpp>
 
 #include <Memory/UniqueString.hpp>
@@ -28,11 +30,11 @@ enum class PipelineType
 };
 
 /// \return Human readable pipeline type value.
-const char *GetPipelineTypeName (PipelineType _type) noexcept;
+CelerityApi const char *GetPipelineTypeName (PipelineType _type) noexcept;
 
 /// \brief Executable collection of interdependent tasks.
 /// \details To create pipelines for World, use PipelineBuilder.
-class Pipeline final
+class CelerityApi Pipeline final
 {
 public:
     Pipeline (const Pipeline &_other) = delete;

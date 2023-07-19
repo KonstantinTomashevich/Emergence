@@ -4,6 +4,7 @@ concrete_sources ("*.cpp")
 
 concrete_require (
         SCOPE PRIVATE
-        ABSTRACT CPUProfiler JobDispatcher TaskExecutor
+        ABSTRACT CPUProfiler JobDispatcher
         CONCRETE_INTERFACE Container SyntaxSugar
         INTERFACE APICommon)
+concrete_implements_abstract (TaskExecutor)

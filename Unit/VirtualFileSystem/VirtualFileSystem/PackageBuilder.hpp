@@ -1,5 +1,7 @@
 #pragma once
 
+#include <VirtualFileSystemApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Container/String.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::VirtualFileSystem
 {
 /// \brief Helper class for building read-only packages. See Context documentation for more info.
-class PackageBuilder final
+class VirtualFileSystemApi PackageBuilder final
 {
 public:
     PackageBuilder () noexcept;

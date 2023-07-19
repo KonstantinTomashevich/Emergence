@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RecordCollectionApi.hpp>
+
 #include <API/Common/Cursor.hpp>
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Iterator.hpp>
@@ -17,11 +19,11 @@
 namespace Emergence::RecordCollection
 {
 /// \brief Stores records of the same type and provides fast lookup using representations.
-class Collection final
+class RecordCollectionApi Collection final
 {
 public:
     /// \brief Wraps allocation and insertion of several records into one transaction.
-    class Allocator final
+    class RecordCollectionApi Allocator final
     {
     public:
         Allocator (const Allocator &_other) = delete;
@@ -51,7 +53,7 @@ public:
     /// \brief Allows iteration over Collection linear representations.
     ///
     /// \warning Collection::CreateLinearRepresentation invalidates these iterators.
-    class LinearRepresentationIterator final
+    class RecordCollectionApi LinearRepresentationIterator final
     {
     public:
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (LinearRepresentationIterator, LinearRepresentation);
@@ -68,7 +70,7 @@ public:
     /// \brief Allows iteration over Collection point representations.
     ///
     /// \warning Collection::CreatePointRepresentation invalidates these iterators.
-    class PointRepresentationIterator final
+    class RecordCollectionApi PointRepresentationIterator final
     {
     public:
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (PointRepresentationIterator, PointRepresentation);
@@ -85,7 +87,7 @@ public:
     /// \brief Allows iteration over Collection signal representations.
     ///
     /// \warning Collection::CreateSignalRepresentation invalidates these iterators.
-    class SignalRepresentationIterator final
+    class RecordCollectionApi SignalRepresentationIterator final
     {
     public:
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (SignalRepresentationIterator, SignalRepresentation);
@@ -102,7 +104,7 @@ public:
     /// \brief Allows iteration over Collection volumetric representations.
     ///
     /// \warning Collection::CreateVolumetricRepresentation invalidates these iterators.
-    class VolumetricRepresentationIterator final
+    class RecordCollectionApi VolumetricRepresentationIterator final
     {
     public:
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (VolumetricRepresentationIterator, VolumetricRepresentation);
@@ -117,7 +119,7 @@ public:
     };
 
     /// \brief Describes one of the VolumetricRepresentation dimensions, used for VolumetricRepresentation creation.
-    struct DimensionDescriptor
+    struct RecordCollectionApi DimensionDescriptor
     {
         /// \brief Pointer to minimum possible value of #minBorderField.
         ///
@@ -229,4 +231,5 @@ private:
 };
 } // namespace Emergence::RecordCollection
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::RecordCollection::Collection::DimensionDescriptor)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (RecordCollectionApi,
+                                           Emergence::RecordCollection::Collection::DimensionDescriptor)

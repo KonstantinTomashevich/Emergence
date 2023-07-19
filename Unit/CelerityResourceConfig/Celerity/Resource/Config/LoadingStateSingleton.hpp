@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityResourceConfigApi.hpp>
+
 #include <Container/HashSet.hpp>
 #include <Container/String.hpp>
 #include <Container/Vector.hpp>
@@ -27,7 +29,7 @@ enum class ResourceConfigLoadingState : std::uint8_t
 };
 
 /// \brief Contains resource config library loading state that is shared with background job.
-class ResourceConfigLoadingSharedState final : public Handling::HandleableBase
+class CelerityResourceConfigApi ResourceConfigLoadingSharedState final : public Handling::HandleableBase
 {
 public:
     void *operator new (std::size_t /*unused*/) noexcept;
@@ -63,13 +65,13 @@ private:
 
 /// \brief Contains loading states for resource config loading requests.
 /// \details Is not designed to be modified from outside.
-struct ResourceConfigLoadingStateSingleton final
+struct CelerityResourceConfigApi ResourceConfigLoadingStateSingleton final
 {
     /// \brief States for all active loading requests.
     Container::Vector<Handling::Handle<ResourceConfigLoadingSharedState>> loadingStates {
         Memory::Profiler::AllocationGroup::Top ()};
 
-    struct Reflection final
+    struct CelerityResourceConfigApi Reflection final
     {
         StandardLayout::Mapping mapping;
     };

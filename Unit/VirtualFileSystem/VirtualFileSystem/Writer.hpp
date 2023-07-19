@@ -1,5 +1,7 @@
 #pragma once
 
+#include <VirtualFileSystemApi.hpp>
+
 #include <cstdint>
 #include <iostream>
 
@@ -11,7 +13,7 @@
 namespace Emergence::VirtualFileSystem
 {
 /// \brief Provides API for writing files through virtual file system.
-class Writer final
+class VirtualFileSystemApi Writer final
 {
 public:
     /// \brief Constructs writer for given file entry with given open mode.

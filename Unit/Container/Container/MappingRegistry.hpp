@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ContainerApi.hpp>
+
 #include <Container/HashMap.hpp>
 #include <Container/Optional.hpp>
 
@@ -10,7 +12,7 @@
 namespace Emergence::Container
 {
 /// \brief Simple utility class for storing map of named mappings.
-class MappingRegistry final
+class ContainerApi MappingRegistry final
 {
 public:
     /// \brief Registers given type.

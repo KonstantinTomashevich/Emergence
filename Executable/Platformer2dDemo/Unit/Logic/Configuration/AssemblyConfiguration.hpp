@@ -1,9 +1,11 @@
 #pragma once
 
+#include <Platformer2dDemoLogicApi.hpp>
+
 #include <Celerity/Assembly/AssemblerConfiguration.hpp>
 
-Emergence::Celerity::CustomKeyVector GetAssemblerCustomKeys () noexcept;
+Platformer2dDemoLogicApi Emergence::Celerity::CustomKeyVector GetAssemblerCustomKeys () noexcept;
 
-Emergence::Celerity::TypeBindingVector GetFixedAssemblerTypes () noexcept;
+Platformer2dDemoLogicApi Emergence::Celerity::TypeBindingVector GetFixedAssemblerTypes () noexcept;
 
-Emergence::Celerity::TypeBindingVector GetNormalAssemblerTypes () noexcept;
+Platformer2dDemoLogicApi Emergence::Celerity::TypeBindingVector GetNormalAssemblerTypes () noexcept;

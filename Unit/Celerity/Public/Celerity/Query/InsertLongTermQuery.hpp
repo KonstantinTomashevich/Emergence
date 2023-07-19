@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <Celerity/Event/EventTrigger.hpp>
 
 #include <Warehouse/InsertLongTermQuery.hpp>
@@ -7,11 +9,11 @@
 namespace Emergence::Celerity
 {
 /// \brief Wrapper for Warehouse::InsertLongTermQuery, that integrates insertion with Celerity events.
-class InsertLongTermQuery final
+class CelerityApi InsertLongTermQuery final
 {
 public:
     /// \brief Allows user to allocate new objects and insert them into registry.
-    class Cursor final
+    class CelerityApi Cursor final
     {
     public:
         Cursor (const Cursor &_other) = delete;

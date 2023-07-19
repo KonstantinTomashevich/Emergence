@@ -6,47 +6,51 @@ file (MAKE_DIRECTORY "${GAME_OUTPUT_DIRECTORY}")
 file (MAKE_DIRECTORY "${GAME_OUTPUT_DIRECTORY}Packaged")
 add_subdirectory (Unit)
 
-# TODO: Try to move common content into a shared library.
+register_shared_library ("${GAME_NAME}SharedBase")
+shared_library_include (
+        SCOPE PUBLIC
 
-register_executable (${GAME_NAME}ResourceCooker)
-executable_include (
         ABSTRACT
-        Assert=SDL3 CelerityPhysics2d=Box2d CelerityUI=ImGUI CPUProfiler=None Hashing=XXHash JobDispatcher=Original
-        Log=SPDLog Memory=Original MemoryProfiler=Original RecordCollection=Pegasus RenderBackend=BGFX
-        ResourceProvider=Original StandardLayoutMapping=Original TaskExecutor=Parallel VirtualFileSystem=Original
-        Warehouse=Galleon
+        Assert=SDL3 Hashing=XXHash JobDispatcher=Original Log=SPDLog Memory=Original RecordCollection=Pegasus
+        RenderBackend=BGFX ResourceProvider=Original StandardLayoutMapping=Original TaskExecutor=Parallel
+        VirtualFileSystem=Original Warehouse=Galleon
 
         CONCRETE
-        ${GAME_NAME}Logic ${GAME_NAME}Model ${GAME_NAME}ResourceCookerApplication ${GAME_NAME}Resources Celerity
-        CelerityAsset CelerityAssembly CelerityInput CelerityLocale CelerityPhysics2dDebugDraw CelerityRenderFoundation
-        CelerityResourceConfig CelerityRender2d CelerityResourceObject CelerityTransform CommandLine Container Flow
-        Handling Math RecordCollectionVisualization ResourceCooking ResourceObject Serialization SyntaxSugar
-        TaskCollection VisualGraph)
+        Celerity Container Flow Handling Math MemoryRecording RecordCollectionVisualization ResourceObject
+        Serialization SyntaxSugar TaskCollection VisualGraph)
 
+if (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING)
+    shared_library_include (SCOPE PUBLIC ABSTRACT CPUProfiler=None MemoryProfiler=None)
+else ()
+    shared_library_include (SCOPE PUBLIC ABSTRACT CPUProfiler=Tracy MemoryProfiler=Original)
+endif ()
+
+shared_library_verify ()
+
+register_shared_library (${GAME_NAME}SharedGame)
+shared_library_include (
+        SCOPE PUBLIC
+
+        ABSTRACT
+        CelerityPhysics2d=Box2d CelerityUI=ImGUI
+
+        CONCRETE
+        ${GAME_NAME}Logic ${GAME_NAME}Model ${GAME_NAME}Resources CelerityAsset CelerityAssembly CelerityInput
+        CelerityLocale CelerityPhysics2dDebugDraw CelerityRenderFoundation CelerityResourceConfig CelerityRender2d
+        CelerityResourceObject CelerityTransform)
+shared_library_link_shared_library (PUBLIC "${GAME_NAME}SharedBase")
+shared_library_verify ()
+
+register_executable (${GAME_NAME}ResourceCooker)
+executable_include (CONCRETE ${GAME_NAME}ResourceCookerApplication CommandLine ResourceCooking)
+executable_link_shared_libraries (${GAME_NAME}SharedGame)
 executable_verify ()
 executable_copy_linked_artefacts ()
 set_target_properties ("${GAME_NAME}ResourceCooker" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}")
 
 register_executable (${GAME_NAME}Game)
-executable_include (
-        ABSTRACT
-        Assert=SDL3 CelerityPhysics2d=Box2d CelerityUI=ImGUI Hashing=XXHash JobDispatcher=Original Log=SPDLog
-        Memory=Original RecordCollection=Pegasus RenderBackend=BGFX ResourceProvider=Original
-        StandardLayoutMapping=Original TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
-
-        CONCRETE
-        ${GAME_NAME}Logic ${GAME_NAME}Model ${GAME_NAME}GameApplication ${GAME_NAME}Resources Celerity
-        CelerityAsset CelerityAssembly CelerityInput CelerityLocale CelerityPhysics2dDebugDraw CelerityRenderFoundation
-        CelerityResourceConfig CelerityRender2d CelerityResourceObject CelerityTransform Container Flow Handling Math
-        MemoryRecording RecordCollectionVisualization ResourceObject Serialization SyntaxSugar TaskCollection
-        VisualGraph)
-
-if (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING)
-    executable_include (ABSTRACT CPUProfiler=None MemoryProfiler=None)
-else ()
-    executable_include (ABSTRACT CPUProfiler=Tracy MemoryProfiler=Original)
-endif ()
-
+executable_include (CONCRETE ${GAME_NAME}GameApplication)
+executable_link_shared_libraries (${GAME_NAME}SharedGame)
 executable_verify ()
 executable_copy_linked_artefacts ()
 

@@ -1,16 +1,18 @@
 #pragma once
 
+#include <ResourceObjectApi.hpp>
+
 #include <Resource/Object/Object.hpp>
 
 namespace Emergence::Resource::Object
 {
 /// \brief Storage for loaded objects.
 /// \details Should be created using LibraryLoader.
-class Library final
+class ResourceObjectApi Library final
 {
 public:
     /// \brief Holds all known information about one particular object.
-    struct ObjectData final
+    struct ResourceObjectApi ObjectData final
     {
         /// \brief Content of this object.
         Object object;

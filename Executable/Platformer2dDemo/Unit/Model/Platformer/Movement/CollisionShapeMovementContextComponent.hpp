@@ -1,12 +1,14 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Platformer/Movement/MovementState.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
-struct CollisionShapeMovementContextComponent final
+struct Platformer2dDemoModelApi CollisionShapeMovementContextComponent final
 {
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
@@ -16,7 +18,7 @@ struct CollisionShapeMovementContextComponent final
 
     bool useForGroundContactCheck = false;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId objectId;
         Emergence::StandardLayout::FieldId shapeId;

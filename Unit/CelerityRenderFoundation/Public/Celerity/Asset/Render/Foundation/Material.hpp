@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Render/Foundation/Material.hpp>
 
@@ -10,7 +12,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Contains all the information about a uniform.
-struct UniformDescription final
+struct CelerityRenderFoundationApi UniformDescription final
 {
     /// \brief Name of the uniform.
     Memory::UniqueString name;
@@ -24,7 +26,7 @@ struct UniformDescription final
         std::uint8_t textureStage = 0u;
     };
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId name;
         StandardLayout::FieldId type;
@@ -36,7 +38,7 @@ struct UniformDescription final
 };
 
 /// \brief Content of material file that stores all the information about this material
-struct MaterialAsset final
+struct CelerityRenderFoundationApi MaterialAsset final
 {
     /// \brief Id of a fragment shader used by this material.
     Memory::UniqueString vertexShader;
@@ -48,7 +50,7 @@ struct MaterialAsset final
     Container::Vector<UniformDescription> uniforms {
         Memory::Profiler::AllocationGroup {Memory::UniqueString {"MaterialUniforms"}}};
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId vertexShader;
         StandardLayout::FieldId fragmentShader;

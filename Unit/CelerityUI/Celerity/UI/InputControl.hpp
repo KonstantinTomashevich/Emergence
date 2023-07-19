@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Input/InputAction.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
@@ -23,7 +25,7 @@ enum class InputControlType : std::uint8_t
 };
 
 /// \brief Control that gives user ability to input values. Type of values is described by ::type.
-struct InputControl final
+struct CelerityUIApi InputControl final
 {
     /// \brief Maximum length of the text that can be typed into InputControlType::TEXT.
     static constexpr std::size_t MAX_TEXT_LENGTH = 64u;
@@ -60,7 +62,7 @@ struct InputControl final
         float floatValue;
     };
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId type;

@@ -1,9 +1,5 @@
 #pragma once
 
-/// This file provides quality of life improvements that are not de factor part of VirtualFileSystem API.
-/// They might need additional libraries to be included in order to satisfy all dependencies.
-/// Also, all these functions are inline as they are build on top of the API and are not part of the implementation.
-
 #include <fstream>
 
 #include <Container/StringBuilder.hpp>

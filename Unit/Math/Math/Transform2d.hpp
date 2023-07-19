@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MathApi.hpp>
+
 #include <type_traits>
 
 #include <Math/Matrix3x3f.hpp>
@@ -10,7 +12,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (float) Transform2d final
+struct alignas (float) MathApi Transform2d final
 {
     Transform2d (const NoInitializationFlag &_guard) noexcept;
 
@@ -31,7 +33,7 @@ struct alignas (float) Transform2d final
 
     Vector2f scale;
 
-    struct Reflection final
+    struct MathApi Reflection final
     {
         StandardLayout::FieldId translation;
         StandardLayout::FieldId rotation;
@@ -48,5 +50,5 @@ static_assert (std::is_trivially_destructible_v<Transform2d>);
 static_assert (std::is_trivially_copy_assignable_v<Transform2d>);
 static_assert (std::is_trivially_move_assignable_v<Transform2d>);
 
-bool NearlyEqual (const Transform2d &_first, const Transform2d &_second) noexcept;
+MathApi bool NearlyEqual (const Transform2d &_first, const Transform2d &_second) noexcept;
 } // namespace Emergence::Math

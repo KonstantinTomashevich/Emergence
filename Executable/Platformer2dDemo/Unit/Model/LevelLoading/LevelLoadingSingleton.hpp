@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -12,12 +14,12 @@ enum class LevelLoadingState : std::uint8_t
     DONE,
 };
 
-struct LevelLoadingSingleton final
+struct Platformer2dDemoModelApi LevelLoadingSingleton final
 {
     Emergence::Memory::UniqueString levelName;
     LevelLoadingState state = LevelLoadingState::NONE;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId levelName;
         Emergence::StandardLayout::FieldId state;

@@ -1,12 +1,14 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <Celerity/Event/EventTrigger.hpp>
 #include <Celerity/World.hpp>
 
 namespace Emergence::Celerity
 {
 /// \brief Base seed for all events, that are managed by Celerity.
-struct ClearableEventSeed
+struct CelerityApi ClearableEventSeed
 {
     StandardLayout::Mapping eventType;
     EventRoute route;
@@ -18,7 +20,7 @@ struct ClearableEventSeed
 ///            it must be constructed after all relevant automated events are constructed, therefore additional
 ///            ordering step would be required. Also, short term objects are usually events, therefore usually
 ///            there is no need to track their addition and removal.
-struct TrivialAutomatedEventSeed : public ClearableEventSeed
+struct CelerityApi TrivialAutomatedEventSeed : public ClearableEventSeed
 {
     StandardLayout::Mapping trackedType;
     Container::Vector<CopyOutField> copyOut;
@@ -27,7 +29,7 @@ struct TrivialAutomatedEventSeed : public ClearableEventSeed
 /// \brief Seed for automated event, that is fired when any record field from ::trackedFields is changed.
 /// \invariant Records of ::recordType are either singletons or long term objects.
 ///            For explanation check same invariant in ::TrivialAutomatedEventSeed.
-struct OnChangeAutomatedEventSeed : public ClearableEventSeed
+struct CelerityApi OnChangeAutomatedEventSeed : public ClearableEventSeed
 {
     StandardLayout::Mapping trackedType;
     Container::Vector<StandardLayout::FieldId> trackedFields;
@@ -40,7 +42,7 @@ struct OnChangeAutomatedEventSeed : public ClearableEventSeed
 
 /// \brief Interface for adding events into World.
 /// \invariant All events for the single world must be registered though single registrar!
-class EventRegistrar final
+class CelerityApi EventRegistrar final
 {
 public:
     EventRegistrar (World *_world) noexcept;

@@ -216,8 +216,17 @@ function (register_concrete UNIT_NAME)
 
     add_library ("${UNIT_NAME}" OBJECT)
     set_target_properties ("${UNIT_NAME}" PROPERTIES UNIT_TARGET_TYPE "Concrete")
-
     reflected_target_link_libraries (TARGET "${UNIT_NAME}" PUBLIC "${UNIT_NAME}Interface")
+
+    # Generate API header for shared library support.
+    file (MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Generated")
+    generate_api_header (
+            API_MACRO "${UNIT_NAME}Api"
+            EXPORT_MACRO "${UNIT_NAME}Implementation"
+            OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/Generated/${UNIT_NAME}Api.hpp")
+    target_include_directories ("${UNIT_NAME}Interface" INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/Generated")
+    target_compile_definitions ("${UNIT_NAME}" PRIVATE "${UNIT_NAME}Implementation")
+
     set (UNIT_NAME "${UNIT_NAME}" PARENT_SCOPE)
 endfunction ()
 
@@ -363,11 +372,28 @@ function (concrete_compile_options)
     endif ()
 endfunction ()
 
+# Informs build system that this concrete unit implements given abstract unit.
+# Needed to pass correct compile definitions to concrete unit objects.
+function (concrete_implements_abstract ABSTRACT_NAME)
+    message (STATUS "    Implement abstract unit \"${ABSTRACT_NAME}\".")
+    reflected_target_link_libraries (TARGET "${UNIT_NAME}" PRIVATE "${ABSTRACT_NAME}")
+    target_compile_definitions ("${UNIT_NAME}" PRIVATE "${ABSTRACT_NAME}Implementation")
+endfunction ()
+
 # Starts configuration routine of abstract unit: headers that might have multiple implementations.
 function (register_abstract UNIT_NAME)
     message (STATUS "Registering abstract \"${UNIT_NAME}\"...")
     add_library ("${UNIT_NAME}" INTERFACE)
     set_target_properties ("${UNIT_NAME}" PROPERTIES UNIT_TARGET_TYPE "Abstract")
+
+    # Generate API header for shared library support.
+    file (MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/Generated")
+    generate_api_header (
+            API_MACRO "${UNIT_NAME}Api"
+            EXPORT_MACRO "${UNIT_NAME}Implementation"
+            OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/Generated/${UNIT_NAME}Api.hpp")
+    target_include_directories ("${UNIT_NAME}" INTERFACE "${CMAKE_CURRENT_BINARY_DIR}/Generated")
+
     set (UNIT_NAME "${UNIT_NAME}" PARENT_SCOPE)
 endfunction ()
 
@@ -526,6 +552,29 @@ function (shared_library_include)
 
 endfunction ()
 
+# Links other shared libraries to current shared library.
+# Arguments:
+# - PRIVATE: list of shared libraries to be linked in private scope.
+# - PUBLIC: list of shared libraries to be linked in public scope.
+function (shared_library_link_shared_library)
+    cmake_parse_arguments (LINK "" "" "PRIVATE;PUBLIC" ${ARGV})
+    if (DEFINED LINK_UNPARSED_ARGUMENTS OR
+            NOT DEFINED LINK_PRIVATE AND
+            NOT DEFINED LINK_PUBLIC)
+        message (FATAL_ERROR "Incorrect function arguments!")
+    endif ()
+
+    foreach (LIBRARY_TARGET ${LINK_PRIVATE})
+        message (STATUS "    Link shared library \"${LIBRARY_TARGET}\" in private scope.")
+        reflected_target_link_libraries (TARGET "${ARTEFACT_NAME}" PRIVATE "${LIBRARY_TARGET}")
+    endforeach ()
+
+    foreach (LIBRARY_TARGET ${LINK_PUBLIC})
+        message (STATUS "    Link shared library \"${LIBRARY_TARGET}\" in public scope.")
+        reflected_target_link_libraries (TARGET "${ARTEFACT_NAME}" PUBLIC "${LIBRARY_TARGET}")
+    endforeach ()
+endfunction ()
+
 # Verifies that there is no missing abstract unit implementations or concrete units in current shared library.
 function (shared_library_verify)
     message (STATUS "    Verifying...")
@@ -587,6 +636,14 @@ endfunction ()
 function (executable_include)
     # Technically, we're doing the same thing except for the scope, so it is ok to call shared library function.
     shared_library_include (SCOPE PRIVATE ${ARGV})
+endfunction ()
+
+# Links given shared libraries to current executable.
+function (executable_link_shared_libraries)
+    foreach (LIBRARY_TARGET ${ARGV})
+        message (STATUS "    Link shared library \"${LIBRARY_TARGET}\".")
+        reflected_target_link_libraries (TARGET "${ARTEFACT_NAME}" PRIVATE "${LIBRARY_TARGET}")
+    endforeach ()
 endfunction ()
 
 # Verifies that there is no missing abstract unit implementations or concrete units in current executable.

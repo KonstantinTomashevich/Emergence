@@ -1,12 +1,14 @@
 #pragma once
 
+#include <CelerityInputApi.hpp>
+
 #include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::Input
 {
 /// \brief Checkpoints supported by tasks from ::AddToFixedUpdate and ::AddToNormalUpdate.
-struct Checkpoint final
+struct CelerityInputApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -23,9 +25,9 @@ struct Checkpoint final
 };
 
 /// \brief Adds fixed update tasks that update InputActionComponent's and dispatch fixed pipeline actions.
-void AddToFixedUpdate (PipelineBuilder &_builder) noexcept;
+CelerityInputApi void AddToFixedUpdate (PipelineBuilder &_builder) noexcept;
 
 /// \brief Adds normal update tasks that update InputActionComponent's,
 ///        update input triggers and dispatch normal pipeline actions.
-void AddToNormalUpdate (PipelineBuilder &_builder, FrameInputAccumulator *_inputAccumulator) noexcept;
+CelerityInputApi void AddToNormalUpdate (PipelineBuilder &_builder, FrameInputAccumulator *_inputAccumulator) noexcept;
 } // namespace Emergence::Celerity::Input

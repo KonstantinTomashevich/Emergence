@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Render/Backend/Viewport.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Configures output surface for rendering. Having multiple viewports is supported.
-struct Viewport final
+struct CelerityRenderFoundationApi Viewport final
 {
     /// \brief Readable name for this viewport.
     /// \invariant Must be unique among other viewports.
@@ -47,7 +49,7 @@ struct Viewport final
     ///          we work with underlying implementation that operates under different read-write ruleset.
     mutable Render::Backend::Viewport viewport;
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId name;
         StandardLayout::FieldId targetFrameBuffer;

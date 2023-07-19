@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 #include <Render/Backend/Renderer.hpp>
@@ -8,7 +10,7 @@ namespace Emergence::Celerity
 {
 /// \brief Utility class for submitting material instance uniform values.
 /// \details Encapsulating uniform submission logic makes it easier for users to implement their renderers.
-class MaterialInstanceSubmitter final
+class CelerityRenderFoundationApi MaterialInstanceSubmitter final
 {
 public:
     /// \brief Initializes internal queries using given task constructor,

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics3dApi.hpp>
+
 #include <API/Common/Shortcuts.hpp>
 
 #include <Celerity/Physics3d/CollisionGeometry3d.hpp>
@@ -14,7 +16,7 @@ namespace Emergence::Celerity
 {
 /// \brief Represents collision shape, attached to an object.
 /// \details There could be multiple shapes, attached to the same object.
-struct CollisionShape3dComponent final
+struct CelerityPhysics3dApi CollisionShape3dComponent final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (CollisionShape3dComponent);
 
@@ -61,7 +63,7 @@ struct CollisionShape3dComponent final
     /// \brief Pointer to implementation-specific object.
     void *implementationHandle = nullptr;
 
-    struct Reflection final
+    struct CelerityPhysics3dApi Reflection final
     {
         StandardLayout::FieldId shapeId;
         StandardLayout::FieldId objectId;

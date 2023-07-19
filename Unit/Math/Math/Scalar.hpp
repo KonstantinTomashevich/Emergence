@@ -1,34 +1,36 @@
 #pragma once
 
+#include <MathApi.hpp>
+
 namespace Emergence::Math
 {
-float Sin (float _rad) noexcept;
+MathApi float Sin (float _rad) noexcept;
 
-float Cos (float _rad) noexcept;
-
-/// \return Angle in radians.
-float ASin (float _value) noexcept;
+MathApi float Cos (float _rad) noexcept;
 
 /// \return Angle in radians.
-float ACos (float _value) noexcept;
+MathApi float ASin (float _value) noexcept;
 
 /// \return Angle in radians.
-float ATan2 (float _y, float _x) noexcept;
+MathApi float ACos (float _value) noexcept;
 
-float Abs (float _value) noexcept;
+/// \return Angle in radians.
+MathApi float ATan2 (float _y, float _x) noexcept;
 
-float SquareRoot (float _value) noexcept;
+MathApi float Abs (float _value) noexcept;
 
-float Clamp (float _value, float _min, float _max) noexcept;
+MathApi float SquareRoot (float _value) noexcept;
 
-float Lerp (float _begin, float _end, float _t) noexcept;
+MathApi float Clamp (float _value, float _min, float _max) noexcept;
 
-float Truncate (float _value) noexcept;
+MathApi float Lerp (float _begin, float _end, float _t) noexcept;
 
-float ToDegrees (float _radians) noexcept;
+MathApi float Truncate (float _value) noexcept;
+
+MathApi float ToDegrees (float _radians) noexcept;
 
 /// \brief Moves angle into [-PI, PI] range.
-float NormalizeAngle (float _radians) noexcept;
+MathApi float NormalizeAngle (float _radians) noexcept;
 
-bool NearlyEqual (float _first, float _second) noexcept;
+MathApi bool NearlyEqual (float _first, float _second) noexcept;
 } // namespace Emergence::Math

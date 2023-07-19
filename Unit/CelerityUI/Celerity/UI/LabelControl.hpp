@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/String.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Represents control that displays simple text.
-struct LabelControl final
+struct CelerityUIApi LabelControl final
 {
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
@@ -20,7 +22,7 @@ struct LabelControl final
     /// \brief Text that is displayed. Used instead of ::labelKey if present.
     Container::Utf8String label;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId labelKey;

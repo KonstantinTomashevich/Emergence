@@ -1,10 +1,12 @@
 #pragma once
 
+#include <Platformer2dDemoLogicApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Camera
 {
-struct Checkpoint final
+struct Platformer2dDemoLogicApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -12,5 +14,5 @@ struct Checkpoint final
     static const Emergence::Memory::UniqueString FINISHED;
 };
 
-void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
+Platformer2dDemoLogicApi void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace Camera

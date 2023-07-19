@@ -1,5 +1,7 @@
 #pragma once
 
+#include <JobDispatcherApi.hpp>
+
 #include <array>
 #include <functional>
 #include <thread>
@@ -28,7 +30,7 @@ enum class Priority
 
 /// \brief Dispatches received jobs between worker threads.
 /// \details Usage of shared job dispatcher allows to avoid creation of multiple private thread pools.
-class Dispatcher final
+class JobDispatcherApi Dispatcher final
 {
 public:
     /// \brief Type of a job, that can be executed by job dispatcher.
@@ -37,7 +39,7 @@ public:
     /// \brief Utility class for optimized dispatching multiple jobs at once.
     /// \details It is advised to use this class instead of calling dispatch multiple times if you have
     ///          more than one job to dispatch as this class might provide better dispatch performance.
-    class Batch final
+    class JobDispatcherApi Batch final
     {
     public:
         /// \brief Creates batch for given dispatcher instance.

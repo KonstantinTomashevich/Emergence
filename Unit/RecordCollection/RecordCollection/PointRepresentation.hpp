@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RecordCollectionApi.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -15,12 +17,12 @@ namespace Emergence::RecordCollection
 ///
 /// \details Works as handle to real point representation instance.
 ///          Prevents destruction unless there is only one reference to instance.
-class PointRepresentation final
+class RecordCollectionApi PointRepresentation final
 {
 public:
     /// \brief Allows user to read records, that match criteria, specified in PointRepresentation::ReadPoint.
     /// \details All ReadCursor operations are thread safe.
-    class ReadCursor final
+    class RecordCollectionApi ReadCursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (ReadCursor);
@@ -36,7 +38,7 @@ public:
 
     /// \brief Allows user to read, modify and delete records, that
     ///        match criteria, specified in PointRepresentation::EditPoint.
-    class EditCursor final
+    class RecordCollectionApi EditCursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (EditCursor);
@@ -51,7 +53,7 @@ public:
     };
 
     /// \brief Allows iteration over PointRepresentation key fields.
-    class KeyFieldIterator final
+    class RecordCollectionApi KeyFieldIterator final
     {
     public:
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (KeyFieldIterator, StandardLayout::Field);

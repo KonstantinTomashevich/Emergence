@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WarehouseApi.hpp>
+
 #include <API/Common/Shortcuts.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -64,7 +66,7 @@ class Registry;
      *          In most cases user should avoid entering unsafe fetch mode, but some rare tasks, that are usually      \
      *          connected to hierarchical access, can not be solved without this tricky approach.                      \
      */                                                                                                                \
-    class UnsafeFetchAccessToken final                                                                                 \
+    class WarehouseApi UnsafeFetchAccessToken final                                                                    \
     {                                                                                                                  \
     public:                                                                                                            \
         UnsafeFetchAccessToken (const UnsafeFetchAccessToken &_other) = delete;                                        \

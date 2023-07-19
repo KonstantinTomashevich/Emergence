@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Memory/UniqueString.hpp>
 
-struct WorldStates final
+struct Platformer2dDemoModelApi WorldStates final
 {
     WorldStates () = delete;
 

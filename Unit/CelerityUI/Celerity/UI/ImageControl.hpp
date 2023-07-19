@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/AxisAlignedBox2d.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Control that renders given texture.
-struct ImageControl final
+struct CelerityUIApi ImageControl final
 {
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
@@ -26,7 +28,7 @@ struct ImageControl final
     /// \brief UV-coordinates for rendering texture.
     Math::AxisAlignedBox2d uv;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId width;

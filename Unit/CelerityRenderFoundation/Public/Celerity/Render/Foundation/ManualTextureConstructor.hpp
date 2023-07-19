@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Celerity/Asset/ManualAssetConstructor.hpp>
 
 #include <Render/Backend/Texture.hpp>
@@ -9,7 +11,7 @@ namespace Emergence::Celerity
 /// \brief Utility class for systems that need to manually construct texture
 ///        assets instead of constructing them through references.
 /// \details Useful for things like frame buffer render targets that are not being loaded as regular textures.
-class ManualTextureConstructor final
+class CelerityRenderFoundationApi ManualTextureConstructor final
 {
 public:
     /// \brief Initializes internal queries using given task constructor,

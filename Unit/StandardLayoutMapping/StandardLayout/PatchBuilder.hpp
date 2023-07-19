@@ -1,5 +1,7 @@
 #pragma once
 
+#include <StandardLayoutMappingApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::StandardLayout
 {
 /// \brief Hides Patch building logic from user to prevent usage of unfinished patches.
-class PatchBuilder final
+class StandardLayoutMappingApi PatchBuilder final
 {
 public:
     /// \brief Automatically detects difference between given objects of given type and creates patch that

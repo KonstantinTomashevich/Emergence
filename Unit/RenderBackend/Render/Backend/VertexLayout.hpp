@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -41,7 +43,7 @@ enum class AttributeType : std::uint8_t
 
 /// \brief Represents defined and ready to use vertex layout.
 /// \details Vertex layout defines which data is stored in vertices. Use VertexLayoutBuilder to build layouts.
-class VertexLayout final
+class RenderBackendApi VertexLayout final
 {
 public:
     VertexLayout (const VertexLayout &_other) = delete;
@@ -64,7 +66,7 @@ private:
 };
 
 /// \brief Provides API for building VertexLayout's.
-class VertexLayoutBuilder final
+class RenderBackendApi VertexLayoutBuilder final
 {
 public:
     VertexLayoutBuilder () noexcept;

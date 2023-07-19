@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ContainerApi.hpp>
+
 #include <string>
 
 #include <Memory/Heap.hpp>
@@ -20,7 +22,7 @@ inline String operator"" _s (const char *_string, [[maybe_unused]] std::size_t _
 } // namespace Literals
 } // namespace Emergence::Container
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (char)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (ContainerApi, char)
 
 // Some compilers do not support hashing for strings with custom allocator,
 // therefore we have to add redirect to string view.

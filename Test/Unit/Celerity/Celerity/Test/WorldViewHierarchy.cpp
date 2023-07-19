@@ -52,9 +52,11 @@ const TestComponent::Reflection &TestComponent::Reflect () noexcept
     return reflection;
 }
 
+#define EventsApi
 EMERGENCE_CELERITY_EVENT1_DECLARATION (TestComponentAddedNormalEvent, UniqueId, objectId);
 EMERGENCE_CELERITY_EVENT1_DECLARATION (TestComponentChangedNormalEvent, UniqueId, objectId);
 EMERGENCE_CELERITY_EVENT1_DECLARATION (TestComponentRemovedNormalEvent, UniqueId, objectId);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestComponentAddedNormalEvent, objectId)
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestComponentChangedNormalEvent, objectId)

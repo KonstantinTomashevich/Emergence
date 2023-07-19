@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <cstdint>
 
 #include <Math/RunningAverage.hpp>
@@ -14,7 +16,7 @@ namespace Emergence::Celerity
 ///       use 64-bit nanosecond counters.
 /// \warning This singleton is modified by World outside of pipeline execution,
 ///          therefore OnChange events do not work with it.
-struct TimeSingleton final
+struct CelerityApi TimeSingleton final
 {
     static constexpr std::size_t MAXIMUM_TARGET_FIXED_DURATIONS = 3u;
 
@@ -50,7 +52,7 @@ struct TimeSingleton final
     /// \details Used to adjust ::fixedDurationS in order to avoid death spiraling.
     Math::RunningAverage<30u> averageFullFrameRealDurationS;
 
-    struct Reflection final
+    struct CelerityApi Reflection final
     {
         StandardLayout::FieldId normalTimeNs;
         StandardLayout::FieldId realNormalTimeNs;

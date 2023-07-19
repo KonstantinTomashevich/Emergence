@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics3dApi.hpp>
+
 #include <API/Common/Shortcuts.hpp>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -24,7 +26,7 @@ enum class RigidBody3dType
 };
 
 /// \brief Represents rigid body attached to an object.
-struct RigidBody3dComponent final
+struct CelerityPhysics3dApi RigidBody3dComponent final
 {
     /// \brief Forbids body to change its translation on X axis.
     /// \see ::lockFlags
@@ -97,7 +99,7 @@ struct RigidBody3dComponent final
     /// \brief Pointer to implementation-specific object.
     void *implementationHandle = nullptr;
 
-    struct Reflection final
+    struct CelerityPhysics3dApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId type;

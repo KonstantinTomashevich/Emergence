@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics2dApi.hpp>
+
 #include <Math/Vector2f.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -16,7 +18,7 @@ enum class CollisionGeometry2dType : uint8_t
 };
 
 /// \brief Two dimensional line that can be used as CollisionGeometry2d.
-struct Line2d final
+struct CelerityPhysics2dApi Line2d final
 {
     /// \brief Line start point.
     Math::Vector2f start;
@@ -24,7 +26,7 @@ struct Line2d final
     /// \brief Line end point.
     Math::Vector2f end;
 
-    struct Reflection final
+    struct CelerityPhysics2dApi Reflection final
     {
         StandardLayout::FieldId start;
         StandardLayout::FieldId end;
@@ -35,7 +37,7 @@ struct Line2d final
 };
 
 /// \brief Stores collision geometry data along with its type.
-struct CollisionGeometry2d final
+struct CelerityPhysics2dApi CollisionGeometry2d final
 {
     /// \brief This geometry type.
     CollisionGeometry2dType type;
@@ -52,7 +54,7 @@ struct CollisionGeometry2d final
         Line2d line;
     };
 
-    struct Reflection final
+    struct CelerityPhysics2dApi Reflection final
     {
         StandardLayout::FieldId type;
         StandardLayout::FieldId boxHalfExtents;

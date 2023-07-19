@@ -1,5 +1,7 @@
 #pragma once
 
+#include <StandardLayoutMappingApi.hpp>
+
 #include <cstdint>
 
 #include <StandardLayout/Mapping.hpp>
@@ -20,7 +22,7 @@ enum class ConditionalOperation
 };
 
 /// \brief Hides Mapping building logic from user to prevent usage of unfinished mappings.
-class MappingBuilder final
+class StandardLayoutMappingApi MappingBuilder final
 {
 public:
     MappingBuilder () noexcept;

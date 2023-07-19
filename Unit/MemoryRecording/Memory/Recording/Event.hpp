@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryRecordingApi.hpp>
+
 #include <chrono>
 #include <limits>
 
@@ -38,7 +40,7 @@ enum class EventType : std::uint8_t
 };
 
 /// \brief Contains data of EventType::DECLARE_GROUP events.
-struct DeclareGroupEventData
+struct MemoryRecordingApi DeclareGroupEventData
 {
     /// \brief UID of the parent group, that must be declared before.
     GroupUID parent;
@@ -57,7 +59,7 @@ struct DeclareGroupEventData
     /// \brief Count of bytes, that are already used for something.
     std::uint64_t acquiredBytes;
 
-    struct Reflection final
+    struct MemoryRecordingApi Reflection final
     {
         StandardLayout::FieldId parent;
         StandardLayout::FieldId id;
@@ -71,7 +73,7 @@ struct DeclareGroupEventData
 };
 
 /// \brief Contains data of EventType::ALLOCATE, EventType::ACQUIRE, EventType::RELEASE and EventType::FREE events.
-struct MemoryEventData final
+struct MemoryRecordingApi MemoryEventData final
 {
     /// \brief UID of the group, associated with this event.
     GroupUID group;
@@ -79,7 +81,7 @@ struct MemoryEventData final
     /// \brief Amount of bytes, used by operation specified by ::type.
     std::uint64_t bytes;
 
-    struct Reflection final
+    struct MemoryRecordingApi Reflection final
     {
         StandardLayout::FieldId group;
         StandardLayout::FieldId bytes;
@@ -90,7 +92,7 @@ struct MemoryEventData final
 };
 
 /// \brief Contains data of EventType::MARKER events.
-struct MarkerEventData final
+struct MemoryRecordingApi MarkerEventData final
 {
     /// \brief UID of the group, used as a scope for this marker.
     GroupUID scope;
@@ -98,7 +100,7 @@ struct MarkerEventData final
     /// \brief Human-readable id of the marker.
     UniqueString markerId;
 
-    struct Reflection final
+    struct MemoryRecordingApi Reflection final
     {
         StandardLayout::FieldId scope;
         StandardLayout::FieldId markerId;
@@ -109,7 +111,7 @@ struct MarkerEventData final
 };
 
 /// \brief Contains data of a single event in memory usage track.
-struct Event
+struct MemoryRecordingApi Event
 {
     /// \brief Constructor for EventType::DECLARE_GROUP events.
     /// \details Constructors are required, because MSVC reports internal error on field initialization of this struct.
@@ -145,7 +147,7 @@ struct Event
         MarkerEventData marker;
     };
 
-    struct Reflection final
+    struct MemoryRecordingApi Reflection final
     {
         StandardLayout::FieldId type;
         StandardLayout::FieldId timeNs;

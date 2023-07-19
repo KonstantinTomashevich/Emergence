@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WarehouseApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -8,11 +10,11 @@
 namespace Emergence::Warehouse
 {
 /// \brief Prepared query, used to gain readwrite access to singleton instance.
-class ModifySingletonQuery final
+class WarehouseApi ModifySingletonQuery final
 {
 public:
     /// \brief Provides readwrite access to singleton instance.
-    class Cursor final
+    class WarehouseApi Cursor final
     {
     public:
         Cursor (const Cursor &_other) = delete;

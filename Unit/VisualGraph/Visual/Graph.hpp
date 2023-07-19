@@ -1,5 +1,7 @@
 #pragma once
 
+#include <VisualGraphApi.hpp>
+
 #include <Container/Optional.hpp>
 #include <Container/String.hpp>
 #include <Container/Vector.hpp>
@@ -11,7 +13,7 @@ namespace Emergence::VisualGraph
 constexpr char NODE_PATH_SEPARATOR = '/';
 
 /// \brief Defines node of a Graph.
-struct Node
+struct VisualGraphApi Node
 {
     /// \brief Node local id in its graph.
     /// \invariant Unique among nodes of parent graph.
@@ -25,7 +27,7 @@ struct Node
 };
 
 /// \brief Defines directed edge of a Graph.
-struct Edge
+struct VisualGraphApi Edge
 {
     /// \brief Specifies node, from which edge goes, either by absolute or relative path.
     /// \details See more about node paths in Graph documentation.
@@ -76,7 +78,7 @@ struct Edge
 ///         {}};
 /// ```
 /// \endparblock
-struct Graph
+struct VisualGraphApi Graph
 {
     /// \brief Graph local id.
     /// \invariant Unique among other subgraphs, that belong to the same parent.
@@ -99,7 +101,7 @@ struct Graph
     bool operator== (const Graph &_other) const = default;
 };
 
-Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept;
+VisualGraphApi Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept;
 
 /// \brief Contains common constants for graphs, that are created from Emergence libraries and services.
 namespace Common::Constants
@@ -138,6 +140,6 @@ constexpr const char *WAREHOUSE_QUERY_ROOT_NODE = ".";
 } // namespace Common::Constants
 } // namespace Emergence::VisualGraph
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Node)
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Edge)
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::VisualGraph::Graph)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (VisualGraphApi, Emergence::VisualGraph::Node)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (VisualGraphApi, Emergence::VisualGraph::Edge)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (VisualGraphApi, Emergence::VisualGraph::Graph)

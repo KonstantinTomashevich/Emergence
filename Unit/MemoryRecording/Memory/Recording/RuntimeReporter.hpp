@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryRecordingApi.hpp>
+
 #include <Container/Optional.hpp>
 
 #include <Memory/Profiler/Capture.hpp>
@@ -11,7 +13,7 @@
 namespace Emergence::Memory::Recording
 {
 /// \brief Reports MemoryProfiler events directly into Track.
-class RuntimeReporter final : public ReporterBase
+class MemoryRecordingApi RuntimeReporter final : public ReporterBase
 {
 public:
     RuntimeReporter () noexcept = default;

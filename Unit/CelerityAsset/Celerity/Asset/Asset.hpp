@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityAssetApi.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
@@ -33,7 +35,7 @@ enum class AssetState : std::uint8_t
 ///            appropriate event from AssetReferenceBindingEventMap::stateUpdate.
 ///          - Use value query on ::type and ::state pair to request assets that need to
 ///            be loaded by appropriate loader.
-struct Asset final
+struct CelerityAssetApi Asset final
 {
     /// \brief Unique id of this asset.
     Memory::UniqueString id;
@@ -48,7 +50,7 @@ struct Asset final
     /// \brief Number of references that point to this asset.
     std::uint32_t usages = 0u;
 
-    struct Reflection final
+    struct CelerityAssetApi Reflection final
     {
         StandardLayout::FieldId id;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityInputApi.hpp>
+
 #include <Celerity/Input/Keyboard.hpp>
 #include <Celerity/Input/Mouse.hpp>
 
@@ -18,7 +20,7 @@ enum class InputEventType
 };
 
 /// \brief Stores information about keyboard input event.
-struct KeyboardEvent final
+struct CelerityInputApi KeyboardEvent final
 {
     /// \brief Code of the key, localized to layout.
     KeyCode keyCode = 0u;
@@ -40,7 +42,7 @@ struct KeyboardEvent final
 // TODO: Support for multiple mouses?
 
 /// \brief Stores information about mouse buttons related event.
-struct MouseButtonEvent final
+struct CelerityInputApi MouseButtonEvent final
 {
     /// \brief Mouse X coordinate at the time of click, relative to the window.
     int32_t mouseX = 0;
@@ -64,7 +66,7 @@ struct MouseButtonEvent final
 };
 
 /// \brief Stores information about mouse motion related event.
-struct MouseMotionEvent final
+struct CelerityInputApi MouseMotionEvent final
 {
     /// \brief Mouse X coordinate before motion happened, relative to the window.
     int32_t oldX = 0;
@@ -84,7 +86,7 @@ struct MouseMotionEvent final
 };
 
 /// \brief Stores information about mouse wheel related event.
-struct MouseWheelEvent final
+struct CelerityInputApi MouseWheelEvent final
 {
     /// \brief Horizontal wheel movement for mouses that support it.
     float x = 0.0f;
@@ -98,7 +100,7 @@ struct MouseWheelEvent final
 };
 
 /// \brief Stores information about text input from keyboard or other sources (like Android keyboard widget).
-struct TextInputEvent final
+struct CelerityInputApi TextInputEvent final
 {
     /// \brief Maximum amount of bytes per one input event.
     static constexpr std::size_t TEXT_BUFFER_SIZE = 32u;
@@ -112,7 +114,7 @@ struct TextInputEvent final
 };
 
 /// \brief Universal structure for storing information about physical input.
-struct InputEvent final
+struct CelerityInputApi InputEvent final
 {
     InputEvent (std::uint64_t _timeNs, const KeyboardEvent &_event) noexcept;
 
@@ -145,7 +147,7 @@ struct InputEvent final
 };
 
 /// \brief Storage for input events that happened during last frame and need to be processed.
-class FrameInputAccumulator final
+class CelerityInputApi FrameInputAccumulator final
 {
 public:
     /// \brief Provides API for iterating over input events and dropping out consumed events.

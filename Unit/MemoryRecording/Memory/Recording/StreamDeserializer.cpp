@@ -64,4 +64,15 @@ void StreamDeserializer::End () noexcept
 {
     ReporterBase::End ();
 }
+
+StreamDeserializer &StreamDeserializer::operator= (StreamDeserializer &&_other) noexcept
+{
+    if (this != &_other)
+    {
+        this->~StreamDeserializer ();
+        new (this) StreamDeserializer (std::move (_other));
+    }
+
+    return *this;
+}
 } // namespace Emergence::Memory::Recording

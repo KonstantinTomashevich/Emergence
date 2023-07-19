@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRender2dApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/AxisAlignedBox2d.hpp>
@@ -12,7 +14,7 @@ namespace Emergence::Celerity
 {
 /// \brief Represent two dimensional sprite that is attached to the world object.
 /// \invariant Object must have Transform2dComponent in order to position the sprite.
-struct Sprite2dComponent final
+struct CelerityRender2dApi Sprite2dComponent final
 {
     /// \brief Id of an object with Transform2dComponent to which this sprite is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
@@ -40,7 +42,7 @@ struct Sprite2dComponent final
     /// \brief Visibility mask used for filtering out unwanted drawables. See Camera2dComponent::visibilityMask.
     std::uint64_t visibilityMask = ~0u;
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId spriteId;

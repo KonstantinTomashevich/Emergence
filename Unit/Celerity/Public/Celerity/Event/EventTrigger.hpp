@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <Container/InplaceVector.hpp>
 #include <Container/Vector.hpp>
 
@@ -46,16 +48,16 @@ enum class EventRoute
 };
 
 /// \return Pipeline type, that is allowed to produce events.
-PipelineType GetEventProducingPipeline (EventRoute _route) noexcept;
+CelerityApi PipelineType GetEventProducingPipeline (EventRoute _route) noexcept;
 
 /// \return Pipeline type, that is allowed to consume events.
-PipelineType GetEventConsumingPipeline (EventRoute _route) noexcept;
+CelerityApi PipelineType GetEventConsumingPipeline (EventRoute _route) noexcept;
 
 /// \brief Pair of record-event fields, used for automatic copying when event is fired.
 /// \invariant Both fields have the same archetype and size.
 /// \invariant FieldArchetype::BIT is not supported.
 /// \invariant Field must be trivially copyable.
-struct CopyOutField final
+struct CelerityApi CopyOutField final
 {
     StandardLayout::FieldId recordField;
     StandardLayout::FieldId eventField;
@@ -63,7 +65,7 @@ struct CopyOutField final
 
 /// \brief Result of CopyOutFieldProcessing, that is more performance-friendly.
 /// \details Commands to copy one or more fields, that are positioned next to each other.
-struct CopyOutBlock final
+struct CelerityApi CopyOutBlock final
 {
     std::size_t sourceOffset = 0u;
     std::size_t targetOffset = 0u;
@@ -71,7 +73,7 @@ struct CopyOutBlock final
 };
 
 /// \brief Contains common data for all event triggers.
-class EventTriggerBase
+class CelerityApi EventTriggerBase
 {
 public:
     [[nodiscard]] StandardLayout::Mapping GetTrackedType () const noexcept;
@@ -91,7 +93,7 @@ protected:
 };
 
 /// \brief Trigger for trivial automated events like OnAdd/OnRemove.
-class TrivialEventTrigger final : public EventTriggerBase
+class CelerityApi TrivialEventTrigger final : public EventTriggerBase
 {
 public:
     TrivialEventTrigger (StandardLayout::Mapping _trackedType,
@@ -106,7 +108,7 @@ private:
 };
 
 /// \brief Instance of event trigger knows where to insert events and therefore can be triggered.
-class TrivialEventTriggerInstance final
+class CelerityApi TrivialEventTriggerInstance final
 {
 public:
     TrivialEventTriggerInstance (const TrivialEventTrigger *_trigger,
@@ -137,7 +139,7 @@ using TrivialEventTriggerInstanceRow =
     Container::InplaceVector<TrivialEventTriggerInstance, static_cast<std::size_t> (EventRoute::COUNT)>;
 
 /// \brief Trigger for OnChange automated events.
-class OnChangeEventTrigger final : public EventTriggerBase
+class CelerityApi OnChangeEventTrigger final : public EventTriggerBase
 {
 public:
     OnChangeEventTrigger (StandardLayout::Mapping _trackedType,
@@ -170,7 +172,7 @@ private:
 };
 
 /// \brief Instance of event trigger knows where to insert events and therefore can be triggered.
-class OnChangeEventTriggerInstance final
+class CelerityApi OnChangeEventTriggerInstance final
 {
 public:
     OnChangeEventTriggerInstance (const OnChangeEventTrigger *_trigger,
@@ -192,7 +194,7 @@ using OnChangeEventTriggerInstanceRow =
     Container::InplaceVector<OnChangeEventTriggerInstance, MAX_ON_CHANGE_EVENTS_PER_TYPE>;
 
 /// \brief Change tracker performs change detection logic and stores optimized data for change detection algorithm.
-class ChangeTracker final
+class CelerityApi ChangeTracker final
 {
 public:
     using EventVector = Container::InplaceVector<OnChangeEventTrigger *, MAX_ON_CHANGE_EVENTS_PER_TYPE>;
@@ -245,4 +247,4 @@ private:
 };
 } // namespace Emergence::Celerity
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Celerity::CopyOutField)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (CelerityApi, Celerity::CopyOutField)

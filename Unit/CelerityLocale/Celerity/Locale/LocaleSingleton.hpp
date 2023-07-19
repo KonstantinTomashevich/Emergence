@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityLocaleApi.hpp>
+
 #include <Celerity/Locale/LocaleConfiguration.hpp>
 
 #include <Handling/Handle.hpp>
@@ -23,7 +25,7 @@ enum class LocaleLoadingState : std::uint8_t
 };
 
 /// \brief Contains locale loading state that is shared with background job.
-class LocaleLoadingSharedState final : public Handling::HandleableBase
+class CelerityLocaleApi LocaleLoadingSharedState final : public Handling::HandleableBase
 {
 public:
     void *operator new (std::size_t /*unused*/) noexcept;
@@ -45,7 +47,7 @@ private:
 };
 
 /// \brief Stores global configuration and state of localization routine.
-struct LocaleSingleton final
+struct CelerityLocaleApi LocaleSingleton final
 {
     /// \brief Target locale to be loaded and applied. Edit this field if you need to change locale.
     Memory::UniqueString targetLocale;
@@ -59,7 +61,7 @@ struct LocaleSingleton final
     /// \brief Shared state for background loading through job dispatcher.
     Handling::Handle<LocaleLoadingSharedState> sharedState {new LocaleLoadingSharedState};
 
-    struct Reflection final
+    struct CelerityLocaleApi Reflection final
     {
         StandardLayout::FieldId targetLocale;
         StandardLayout::FieldId loadedLocale;

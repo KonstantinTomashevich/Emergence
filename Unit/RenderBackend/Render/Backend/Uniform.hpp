@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <Memory/UniqueString.hpp>
 
 #include <Render/Backend/Texture.hpp>
@@ -26,7 +28,7 @@ enum class UniformType : std::uint8_t
 };
 
 /// \brief Represents named parameter that can be passed to GPU programs.
-class Uniform final
+class RenderBackendApi Uniform final
 {
 public:
     /// \brief Constructs default invalid instance.

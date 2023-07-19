@@ -1,11 +1,13 @@
 #pragma once
 
+#include <CelerityAssetApi.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
 /// \brief Contains global configuration and information about asset management.
-struct AssetManagerSingleton final
+struct CelerityAssetApi AssetManagerSingleton final
 {
     /// \brief Total count of assets that are currently in AssetState::LOADING.
     std::uint32_t assetsLeftToLoad = 0u;
@@ -16,7 +18,7 @@ struct AssetManagerSingleton final
     /// \brief Indicates whether assets with no references should be deleted automatically.
     bool automaticallyCleanUnusedAssets = true;
 
-    struct Reflection final
+    struct CelerityAssetApi Reflection final
     {
         StandardLayout::FieldId assetsLeftToLoad;
         StandardLayout::FieldId unusedAssetCount;

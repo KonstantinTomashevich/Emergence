@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Platformer2dDemoLogicApi.hpp>
+
 #include <Resource/Object/TypeManifest.hpp>
 
-Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexcept;
+Platformer2dDemoLogicApi Emergence::Resource::Object::TypeManifest GetResourceObjectTypeManifest () noexcept;

@@ -1,12 +1,14 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::UI
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToNormalUpdate.
-struct Checkpoint final
+struct CelerityUIApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -32,7 +34,7 @@ struct Checkpoint final
 };
 
 /// \brief Adds tasks that update and render user interface.
-void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        FrameInputAccumulator *_inputAccumulator,
-                        const KeyCodeMapping &_keyCodeMapping) noexcept;
+CelerityUIApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
+                                      FrameInputAccumulator *_inputAccumulator,
+                                      const KeyCodeMapping &_keyCodeMapping) noexcept;
 } // namespace Emergence::Celerity::UI

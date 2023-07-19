@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRender2dApi.hpp>
+
 #include <Celerity/Asset/AssetReferenceBinding.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
@@ -11,7 +13,7 @@ namespace Emergence::Celerity::Sprite2dUvAnimationManagement
 /// \details Inserted into asset loading, therefore has no specific checkpoints.
 ///
 /// \param _eventMap Event map generated as a result of asset events binding.
-void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        Resource::Provider::ResourceProvider *_resourceProvider,
-                        const AssetReferenceBindingEventMap &_eventMap) noexcept;
+CelerityRender2dApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
+                                            Resource::Provider::ResourceProvider *_resourceProvider,
+                                            const AssetReferenceBindingEventMap &_eventMap) noexcept;
 } // namespace Emergence::Celerity::Sprite2dUvAnimationManagement

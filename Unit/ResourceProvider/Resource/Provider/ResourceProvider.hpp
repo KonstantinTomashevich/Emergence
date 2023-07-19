@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ResourceProviderApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/Cursor.hpp>
@@ -78,11 +80,11 @@ enum class LoadingOperationResponse : std::uint8_t
 /// safely execute several const methods from different threads, but no other methods can be executed while non-const
 /// method is being executed.
 /// \endparblock
-class ResourceProvider final
+class ResourceProviderApi ResourceProvider final
 {
 public:
     /// \brief Cursor that provides access to ids of all resource objects of given type.
-    class ObjectRegistryCursor final
+    class ResourceProviderApi ObjectRegistryCursor final
     {
     public:
         ObjectRegistryCursor (const ObjectRegistryCursor &_other) noexcept;
@@ -108,7 +110,7 @@ public:
     };
 
     /// \brief Cursor that provides access to ids of all third party resources.
-    class ThirdPartyRegistryCursor final
+    class ResourceProviderApi ThirdPartyRegistryCursor final
     {
     public:
         ThirdPartyRegistryCursor (const ThirdPartyRegistryCursor &_other) noexcept;

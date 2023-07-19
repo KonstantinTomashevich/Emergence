@@ -1,5 +1,7 @@
 #pragma once
 
+#include <StandardLayoutMappingApi.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -15,11 +17,11 @@ namespace Emergence::StandardLayout
 /// \brief Finished field mapping for user defined object type.
 ///
 /// \details MappingBuilder should be used to construct mappings.
-class Mapping final
+class StandardLayoutMappingApi Mapping final
 {
 public:
     /// \brief Allows iteration over Mapping fields.
-    class FieldIterator final
+    class StandardLayoutMappingApi FieldIterator final
     {
     public:
         EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (FieldIterator, Field);
@@ -38,7 +40,7 @@ public:
     ///          field values. For example, if class has union field and union variant specifier is `1` then only
     ///          fields from variant associated with `1` are visible because other union fields just have no logical
     ///          meaning for that object.
-    class ConditionalFieldIterator final
+    class StandardLayoutMappingApi ConditionalFieldIterator final
     {
     public:
         EMERGENCE_FORWARD_ITERATOR_OPERATIONS (ConditionalFieldIterator, Field);
@@ -140,10 +142,10 @@ private:
 };
 
 /// \brief Wraps Mapping::Begin for foreach sentences.
-Mapping::FieldIterator begin (const Mapping &_mapping) noexcept;
+StandardLayoutMappingApi Mapping::FieldIterator begin (const Mapping &_mapping) noexcept;
 
 /// \brief Wraps Mapping::End for foreach sentences.
-Mapping::FieldIterator end (const Mapping &_mapping) noexcept;
+StandardLayoutMappingApi Mapping::FieldIterator end (const Mapping &_mapping) noexcept;
 } // namespace Emergence::StandardLayout
 
 namespace std

@@ -19,7 +19,9 @@ using namespace Emergence::Memory::Literals;
 
 namespace
 {
+#define EventsApi
 EMERGENCE_CELERITY_EVENT1_DECLARATION (TestEvent, std::uint64_t, data);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestEvent, data)
 

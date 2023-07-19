@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MathApi.hpp>
+
 #include <type_traits>
 
 #include <Math/NoInitializationFlag.hpp>
@@ -8,7 +10,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (float) Vector3f final
+struct alignas (float) MathApi Vector3f final
 {
     static const Vector3f ZERO;
     static const Vector3f ONE;
@@ -80,7 +82,7 @@ struct alignas (float) Vector3f final
         };
     };
 
-    struct Reflection final
+    struct MathApi Reflection final
     {
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
@@ -97,15 +99,15 @@ static_assert (std::is_trivially_destructible_v<Vector3f>);
 static_assert (std::is_trivially_copy_assignable_v<Vector3f>);
 static_assert (std::is_trivially_move_assignable_v<Vector3f>);
 
-float Dot (const Vector3f &_first, const Vector3f &_second) noexcept;
+MathApi float Dot (const Vector3f &_first, const Vector3f &_second) noexcept;
 
-Vector3f Cross (const Vector3f &_first, const Vector3f &_second) noexcept;
+MathApi Vector3f Cross (const Vector3f &_first, const Vector3f &_second) noexcept;
 
-float UnsignedAngle (const Vector3f &_from, const Vector3f &_to) noexcept;
+MathApi float UnsignedAngle (const Vector3f &_from, const Vector3f &_to) noexcept;
 
-float SignedAngle (const Vector3f &_from, const Vector3f &_to, const Vector3f &_axis = Vector3f::UP) noexcept;
+MathApi float SignedAngle (const Vector3f &_from, const Vector3f &_to, const Vector3f &_axis = Vector3f::UP) noexcept;
 
-Vector3f Lerp (const Vector3f &_begin, const Vector3f &_end, float _t) noexcept;
+MathApi Vector3f Lerp (const Vector3f &_begin, const Vector3f &_end, float _t) noexcept;
 
-bool NearlyEqual (const Vector3f &_first, const Vector3f &_second) noexcept;
+MathApi bool NearlyEqual (const Vector3f &_first, const Vector3f &_second) noexcept;
 } // namespace Emergence::Math

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryRecordingApi.hpp>
+
 #include <ostream>
 
 #include <Memory/Profiler/Capture.hpp>
@@ -10,7 +12,7 @@
 namespace Emergence::Memory::Recording
 {
 /// \brief Serializes MemoryProfiler events using MemoryRecording format into standard stream.
-class StreamSerializer final
+class MemoryRecordingApi StreamSerializer final
 {
 public:
     StreamSerializer () noexcept = default;

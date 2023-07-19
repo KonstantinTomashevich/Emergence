@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryRecordingApi.hpp>
+
 #include <functional>
 
 #include <Container/HashMap.hpp>
@@ -12,7 +14,7 @@
 namespace Emergence::Memory::Recording
 {
 /// \brief Encapsulates shared logic for GroupUID and EventType::DECLARE_GROUP events generation.
-class GroupUIDAssigner final
+class MemoryRecordingApi GroupUIDAssigner final
 {
 public:
     /// \brief Consumer for created EventType::DECLARE_GROUP events.
@@ -43,5 +45,5 @@ private:
 
 /// \brief Converts MemoryProfiler event into MemoryRecording event.
 /// \param _groupUID UID for Profiler::Event::group, obtained by external code. For example, using GroupUIDAssigner.
-Event ConvertEvent (GroupUID _groupUID, const Profiler::Event &_source) noexcept;
+MemoryRecordingApi Event ConvertEvent (GroupUID _groupUID, const Profiler::Event &_source) noexcept;
 } // namespace Emergence::Memory::Recording

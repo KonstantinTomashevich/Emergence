@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityTransformApi.hpp>
+
 #include <limits>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -26,7 +28,7 @@ class TransformWorldAccessor;
 ///          If object is used only for visual effects, only its visual transform should be changed,
 ///          because it has no "logical" gameplay meaning.
 template <typename Transform>
-class TransformComponent final
+class CelerityTransformApi TransformComponent final
 {
 public:
     TransformComponent () noexcept = default;
@@ -97,7 +99,7 @@ private:
     std::uint64_t visualTransformLastSyncTimeNs = 0u;
 
 public:
-    struct Reflection final
+    struct CelerityTransformApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId parentObjectId;

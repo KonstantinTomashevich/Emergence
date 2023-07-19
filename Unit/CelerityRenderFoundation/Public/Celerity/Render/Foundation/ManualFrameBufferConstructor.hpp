@@ -1,5 +1,7 @@
 #pragma once
 
+
+#include <CelerityRenderFoundationApi.hpp>
 #include <Celerity/Asset/ManualAssetConstructor.hpp>
 
 #include <Render/Backend/Texture.hpp>
@@ -8,7 +10,7 @@ namespace Emergence::Celerity
 {
 /// \brief Utility class for systems that need to construct frame buffer for rendering.
 /// \warning Frame buffers can only be constructed through this class and cannot be constructed through reference!
-class ManualFrameBufferConstructor final
+class CelerityRenderFoundationApi ManualFrameBufferConstructor final
 {
 public:
     /// \brief Initializes internal queries using given task constructor,

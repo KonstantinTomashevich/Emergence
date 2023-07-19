@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryProfilerApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -31,7 +33,7 @@ enum class EventType
 };
 
 /// \brief Every memory management operation produces appropriate event.
-struct Event final
+struct MemoryProfilerApi Event final
 {
     EventType type = EventType::ALLOCATE;
 
@@ -55,10 +57,10 @@ struct Event final
 
 /// \brief Creates new EventType::MARKER event, associated with given group.
 /// \details Thread safe.
-void AddMarker (UniqueString _markerId, const AllocationGroup &_group = AllocationGroup::Root ()) noexcept;
+MemoryProfilerApi void AddMarker (UniqueString _markerId, const AllocationGroup &_group = AllocationGroup::Root ()) noexcept;
 
 /// \brief State of allocation group, that was captured during Capture::Start.
-class CapturedAllocationGroup final
+class MemoryProfilerApi CapturedAllocationGroup final
 {
 public:
     /// \brief Provides iteration over captured states of allocation group children.
@@ -116,7 +118,7 @@ private:
 };
 
 /// \brief Allows user to read memory management events that occurred after Capture::Start.
-class EventObserver
+class MemoryProfilerApi EventObserver
 {
 public:
     /// Copying captures seems counter-intuitive.
@@ -143,7 +145,7 @@ private:
 };
 
 /// \brief Provides API for capturing memory consumption.
-class Capture final
+class MemoryProfilerApi Capture final
 {
 public:
     Capture () = delete;

@@ -1,12 +1,14 @@
 #pragma once
 
+#include <CelerityAssetApi.hpp>
+
 #include <Celerity/Asset/AssetReferenceBinding.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::AssetManagement
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToNormalUpdate.
-struct Checkpoint final
+struct CelerityAssetApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -24,7 +26,7 @@ struct Checkpoint final
 };
 
 /// \brief Adds asset management checkpoints and tasks to normal update pipeline.
-void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        const AssetReferenceBindingList &_bindingList,
-                        const AssetReferenceBindingEventMap &_bindingEvents) noexcept;
+CelerityAssetApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
+                                         const AssetReferenceBindingList &_bindingList,
+                                         const AssetReferenceBindingEventMap &_bindingEvents) noexcept;
 } // namespace Emergence::Celerity::AssetManagement

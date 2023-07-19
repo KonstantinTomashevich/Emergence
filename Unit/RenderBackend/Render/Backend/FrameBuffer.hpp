@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Render/Backend/Texture.hpp>
@@ -10,7 +12,7 @@ namespace Emergence::Render::Backend
 using FrameBufferId = std::uint64_t;
 
 /// \brief Represents frame buffer which primary function is to connect Viewport to its render targets.
-class FrameBuffer final
+class RenderBackendApi FrameBuffer final
 {
 public:
     /// \brief Creates invalid instance of the frame buffer.
@@ -42,7 +44,7 @@ private:
 };
 
 /// \brief Helper class for building multiple render target frame buffers.
-class FrameBufferBuilder final
+class RenderBackendApi FrameBufferBuilder final
 {
 public:
     /// \brief Creates new frame buffer builder instance.

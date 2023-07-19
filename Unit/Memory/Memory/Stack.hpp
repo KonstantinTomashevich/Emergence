@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -12,7 +14,7 @@ namespace Emergence::Memory
 /// \details Memory stacks are great for allocation of trivially destructible objects with shared lifetime,
 ///          for example events fired during current frame or global unique strings, due of ability to free
 ///          all chunks, allocated after some checkpoint, by simply moving stack head to previous position.
-class Stack final
+class MemoryApi Stack final
 {
 public:
     /// \param _capacity Stack capacity in bytes.

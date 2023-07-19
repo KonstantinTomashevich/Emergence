@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ResourceProviderApi.hpp>
+
 #include <cstdint>
 
 #include <Container/String.hpp>
@@ -10,7 +12,7 @@
 namespace Emergence::Resource::Provider
 {
 /// \brief Describes indexed resource which structure is described using reflection.
-struct IndexFileObjectItem final
+struct ResourceProviderApi IndexFileObjectItem final
 {
     /// \brief Object unique id.
     Memory::UniqueString id;
@@ -21,7 +23,7 @@ struct IndexFileObjectItem final
     /// \brief Path to resource from source root.
     Container::Utf8String relativePath;
 
-    struct Reflection final
+    struct ResourceProviderApi Reflection final
     {
         StandardLayout::FieldId id;
         StandardLayout::FieldId typeName;
@@ -33,7 +35,7 @@ struct IndexFileObjectItem final
 };
 
 /// \brief Describes indexed resource of third party (without reflection) format.
-struct IndexFileThirdPartyItem final
+struct ResourceProviderApi IndexFileThirdPartyItem final
 {
     /// \brief Resource unique id.
     Memory::UniqueString id;
@@ -41,7 +43,7 @@ struct IndexFileThirdPartyItem final
     /// \brief Path to resource from source root.
     Container::Utf8String relativePath;
 
-    struct Reflection final
+    struct ResourceProviderApi Reflection final
     {
         StandardLayout::FieldId id;
         StandardLayout::FieldId relativePath;
@@ -53,7 +55,7 @@ struct IndexFileThirdPartyItem final
 
 /// \brief Describes structure of the resource provider source index file.
 /// \details Index files are used to cache information about source files and avoid scanning the filesystem.
-struct IndexFile final
+struct ResourceProviderApi IndexFile final
 {
     /// \brief Resource provider expects index file to be named this way.
     inline static const Container::Utf8String INDEX_FILE_NAME = ".resource.provider.index";
@@ -66,7 +68,7 @@ struct IndexFile final
     Container::Vector<IndexFileThirdPartyItem> thirdParty {
         Memory::Profiler::AllocationGroup {Memory::UniqueString {"IndexFile"}}};
 
-    struct Reflection final
+    struct ResourceProviderApi Reflection final
     {
         StandardLayout::FieldId objects;
         StandardLayout::FieldId thirdParty;

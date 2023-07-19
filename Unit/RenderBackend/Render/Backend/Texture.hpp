@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -32,7 +34,7 @@ enum class TextureFormat
 };
 
 /// \brief Contains various supported settings that dictate how texture should be used.
-struct TextureSettings final
+struct RenderBackendApi TextureSettings final
 {
     /// \brief Sampling along U coordinate line.
     TextureSampling uSampling = TextureSampling::NONE;
@@ -43,7 +45,7 @@ struct TextureSettings final
     /// \brief Sampling along W coordinate line.
     TextureSampling wSampling = TextureSampling::NONE;
 
-    struct Reflection final
+    struct RenderBackendApi Reflection final
     {
         StandardLayout::FieldId uSampling;
         StandardLayout::FieldId vSampling;
@@ -58,7 +60,7 @@ struct TextureSettings final
 using TextureId = std::uint64_t;
 
 /// \brief Represents loaded texture that can be submitted to sampler.
-class Texture final
+class RenderBackendApi Texture final
 {
 public:
     static Texture CreateInvalid () noexcept;

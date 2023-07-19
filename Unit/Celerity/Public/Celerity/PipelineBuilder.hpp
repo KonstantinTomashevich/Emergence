@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/Query/EditAscendingRangeQuery.hpp>
 #include <Celerity/Query/EditDescendingRangeQuery.hpp>
@@ -53,7 +55,7 @@ class PipelineBuilder;
 ///       has remove access, it is registered as OnRemove event producer for the same reason. This makes it difficult
 ///       to correctly organize event pipelines as we have a lot of potential producers. To reduce this side effect
 ///       we allow users to request edit access without remove and remove without edit.
-class TaskConstructor final
+class CelerityApi TaskConstructor final
 {
 public:
     TaskConstructor (const TaskConstructor &_other) = delete;
@@ -417,7 +419,7 @@ private:
 };
 
 /// \brief Provides API for building WorldView Pipeline's.
-class PipelineBuilder final
+class CelerityApi PipelineBuilder final
 {
 public:
     explicit PipelineBuilder (WorldView *_targetWorldView) noexcept;

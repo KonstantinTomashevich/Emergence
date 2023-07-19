@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRender2dApi.hpp>
+
 #include <atomic>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -11,7 +13,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Contains common parameters of world 2d rendering.
-struct Render2dSingleton final
+struct CelerityRender2dApi Render2dSingleton final
 {
     /// \invariant Do not access directly, use ::GenerateSprite2dId.
     std::atomic_uintptr_t sprite2dIdCounter = 0u;
@@ -25,7 +27,7 @@ struct Render2dSingleton final
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
     [[nodiscard]] std::uintptr_t GenerateDebugShape2dId () const noexcept;
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::Mapping mapping;
     };

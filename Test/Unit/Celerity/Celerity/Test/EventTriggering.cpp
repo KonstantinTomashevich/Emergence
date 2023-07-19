@@ -66,7 +66,9 @@ const TestRecord::Reflection &TestRecord::Reflect () noexcept
     return reflection;
 }
 
+#define EventsApi
 EMERGENCE_CELERITY_EVENT1_DECLARATION (TestRecordAddedEvent, std::uint64_t, id);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT1_IMPLEMENTATION (TestRecordAddedEvent, id)
 
@@ -77,10 +79,12 @@ void RegisterTestRecordAddedEvent (EventRegistrar &_registrar)
                             {{TestRecord::Reflect ().id, TestRecordAddedEvent::Reflect ().id}}});
 }
 
+#define EventsApi
 /// \details In lots of cases we need to know about addition in several pipelines (fixed and normal, for example).
 ///          In order to do it, we need to have two event types: one per pipeline. We're using this event type in pair
 ///          with TestRecordAddedEvent to check that this behaviour works correctly.
 EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordAddedSharedEvent, std::uint64_t, id, float, health);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (TestRecordAddedSharedEvent, id, health)
 
@@ -94,8 +98,10 @@ void RegisterTestRecordAddedSharedEvent (EventRegistrar &_registrar)
                             }});
 }
 
+#define EventsApi
 // Intentionally copy everything except health to test copy out of separate blocks.
 EMERGENCE_CELERITY_EVENT4_DECLARATION (TestRecordRemovedEvent, std::uint64_t, id, float, x, float, y, float, angle);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TestRecordRemovedEvent, id, x, y, angle)
 
@@ -111,7 +117,9 @@ void RegisterTestRecordRemovedEvent (EventRegistrar &_registrar)
                                }});
 }
 
+#define EventsApi
 EMERGENCE_CELERITY_EVENT2_DECLARATION (TestRecordHealthChangedEvent, std::uint64_t, id, float, previousHealth);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT2_IMPLEMENTATION (TestRecordHealthChangedEvent, id, previousHealth)
 
@@ -125,8 +133,10 @@ void RegisterTestRecordHealthChangedEvent (EventRegistrar &_registrar)
          {{TestRecord::Reflect ().id, TestRecordHealthChangedEvent::Reflect ().id}}});
 }
 
+#define EventsApi
 EMERGENCE_CELERITY_EVENT4_DECLARATION (
     TestRecordTransformChangedEvent, std::uint64_t, id, float, previousX, float, previousY, float, previousAngle);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT4_IMPLEMENTATION (TestRecordTransformChangedEvent, id, previousX, previousY, previousAngle)
 
@@ -144,10 +154,12 @@ void RegisterTestRecordTransformChangedEvent (EventRegistrar &_registrar)
          {{TestRecord::Reflect ().id, TestRecordTransformChangedEvent::Reflect ().id}}});
 }
 
+#define EventsApi
 /// \details Although this event has no practical sense, it is used
 ///          to check how change detection in separate blocks works.
 EMERGENCE_CELERITY_EVENT3_DECLARATION (
     TestRecordHealthOrAngleChangedEvent, std::uint64_t, id, float, previousHealth, float, previousAngle);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (TestRecordHealthOrAngleChangedEvent, id, previousHealth, previousAngle)
 
@@ -164,9 +176,11 @@ void RegisterTestRecordHealthOrAngleChangedEvent (EventRegistrar &_registrar)
          {{TestRecord::Reflect ().id, TestRecordHealthOrAngleChangedEvent::Reflect ().id}}});
 }
 
+#define EventsApi
 /// \details Although this event has no practical sense, it is used to check how change tracker zoning works.
 EMERGENCE_CELERITY_EVENT3_DECLARATION (
     TestRecordHealthOrXChangedEvent, std::uint64_t, id, float, previousHealth, float, previousX);
+#undef EventsApi
 
 EMERGENCE_CELERITY_EVENT3_IMPLEMENTATION (TestRecordHealthOrXChangedEvent, id, previousHealth, previousX)
 

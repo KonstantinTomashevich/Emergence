@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryApi.hpp>
+
 #include <cstdint>
 #include <ostream>
 #include <string_view>
@@ -9,7 +11,7 @@
 namespace Emergence::Memory
 {
 /// \brief Provides fast comparison, hashing and trivial destruction for immutable strings.
-class UniqueString final
+class MemoryApi UniqueString final
 {
 public:
     /// \brief Constructs immutable empty string.

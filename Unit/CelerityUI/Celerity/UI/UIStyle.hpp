@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -37,7 +39,7 @@ enum class UIStyleColorPropertyName
 };
 
 /// \brief Attaches property of color type to a style.
-struct UIStyleColorProperty final
+struct CelerityUIApi UIStyleColorProperty final
 {
     UIStyleColorProperty () noexcept;
 
@@ -68,7 +70,7 @@ struct UIStyleColorProperty final
         float rgba[4u];
     };
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId styleId;
         StandardLayout::FieldId property;
@@ -101,7 +103,7 @@ enum class UIStyleFloatPropertyName
 };
 
 /// \brief Attaches property of float type to a style.
-struct UIStyleFloatProperty final
+struct CelerityUIApi UIStyleFloatProperty final
 {
     /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
@@ -112,7 +114,7 @@ struct UIStyleFloatProperty final
     /// \brief Value that is assigned to property.
     float value = 0.0f;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId styleId;
         StandardLayout::FieldId property;
@@ -135,7 +137,7 @@ enum class UIStyleFloatPairPropertyName
 };
 
 /// \brief Attaches property of float pair type to a style.
-struct UIStyleFloatPairProperty final
+struct CelerityUIApi UIStyleFloatPairProperty final
 {
     /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
@@ -149,7 +151,7 @@ struct UIStyleFloatPairProperty final
     /// \brief Second component of the value that is assigned to property.
     float y = 0.0f;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId styleId;
         StandardLayout::FieldId property;
@@ -163,7 +165,7 @@ struct UIStyleFloatPairProperty final
 
 /// \brief Defines font that is attached to given style.
 /// \invariant Only one font attachment per style is allowed.
-struct UIStyleFontProperty final
+struct CelerityUIApi UIStyleFontProperty final
 {
     /// \brief Unique identifier of style to which this property instance belongs.
     Memory::UniqueString styleId;
@@ -171,7 +173,7 @@ struct UIStyleFontProperty final
     /// \brief Id of a font asset to be used.
     Memory::UniqueString fontId;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId styleId;
         StandardLayout::FieldId fontId;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityInputApi.hpp>
+
 #include <Celerity/Input/InputAction.hpp>
 #include <Celerity/Input/Keyboard.hpp>
 
@@ -21,7 +23,7 @@ enum class KeyTriggerType : std::uint8_t
 };
 
 /// \brief Automatically adds action to dispatch queue if given keyboard conditions are met.
-struct KeyTrigger final
+struct CelerityInputApi KeyTrigger final
 {
     /// \brief Action that will be sent when conditions are met.
     InputAction actionToSend;
@@ -50,7 +52,7 @@ struct KeyTrigger final
         bool triggeredThisFrame = false;
     };
 
-    struct Reflection final
+    struct CelerityInputApi Reflection final
     {
         StandardLayout::FieldId actionToSend;
         StandardLayout::FieldId expectedQualifiers;

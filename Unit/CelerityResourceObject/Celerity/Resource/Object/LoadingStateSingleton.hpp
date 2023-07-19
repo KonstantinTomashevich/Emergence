@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityResourceObjectApi.hpp>
+
 #include <Container/HashSet.hpp>
 
 #include <Handling/Handle.hpp>
@@ -12,7 +14,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Contains resource object library loading state that is shared with background job.
-class ResourceObjectLoadingSharedState final : public Handling::HandleableBase
+class CelerityResourceObjectApi ResourceObjectLoadingSharedState final : public Handling::HandleableBase
 {
 public:
     void *operator new (std::size_t /*unused*/) noexcept;
@@ -53,13 +55,13 @@ private:
 
 /// \brief Contains loading states for resource object loading requests.
 /// \details Is not designed to be modified from outside.
-struct ResourceObjectLoadingStateSingleton final
+struct CelerityResourceObjectApi ResourceObjectLoadingStateSingleton final
 {
     /// \brief Loading states of all active requests.
     Container::Vector<Handling::Handle<ResourceObjectLoadingSharedState>> sharedStates {
         Memory::Profiler::AllocationGroup::Top ()};
 
-    struct Reflection final
+    struct CelerityResourceObjectApi Reflection final
     {
         StandardLayout::Mapping mapping;
     };

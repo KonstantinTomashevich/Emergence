@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryRecordingApi.hpp>
+
 #include <Memory/Recording/Event.hpp>
 
 namespace Emergence::Memory::Recording
@@ -7,7 +9,7 @@ namespace Emergence::Memory::Recording
 class Track;
 
 /// \brief Provides inheritors with ability to report events into Track.
-class ReporterBase
+class MemoryRecordingApi ReporterBase
 {
 protected:
     ReporterBase () noexcept = default;

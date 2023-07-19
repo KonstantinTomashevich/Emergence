@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ContainerApi.hpp>
+
 #include <array>
 #include <cstdint>
 #include <string_view>
@@ -17,7 +19,7 @@ namespace Emergence::Container
 ///          construction. For example, to construct `X` as `X = A + B + C + D` we need to allocate two additional
 ///          strings `Y = A + B` and `Z = Y + C`. Buffered concatenation allows to optimize this behaviour through
 ///          usage of one shared buffer.
-class StringBuilder final
+class ContainerApi StringBuilder final
 {
 public:
     /// \details We use fixed-size buffer implementation, because it can be allocated directly on stack.

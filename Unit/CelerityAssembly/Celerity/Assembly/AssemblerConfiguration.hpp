@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityAssemblyApi.hpp>
+
 #include <limits>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -18,14 +20,14 @@ constexpr UniqueId ASSEMBLY_ROOT_OBJECT_ID = 0u;
 constexpr UniqueId ASSEMBLY_OBJECT_ID_KEY_INDEX = std::numeric_limits<UniqueId>::max ();
 
 /// \return Allocation group used to allocate all assembly configuration structures.
-Memory::Profiler::AllocationGroup GetAssemblerConfigurationAllocationGroup () noexcept;
+CelerityAssemblyApi Memory::Profiler::AllocationGroup GetAssemblerConfigurationAllocationGroup () noexcept;
 
 /// \brief Provides ability to register custom keys, for example instance ids for multi components
 ///        (components is called multi component when multiple instances can be attached to one object).
 /// \details Only keys with prototype-internal values (like object ids) should be registered like that.
 ///          If reference is global then assembler does not recalculate its id and therefore has nothing
 ///          to do with this key. Examples of global references: models, unit configs.
-struct CustomKeyDescriptor final
+struct CelerityAssemblyApi CustomKeyDescriptor final
 {
     /// \brief Signature of a function used to get new id from id generator singleton.
     using ProviderFunction = UniqueId (*) (const void *);
@@ -38,7 +40,7 @@ struct CustomKeyDescriptor final
 };
 
 /// \brief Informs that field contains value of selected key.
-struct KeyBinding final
+struct CelerityAssemblyApi KeyBinding final
 {
     /// \brief Id of a field, that holds value associated with selected key.
     StandardLayout::FieldId keyField;
@@ -48,7 +50,7 @@ struct KeyBinding final
 };
 
 /// \brief Describes component type that can be spawned during assembly routine.
-struct TypeDescriptor final
+struct CelerityAssemblyApi TypeDescriptor final
 {
     /// \brief Mapping of this component type.
     StandardLayout::Mapping type;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <atomic>
 #include <cstdint>
 
@@ -28,7 +30,7 @@ enum class WorldUpdateMode
 /// \brief Singleton for world<->tasks communication and global utility like id generation.
 /// \warning This singleton is modified by World outside of pipeline execution,
 ///          therefore OnChange events do not work with it.
-struct WorldSingleton final
+struct CelerityApi WorldSingleton final
 {
     /// \brief Indicates whether current normal update was separated from previous one by one or more fixed updates.
     /// \warning Access outside of normal update routine leads to undefined behaviour.
@@ -43,7 +45,7 @@ struct WorldSingleton final
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
     std::uintptr_t GenerateId () const noexcept;
 
-    struct Reflection final
+    struct CelerityApi Reflection final
     {
         StandardLayout::FieldId fixedUpdateHappened;
         StandardLayout::FieldId updateMode;

@@ -9,6 +9,7 @@ concrete_sources ("*.cpp")
 
 concrete_require (
         SCOPE PRIVATE
-        ABSTRACT CelerityPhysics3d JobDispatcher Log
+        ABSTRACT JobDispatcher Log
         CONCRETE_INTERFACE CelerityTransform
         THIRD_PARTY PhysX)
+concrete_implements_abstract (CelerityPhysics3d)

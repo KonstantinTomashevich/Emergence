@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRender2dApi.hpp>
+
 #include <Celerity/Render/2d/Sprite2dUvAnimation.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -7,7 +9,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Item of animation frames array inside Sprite2dUvAnimationAsset.
-struct Sprite2dUvAnimationFrameInfo final
+struct CelerityRender2dApi Sprite2dUvAnimationFrameInfo final
 {
     /// \brief UV coordinates for this frame.
     Math::AxisAlignedBox2d uv {{0.0f, 0.0f}, {1.0f, 1.0f}};
@@ -15,7 +17,7 @@ struct Sprite2dUvAnimationFrameInfo final
     /// \brief Duration of this frame in seconds.
     float durationS = 1.0f;
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId uv;
         StandardLayout::FieldId durationS;
@@ -26,7 +28,7 @@ struct Sprite2dUvAnimationFrameInfo final
 };
 
 /// \brief Content of sprite uv animation file that stores all the information about this animation.
-struct Sprite2dUvAnimationAsset final
+struct CelerityRender2dApi Sprite2dUvAnimationAsset final
 {
     /// \brief Id of a material instance that is used along with this sprite animation.
     Memory::UniqueString materialInstanceId;
@@ -35,7 +37,7 @@ struct Sprite2dUvAnimationAsset final
     Container::Vector<Sprite2dUvAnimationFrameInfo> frames {
         Memory::Profiler::AllocationGroup {Memory::UniqueString {"Sprite2dUvAnimationFrames"}}};
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId materialInstanceId;
         StandardLayout::FieldId frames;

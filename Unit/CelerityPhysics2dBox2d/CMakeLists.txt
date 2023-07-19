@@ -1,4 +1,5 @@
 register_concrete (CelerityPhysics2dBox2d)
 concrete_include (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 concrete_sources ("*.cpp")
-concrete_require (SCOPE PRIVATE ABSTRACT CelerityPhysics2d Log CONCRETE_INTERFACE CelerityTransform THIRD_PARTY box2d)
+concrete_require (SCOPE PRIVATE ABSTRACT Log CONCRETE_INTERFACE CelerityTransform THIRD_PARTY box2d)
+concrete_implements_abstract (CelerityPhysics2d)

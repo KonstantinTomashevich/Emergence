@@ -1,5 +1,7 @@
 #pragma once
 
+#include <TaskCollectionApi.hpp>
+
 #include <functional>
 
 #include <Container/Vector.hpp>
@@ -12,7 +14,7 @@ namespace Emergence::Task
 /// \brief Intermediate structure for storing tasks that may depend on each other.
 /// \details This format is designed for transporting information about tasks from one library to another.
 ///          It's not designed to be modified after initial construction and setup.
-struct Collection
+struct TaskCollectionApi Collection
 {
     /// \return Shared default allocation group for all task collections.
     static Memory::Profiler::AllocationGroup GetDefaultAllocationGroup () noexcept;

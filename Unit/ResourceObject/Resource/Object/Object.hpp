@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ResourceObjectApi.hpp>
+
 #include <Container/Vector.hpp>
 
 #include <Memory/UniqueString.hpp>
@@ -12,12 +14,12 @@
 namespace Emergence::Resource::Object
 {
 /// \brief Contains information about one particular part of resource object.
-struct ObjectComponent final
+struct ResourceObjectApi ObjectComponent final
 {
     /// \brief Patch that transform this part into required state.
     StandardLayout::Patch component;
 
-    struct Reflection final
+    struct ResourceObjectApi Reflection final
     {
         StandardLayout::FieldId component;
         StandardLayout::Mapping mapping;
@@ -28,7 +30,7 @@ struct ObjectComponent final
 
 /// \brief Contains full serializable information about resource object.
 /// \details Mapping is called ResourceObject, because serialization and mappings know nothing about namespaces.
-struct Object final
+struct ResourceObjectApi Object final
 {
     /// \brief Name of the objects that is logical parent for this object or empty value if no parent is required.
     /// \details Parent content will be merged with this object content to form final ready-to-use object.
@@ -40,7 +42,7 @@ struct Object final
     Container::Vector<ObjectComponent> changelist {
         Memory::Profiler::AllocationGroup {GetRootAllocationGroup (), Memory::UniqueString {"Object"}}};
 
-    struct Reflection final
+    struct ResourceObjectApi Reflection final
     {
         StandardLayout::FieldId parent;
         StandardLayout::FieldId changelist;
@@ -51,11 +53,13 @@ struct Object final
 };
 
 /// \brief Merges parent object changelist into given child object.
-void ApplyInheritance (const TypeManifest &_typeManifest, const Object &_parent, Object &_child) noexcept;
+ResourceObjectApi void ApplyInheritance (const TypeManifest &_typeManifest,
+                                         const Object &_parent,
+                                         Object &_child) noexcept;
 
 /// \brief Extracts child local changelist by comparing child object with parent object.
-void ExtractChildChangelist (const TypeManifest &_typeManifest,
-                             const Object &_parent,
-                             const Object &_child,
-                             Container::Vector<ObjectComponent> &_output) noexcept;
+ResourceObjectApi void ExtractChildChangelist (const TypeManifest &_typeManifest,
+                                               const Object &_parent,
+                                               const Object &_child,
+                                               Container::Vector<ObjectComponent> &_output) noexcept;
 } // namespace Emergence::Resource::Object

@@ -1,10 +1,12 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Memory/UniqueString.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
-struct MovementConfiguration final
+struct Platformer2dDemoModelApi MovementConfiguration final
 {
     Emergence::Memory::UniqueString id;
 
@@ -34,7 +36,7 @@ struct MovementConfiguration final
 
     bool allowSlide = false;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId id;
         Emergence::StandardLayout::FieldId runVelocity;
@@ -45,8 +47,8 @@ struct MovementConfiguration final
         Emergence::StandardLayout::FieldId rollVelocity;
         Emergence::StandardLayout::FieldId rollDurationS;
         Emergence::StandardLayout::FieldId slideVelocity;
-        Emergence::StandardLayout::FieldId slideDurationS;
         Emergence::StandardLayout::FieldId allowJump;
+        Emergence::StandardLayout::FieldId slideDurationS;
         Emergence::StandardLayout::FieldId allowCrouch;
         Emergence::StandardLayout::FieldId allowRoll;
         Emergence::StandardLayout::FieldId allowSlide;

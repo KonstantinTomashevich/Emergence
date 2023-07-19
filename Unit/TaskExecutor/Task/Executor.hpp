@@ -1,5 +1,7 @@
 #pragma once
 
+#include <TaskExecutorApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -8,7 +10,7 @@
 namespace Emergence::Task
 {
 /// \brief Executes tasks from source collection using implementation-specific mechanism.
-class Executor final
+class TaskExecutorApi Executor final
 {
 public:
     /// \brief Constructs executor for given task collection.

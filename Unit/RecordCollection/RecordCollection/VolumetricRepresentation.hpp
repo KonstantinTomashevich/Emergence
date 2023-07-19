@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RecordCollectionApi.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -17,13 +19,13 @@ namespace Emergence::RecordCollection
 ///          implemented as octree with axis aligned bounding boxes.
 ///          Works as handle to real point representation instance.
 ///          Prevents destruction unless there is only one reference to instance.
-class VolumetricRepresentation final
+class RecordCollectionApi VolumetricRepresentation final
 {
 public:
     /// \brief Allows user to read records, that match criteria, specified
     ///        in VolumetricRepresentation::ReadShapeIntersections.
     /// \details All ShapeIntersectionReadCursor operations are thread safe.
-    class ShapeIntersectionReadCursor final
+    class RecordCollectionApi ShapeIntersectionReadCursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (ShapeIntersectionReadCursor);
@@ -41,7 +43,7 @@ public:
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
     ///        specified in VolumetricRepresentation::EditShapeIntersections.
-    class ShapeIntersectionEditCursor final
+    class RecordCollectionApi ShapeIntersectionEditCursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (ShapeIntersectionEditCursor);
@@ -59,7 +61,7 @@ public:
     /// \brief Allows user to read records, that match criteria, specified
     ///        in VolumetricRepresentation::ReadRayIntersections.
     /// \details All RayIntersectionReadCursor operations are thread safe.
-    class RayIntersectionReadCursor final
+    class RecordCollectionApi RayIntersectionReadCursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (RayIntersectionReadCursor);
@@ -76,7 +78,7 @@ public:
 
     /// \brief Allows user to read, modify and delete records, that match criteria,
     ///        specified in VolumetricRepresentation::EditRayIntersections.
-    class RayIntersectionEditCursor final
+    class RecordCollectionApi RayIntersectionEditCursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (RayIntersectionEditCursor);
@@ -92,7 +94,7 @@ public:
     };
 
     /// \brief Allows iteration over VolumetricRepresentation dimensions.
-    class DimensionIterator final
+    class RecordCollectionApi DimensionIterator final
     {
     public:
         /// \brief Describes one of representation dimensions.

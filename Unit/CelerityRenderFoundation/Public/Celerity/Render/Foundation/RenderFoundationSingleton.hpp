@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <atomic>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -11,7 +13,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Stores shared RenderBackend objects.
-struct RenderFoundationSingleton final
+struct CelerityRenderFoundationApi RenderFoundationSingleton final
 {
     /// \brief Backend implementation object.
     /// \details Field is mutable, because render backend objects are technically handles and by modifying them
@@ -25,7 +27,7 @@ struct RenderFoundationSingleton final
     [[nodiscard]] Memory::UniqueString GenerateRuntimeMaterialInstanceId (
         Memory::UniqueString _materialInstanceId) const noexcept;
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::Mapping mapping;
     };

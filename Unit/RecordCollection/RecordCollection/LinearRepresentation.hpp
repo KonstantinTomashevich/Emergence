@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RecordCollectionApi.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -14,13 +16,13 @@ namespace Emergence::RecordCollection
 ///
 /// \details Works as handle to real linear representation instance.
 ///          Prevents destruction unless there is only one reference to instance.
-class LinearRepresentation final
+class RecordCollectionApi LinearRepresentation final
 {
 public:
     /// \brief Allows user to read records, that match criteria,
     ///        specified in LinearRepresentation::ReadAscendingInterval.
     /// \details All AscendingReadCursor operations are thread safe.
-    class AscendingReadCursor final
+    class RecordCollectionApi AscendingReadCursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (AscendingReadCursor);
@@ -36,7 +38,7 @@ public:
 
     /// \brief Allows user to read, modify and delete records, that
     ///        match criteria, specified in LinearRepresentation::EditAscendingInterval.
-    class AscendingEditCursor final
+    class RecordCollectionApi AscendingEditCursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (AscendingEditCursor);
@@ -53,7 +55,7 @@ public:
     /// \brief Allows user to read records, that match criteria,
     ///        specified in LinearRepresentation::ReadDescendingInterval.
     /// \details All DescendingReadCursor operations are thread safe.
-    class DescendingReadCursor final
+    class RecordCollectionApi DescendingReadCursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (DescendingReadCursor);
@@ -69,7 +71,7 @@ public:
 
     /// \brief Allows user to read, modify and delete records, that
     ///        match criteria, specified in LinearRepresentation::EditDescendingInterval.
-    class DescendingEditCursor final
+    class RecordCollectionApi DescendingEditCursor final
     {
     public:
         EMERGENCE_EDIT_CURSOR_OPERATIONS (DescendingEditCursor);

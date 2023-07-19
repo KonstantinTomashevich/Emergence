@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics2dApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/InplaceVector.hpp>
@@ -13,7 +15,7 @@ namespace Emergence::Celerity
 /// \brief Contains information about ongoing collision between shapes that aren't triggers.
 /// \details Created only for collision shapes that have CollisionShape2dComponent::maintainCollisionContacts.
 ///          If both contacting shapes have this flag, two collision contacts will be created for convenience.
-struct CollisionContact2d final
+struct CelerityPhysics2dApi CollisionContact2d final
 {
     /// \brief Maximum world reported count of collision points between between shapes.
     static constexpr std::size_t MAX_WORLD_POINTS = 2u;
@@ -43,7 +45,7 @@ struct CollisionContact2d final
     /// \warning ::normal and ::points are checked using IsNearlyEqual function.
     bool operator== (const CollisionContact2d &_other) const;
 
-    struct Reflection final
+    struct CelerityPhysics2dApi Reflection final
     {
         StandardLayout::FieldId collisionContactId;
         StandardLayout::FieldId objectId;

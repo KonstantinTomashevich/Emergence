@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityResourceObjectApi.hpp>
+
 #include <Container/Vector.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -7,7 +9,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Request resource objects to be loaded.
-struct ResourceObjectRequest final
+struct CelerityResourceObjectApi ResourceObjectRequest final
 {
     /// \brief Id of resource object to be loaded.
     Memory::UniqueString objectId;
@@ -15,7 +17,7 @@ struct ResourceObjectRequest final
     /// \brief Should objects be reloaded if it is already loaded.
     bool forceReload = false;
 
-    struct Reflection final
+    struct CelerityResourceObjectApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId forceReload;
@@ -26,12 +28,12 @@ struct ResourceObjectRequest final
 };
 
 /// \brief Informs that object requested through ResourceObjectRequest is loaded.
-struct ResourceObjectLoadedResponse final
+struct CelerityResourceObjectApi ResourceObjectLoadedResponse final
 {
     /// \brief Object that was loaded.
     Memory::UniqueString objectId;
 
-    struct Reflection final
+    struct CelerityResourceObjectApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::Mapping mapping;

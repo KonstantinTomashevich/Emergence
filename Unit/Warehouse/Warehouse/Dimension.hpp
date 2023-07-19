@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WarehouseApi.hpp>
+
 #include <API/Common/Iterator.hpp>
 
 #include <StandardLayout/Field.hpp>
@@ -7,7 +9,7 @@
 namespace Emergence::Warehouse
 {
 /// \brief Describes one dimensions for volumetric prepared queries.
-struct Dimension
+struct WarehouseApi Dimension
 {
     /// \brief Pointer to minimum possible value of #minBorderField.
     ///
@@ -33,7 +35,7 @@ struct Dimension
 };
 
 /// \brief Provides iteration over dimensions of volumetric prepared queries.
-class DimensionIterator final
+class WarehouseApi DimensionIterator final
 {
 public:
     EMERGENCE_BIDIRECTIONAL_ITERATOR_OPERATIONS (DimensionIterator, Dimension);
@@ -54,4 +56,4 @@ private:
 };
 } // namespace Emergence::Warehouse
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::Warehouse::Dimension)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (WarehouseApi, Emergence::Warehouse::Dimension)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityLocaleApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 #include <Resource/Provider/ResourceProvider.hpp>
@@ -7,7 +9,7 @@
 namespace Emergence::Celerity::Localization
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToNormalUpdate.
-struct Checkpoint final
+struct CelerityLocaleApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -19,5 +21,6 @@ struct Checkpoint final
 };
 
 /// \brief Adds tasks for localization management and synchronization.
-void AddToNormalUpdate (PipelineBuilder &_builder, Resource::Provider::ResourceProvider *_resourceProvider) noexcept;
+CelerityLocaleApi void AddToNormalUpdate (PipelineBuilder &_builder,
+                                          Resource::Provider::ResourceProvider *_resourceProvider) noexcept;
 } // namespace Emergence::Celerity::Localization

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <StandardLayoutMappingApi.hpp>
+
 #include <cstdint>
 #include <cstdlib>
 
@@ -17,7 +19,7 @@ using FieldId = std::uint_fast64_t;
 /// \param _objectField Id of any field in class `Y`, that contains structure of class `X`.
 /// \param _nestedField Id of any field from class `X`.
 /// \return Unique id (among `Y` class fields) for `nestedField` of `X` from `objectField` of `Y`.
-FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept;
+StandardLayoutMappingApi FieldId ProjectNestedField (FieldId _objectField, FieldId _nestedField) noexcept;
 
 /// \brief Declares field archetype, that can be used to reconstruct actual field type.
 ///
@@ -74,7 +76,7 @@ constexpr char PROJECTION_NAME_SEPARATOR = '.';
 ///
 /// \details Mapping of corresponding type should be used to get Field by FieldId.
 /// \warning Storing Field instance outside of corresponding Mapping instance scope results in undefined behaviour.
-class Field final
+class StandardLayoutMappingApi Field final
 {
 public:
     /// \brief Constructs field with invalid handle. Used to create temporary placeholder, for example to fill array.
@@ -155,4 +157,4 @@ private:
 };
 } // namespace Emergence::StandardLayout
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Emergence::StandardLayout::FieldId)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (StandardLayoutMappingApi, Emergence::StandardLayout::FieldId)

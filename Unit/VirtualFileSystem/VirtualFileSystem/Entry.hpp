@@ -1,5 +1,7 @@
 #pragma once
 
+#include <VirtualFileSystemApi.hpp>
+
 #include <chrono>
 #include <cstdint>
 
@@ -26,11 +28,11 @@ enum class EntryType
 };
 
 /// \brief Weak pointer to virtual file system entry: file or directory.
-class Entry final
+class VirtualFileSystemApi Entry final
 {
 public:
     /// \brief Provides API for iterating over entry children if entry is directory.
-    class Cursor final
+    class VirtualFileSystemApi Cursor final
     {
     public:
         Cursor (const Cursor &_other) noexcept;

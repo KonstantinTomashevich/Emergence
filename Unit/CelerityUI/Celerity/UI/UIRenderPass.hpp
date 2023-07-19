@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Render/Backend/Texture.hpp>
@@ -10,7 +12,7 @@ namespace Emergence::Celerity
 {
 /// \brief Attachment to Viewport that directs render commands for UI rendering into this viewport.
 /// \invariant Only one render pass attachment per Viewport is supported!
-struct UIRenderPass final
+struct CelerityUIApi UIRenderPass final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (UIRenderPass);
 
@@ -28,7 +30,7 @@ struct UIRenderPass final
     ///          font is selected. This texture is used to upload this font atlas to GPU.
     Render::Backend::Texture defaultFontTexture = Render::Backend::Texture::CreateInvalid ();
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId name;
         StandardLayout::FieldId defaultStyleId;

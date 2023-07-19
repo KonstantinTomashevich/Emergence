@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics3dApi.hpp>
+
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
@@ -8,6 +10,7 @@
 
 namespace Emergence::Celerity
 {
+#define EventsApi CelerityPhysics3dApi
 EMERGENCE_CELERITY_EVENT0_DECLARATION (PhysicsWorld3dConfigurationChanged);
 
 EMERGENCE_CELERITY_EVENT1_DECLARATION (DynamicsMaterial3dAddedFixedEvent, Memory::UniqueString, id);
@@ -94,6 +97,7 @@ EMERGENCE_CELERITY_EVENT4_DECLARATION (Trigger3dExitedEvent,
                                        intruderObjectId,
                                        UniqueId,
                                        intruderShapeId);
+#undef EventsApi
 
-void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept;
+CelerityPhysics3dApi void RegisterPhysicsEvents (EventRegistrar &_registrar) noexcept;
 } // namespace Emergence::Celerity

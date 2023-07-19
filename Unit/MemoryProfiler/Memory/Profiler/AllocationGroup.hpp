@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryProfilerApi.hpp>
+
 #include <cstdint>
 
 #include <API/Common/ImplementationBinding.hpp>
@@ -15,12 +17,12 @@ namespace Emergence::Memory::Profiler
 ///          Group hierarchy provides easy way to go from "big picture" view to details and vice versa.
 ///          For example, it allows to descend from statement "Records eat much more memory than they should"
 ///          to "There is too much indices for record types X and Y" without any additional debugging or code edition.
-class AllocationGroup final
+class MemoryProfilerApi AllocationGroup final
 {
 public:
     /// \brief RAII object for AllocationGroup stack management.
     /// \see AllocationGroup::Top
-    class PlacedOnStack final
+    class MemoryProfilerApi PlacedOnStack final
     {
     public:
         PlacedOnStack (const PlacedOnStack &_other) = delete;
@@ -40,7 +42,7 @@ public:
     };
 
     /// \brief Provides iteration over AllocationGroup children.
-    class Iterator final
+    class MemoryProfilerApi Iterator final
     {
     public:
         EMERGENCE_FORWARD_ITERATOR_OPERATIONS (Iterator, AllocationGroup);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityPhysics3dApi.hpp>
+
 #include <Math/Vector3f.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -16,7 +18,7 @@ enum class CollisionGeometry3dType : std::uint8_t
 };
 
 /// \brief Stores collision geometry data along with its type.
-struct CollisionGeometry3d final
+struct CelerityPhysics3dApi CollisionGeometry3d final
 {
     /// \brief This geometry type.
     CollisionGeometry3dType type;
@@ -38,7 +40,7 @@ struct CollisionGeometry3d final
         };
     };
 
-    struct Reflection final
+    struct CelerityPhysics3dApi Reflection final
     {
         StandardLayout::FieldId type;
         StandardLayout::FieldId boxHalfExtents;

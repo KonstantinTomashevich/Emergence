@@ -1,11 +1,13 @@
 #pragma once
 
+#include <CelerityPhysics3dApi.hpp>
+
 #include <Celerity/PipelineBuilder.hpp>
 
 namespace Emergence::Celerity::Physics3dSimulation
 {
 /// \brief Contains checkpoints, supported by tasks from ::AddToFixedUpdate.
-struct Checkpoint final
+struct CelerityPhysics3dApi Checkpoint final
 {
     Checkpoint () = delete;
 
@@ -17,5 +19,5 @@ struct Checkpoint final
 };
 
 /// \brief Adds tasks that execute world physics simulation.
-void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
+CelerityPhysics3dApi void AddToFixedUpdate (PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace Emergence::Celerity::Physics3dSimulation

@@ -1,11 +1,13 @@
 #pragma once
 
+#include <CelerityPhysics2dDebugDrawApi.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
 /// \brief Contains configuration for 2d physics debug draw feature.
-struct Physics2dDebugDrawSingleton final
+struct CelerityPhysics2dDebugDrawApi Physics2dDebugDrawSingleton final
 {
     /// \brief Whether debug draw feature is enabled right now.
     bool enabled = false;
@@ -15,7 +17,7 @@ struct Physics2dDebugDrawSingleton final
     ///          for tracking one bool field looks like an overkill.
     bool wasEnabled = false;
 
-    struct Reflection final
+    struct CelerityPhysics2dDebugDrawApi Reflection final
     {
         StandardLayout::FieldId enabled;
         StandardLayout::FieldId wasEnabled;

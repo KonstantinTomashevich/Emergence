@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WarehouseApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 #include <API/Common/Shortcuts.hpp>
 
@@ -8,11 +10,11 @@
 namespace Emergence::Warehouse
 {
 /// \brief Prepared query, used to gain thread safe readonly access to all objects of selected type.
-class FetchSequenceQuery final
+class WarehouseApi FetchSequenceQuery final
 {
 public:
     /// \brief Provides thread safe readonly access to all objects without any guaranteed order.
-    class Cursor final
+    class WarehouseApi Cursor final
     {
     public:
         EMERGENCE_READ_CURSOR_OPERATIONS (Cursor);

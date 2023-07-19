@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRender2dApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/Vector2f.hpp>
@@ -11,7 +13,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Represents orthographic camera in 2d world, attached to a game object.
-struct Camera2dComponent final
+struct CelerityRender2dApi Camera2dComponent final
 {
     /// \brief Id of an object with Transform2dComponent to which this camera is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
@@ -28,7 +30,7 @@ struct Camera2dComponent final
     ///          For example, it can be used to hide world drawables during loading.
     std::uint64_t visibilityMask = ~0u;
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId halfOrthographicSize;

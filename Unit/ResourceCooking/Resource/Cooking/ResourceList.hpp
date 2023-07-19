@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ResourceCookingApi.hpp>
+
 #include <Container/Optional.hpp>
 
 #include <RecordCollection/Collection.hpp>
@@ -11,7 +13,7 @@
 namespace Emergence::Resource::Cooking
 {
 /// \brief Describes a reflection-driven resource object instance.
-struct ObjectData final
+struct ResourceCookingApi ObjectData final
 {
     /// \brief Unique identifier of this object. Usually it is a file name without last extension.
     Memory::UniqueString id;
@@ -37,7 +39,7 @@ struct ObjectData final
 };
 
 /// \brief Describes a third-party (not backed by reflection) resource instance.
-struct ThirdPartyData final
+struct ResourceCookingApi ThirdPartyData final
 {
     /// \brief Unique identifier of this resource. Usually it is a file name including extensions.
     Memory::UniqueString id;
@@ -63,11 +65,11 @@ struct ThirdPartyData final
 /// non-const method is being executed or edit cursor exists. Non-const methods and edit cursors usage is not thread
 /// safe. There are no inbuilt shared locking: user is responsible for taking care of thread safety if it is needed.
 /// \endparblock
-class ResourceList final
+class ResourceCookingApi ResourceList final
 {
 public:
     /// \brief Provides read access to all reflection-driven resource objects.
-    class AllObjectsReadCursor final
+    class ResourceCookingApi AllObjectsReadCursor final
     {
     public:
         AllObjectsReadCursor (const AllObjectsReadCursor &_other) noexcept = default;
@@ -94,7 +96,7 @@ public:
     };
 
     /// \brief Provides edit access to all reflection-driven resource objects.
-    class AllObjectsEditCursor final
+    class ResourceCookingApi AllObjectsEditCursor final
     {
     public:
         AllObjectsEditCursor (const AllObjectsEditCursor &_other) = delete;
@@ -125,7 +127,7 @@ public:
     };
 
     /// \brief Provides read access to all reflection-driven resource objects of requested type.
-    class AllObjectsOfTypeReadCursor final
+    class ResourceCookingApi AllObjectsOfTypeReadCursor final
     {
     public:
         AllObjectsOfTypeReadCursor (const AllObjectsOfTypeReadCursor &_other) noexcept = default;
@@ -152,7 +154,7 @@ public:
     };
 
     /// \brief Provides edit access to all reflection-driven resource objects of requested type.
-    class AllObjectsOfTypeEditCursor final
+    class ResourceCookingApi AllObjectsOfTypeEditCursor final
     {
     public:
         AllObjectsOfTypeEditCursor (const AllObjectsOfTypeEditCursor &_other) = delete;
@@ -183,7 +185,7 @@ public:
     };
 
     /// \brief Provides read access to all third-party resources.
-    class AllThirdPartyReadCursor final
+    class ResourceCookingApi AllThirdPartyReadCursor final
     {
     public:
         AllThirdPartyReadCursor (const AllThirdPartyReadCursor &_other) noexcept = default;
@@ -210,7 +212,7 @@ public:
     };
 
     /// \brief Provides edit access to all third-party resources.
-    class AllThirdPartyEditCursor final
+    class ResourceCookingApi AllThirdPartyEditCursor final
     {
     public:
         AllThirdPartyEditCursor (const AllThirdPartyEditCursor &_other) = delete;

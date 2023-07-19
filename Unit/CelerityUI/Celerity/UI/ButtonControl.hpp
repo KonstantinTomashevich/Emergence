@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Input/InputAction.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
@@ -10,7 +12,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Represents clickable button control.
-struct ButtonControl final
+struct CelerityUIApi ButtonControl final
 {
     /// \brief Id of an UINode, to which this control is attached.
     UniqueId nodeId = INVALID_UNIQUE_ID;
@@ -33,7 +35,7 @@ struct ButtonControl final
     /// \brief Dispatch type for ::onClickAction.
     InputActionDispatchType onClickActionDispatch = InputActionDispatchType::NORMAL;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId labelKey;

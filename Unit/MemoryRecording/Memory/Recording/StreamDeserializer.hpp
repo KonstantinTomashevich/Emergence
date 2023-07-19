@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryRecordingApi.hpp>
+
 #include <istream>
 
 #include <Memory/Profiler/Capture.hpp>
@@ -10,7 +12,7 @@
 namespace Emergence::Memory::Recording
 {
 /// \brief Deserializes events from standard stream and reports them into Track.
-class StreamDeserializer final : public ReporterBase
+class MemoryRecordingApi StreamDeserializer final : public ReporterBase
 {
 public:
     StreamDeserializer () noexcept = default;

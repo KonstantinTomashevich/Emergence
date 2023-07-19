@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityResourceConfigApi.hpp>
+
 #include <Container/String.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -7,7 +9,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Requests all configs of selected type to be loaded into the world.
-struct ResourceConfigRequest final
+struct CelerityResourceConfigApi ResourceConfigRequest final
 {
     /// \brief Selected config type.
     StandardLayout::Mapping type;
@@ -15,7 +17,7 @@ struct ResourceConfigRequest final
     /// \brief If true, configs will be reloaded from the disk even if they are already loaded into the world.
     bool forceReload = false;
 
-    struct Reflection final
+    struct CelerityResourceConfigApi Reflection final
     {
         StandardLayout::FieldId forceReload;
         StandardLayout::Mapping mapping;
@@ -25,12 +27,12 @@ struct ResourceConfigRequest final
 };
 
 /// \brief Informs that all configs of given type are loaded into the world.
-struct ResourceConfigLoadedResponse final
+struct CelerityResourceConfigApi ResourceConfigLoadedResponse final
 {
     /// \brief Type of configs that were loaded.
     StandardLayout::Mapping type;
 
-    struct Reflection final
+    struct CelerityResourceConfigApi Reflection final
     {
         StandardLayout::Mapping mapping;
     };

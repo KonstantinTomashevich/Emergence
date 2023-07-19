@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Platformer2dDemoLogicApi.hpp>
+
 #include <Celerity/Input/InputAction.hpp>
 
-struct MainMenuInputActions final
+struct Platformer2dDemoLogicApi MainMenuInputActions final
 {
     MainMenuInputActions () = delete;
 

@@ -1,10 +1,12 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
-struct LoadingAnimationSingleton final
+struct Platformer2dDemoModelApi LoadingAnimationSingleton final
 {
     bool required = false;
     bool instanced = false;
@@ -12,7 +14,7 @@ struct LoadingAnimationSingleton final
     Emergence::Celerity::UniqueId cameraObjectId = Emergence::Celerity::INVALID_UNIQUE_ID;
     Emergence::Celerity::UniqueId sceneObjectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId required;
         Emergence::StandardLayout::FieldId instanced;

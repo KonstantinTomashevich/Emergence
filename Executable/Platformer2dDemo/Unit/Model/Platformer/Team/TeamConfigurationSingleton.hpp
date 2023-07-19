@@ -1,12 +1,14 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
-struct TeamConfigurationSingleton final
+struct Platformer2dDemoModelApi TeamConfigurationSingleton final
 {
     std::uint8_t playerTeamId = 0u;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId playerTeamId;
         Emergence::StandardLayout::Mapping mapping;

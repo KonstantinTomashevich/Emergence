@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityAssetApi.hpp>
+
 #include <Container/HashMap.hpp>
 #include <Container/Vector.hpp>
 
@@ -8,10 +10,10 @@
 namespace Emergence::Celerity
 {
 /// \return Allocation group for temporary asset reference binding data.
-Memory::Profiler::AllocationGroup GetAssetBindingAllocationGroup () noexcept;
+Memory::Profiler::AllocationGroup CelerityAssetApi GetAssetBindingAllocationGroup () noexcept;
 
 /// \brief Describes field that references an asset.
-struct AssetReferenceField final
+struct CelerityAssetApi AssetReferenceField final
 {
     /// \brief Id of a field with reference.
     /// \invariant Must be FieldArchetype::UNIQUE_STRING.
@@ -22,7 +24,7 @@ struct AssetReferenceField final
 };
 
 /// \brief Describes an asset user: object that references one or more assets.
-struct AssetReferenceBinding final
+struct CelerityAssetApi AssetReferenceBinding final
 {
     /// \brief Type of an object that contains asset references.
     StandardLayout::Mapping objectType;
@@ -35,7 +37,7 @@ struct AssetReferenceBinding final
 using AssetReferenceBindingList = Container::Vector<AssetReferenceBinding>;
 
 /// \brief Stores automatically generated event types for single asset user type.
-struct AssetReferenceBindingHookEvents final
+struct CelerityAssetApi AssetReferenceBindingHookEvents final
 {
     /// \brief Asset user addition in normal pipeline event that is required for asset usage tracking.
     StandardLayout::Mapping onObjectAddedNormal;
@@ -63,7 +65,7 @@ struct AssetReferenceBindingHookEvents final
 };
 
 /// \brief Stores all automatically generated event types.
-struct AssetReferenceBindingEventMap final
+struct CelerityAssetApi AssetReferenceBindingEventMap final
 {
     /// \brief Stores all events for asset users.
     Container::HashMap<StandardLayout::Mapping, AssetReferenceBindingHookEvents> hooks {

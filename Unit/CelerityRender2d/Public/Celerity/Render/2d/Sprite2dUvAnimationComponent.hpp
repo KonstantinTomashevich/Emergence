@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRender2dApi.hpp>
+
 #include <limits>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Attaches uv-based animation to Sprite2dComponent.
-struct Sprite2dUvAnimationComponent final
+struct CelerityRender2dApi Sprite2dUvAnimationComponent final
 {
     /// \brief Id of an object with Transform2dComponent to which this sprite is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
@@ -51,7 +53,7 @@ struct Sprite2dUvAnimationComponent final
     /// \brief Whether component is waiting for an animation asset and therefore unable to update the sprite.
     bool waitingForAnimationToLoad = false;
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId spriteId;

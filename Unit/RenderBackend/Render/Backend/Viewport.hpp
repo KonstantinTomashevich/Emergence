@@ -1,5 +1,7 @@
 #pragma once
 
+#include <RenderBackendApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Math/Transform2d.hpp>
@@ -27,7 +29,7 @@ enum class ViewportSortMode
 /// \brief Represents a render surface on target framebuffer to which geometries can be submitted.
 /// \details Working with different viewports from different threads is thread safe,
 ///          but working with one viewport from multiple threads is not.
-class Viewport final
+class RenderBackendApi Viewport final
 {
 public:
     /// \brief Constructs default invalid instance.

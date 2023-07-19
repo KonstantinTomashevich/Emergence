@@ -1,4 +1,5 @@
 register_concrete (TaskExecutorSequential)
 concrete_include (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 concrete_sources ("*.cpp")
-concrete_require (SCOPE PRIVATE ABSTRACT TaskExecutor CONCRETE_INTERFACE SyntaxSugar)
+concrete_require (SCOPE PRIVATE CONCRETE_INTERFACE SyntaxSugar)
+concrete_implements_abstract (TaskExecutor)

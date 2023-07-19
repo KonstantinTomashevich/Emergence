@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MathApi.hpp>
+
 #include <array>
 
 #include <Math/NoInitializationFlag.hpp>
@@ -11,7 +13,7 @@ namespace Emergence::Math
 {
 struct Transform2d;
 
-struct Matrix3x3f final
+struct MathApi Matrix3x3f final
 {
     static const Matrix3x3f ZERO;
     static const Matrix3x3f IDENTITY;
@@ -71,7 +73,7 @@ struct Matrix3x3f final
         };
     };
 
-    struct Reflection final
+    struct MathApi Reflection final
     {
         StandardLayout::FieldId m00;
         StandardLayout::FieldId m01;

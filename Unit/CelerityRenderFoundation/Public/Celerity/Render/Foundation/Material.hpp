@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRenderFoundationApi.hpp>
+
 #include <Container/Vector.hpp>
 
 #include <Memory/UniqueString.hpp>
@@ -15,7 +17,7 @@ namespace Emergence::Celerity
 /// \details Materials are used to bind shader programs and define uniforms supported by these shader programs.
 ///          That means that materials define how object is rendered and provide customizable parameters as
 ///          uniforms. Parameter customization is done through MaterialInstance.
-struct Material final
+struct CelerityRenderFoundationApi Material final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
@@ -31,7 +33,7 @@ struct Material final
     /// \brief Underlying implementation object.
     Render::Backend::Program program;
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId vertexShader;
@@ -43,7 +45,7 @@ struct Material final
 };
 
 /// \brief Represents parameter supported by Material. Part of Material asset.
-struct Uniform final
+struct CelerityRenderFoundationApi Uniform final
 {
     /// \brief Id used to bind to Asset instance.
     Memory::UniqueString assetId;
@@ -68,7 +70,7 @@ struct Uniform final
         std::uint8_t textureStage = 0u;
     };
 
-    struct Reflection final
+    struct CelerityRenderFoundationApi Reflection final
     {
         StandardLayout::FieldId assetId;
         StandardLayout::FieldId name;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ResourceObjectApi.hpp>
+
 #include <Container/String.hpp>
 
 #include <Resource/Object/Library.hpp>
@@ -9,14 +11,14 @@
 namespace Emergence::Resource::Object
 {
 /// \brief Encapsulates request for specific object to be loaded.
-struct LibraryLoadingTask final
+struct ResourceObjectApi LibraryLoadingTask final
 {
     /// \brief Id of object to be loaded.
     Memory::UniqueString objectId;
 };
 
 /// \brief Loads libraries from sequences of LibraryLoadingTask.
-class LibraryLoader final
+class ResourceObjectApi LibraryLoader final
 {
 public:
     /// \brief Constructs loader with given type manifest.
@@ -60,4 +62,4 @@ private:
 };
 } // namespace Emergence::Resource::Object
 
-EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (Resource::Object::LibraryLoadingTask)
+EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP (ResourceObjectApi, Resource::Object::LibraryLoadingTask)

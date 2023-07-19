@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityRender2dApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/Vector2f.hpp>
@@ -19,7 +21,7 @@ enum class DebugShape2dType : std::uint8_t
 };
 
 /// \brief Describes shape that can be used to draw 2d debug information on screen.
-struct DebugShape2d final
+struct CelerityRender2dApi DebugShape2d final
 {
     /// \brief Constructs new DebugShape2dType::BOX shape.
     DebugShape2d (float _boxHalfWidth, float _boxHalfHeight) noexcept;
@@ -45,7 +47,7 @@ struct DebugShape2d final
         Math::Vector2f lineEnd;
     };
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId type;
         StandardLayout::FieldId boxHalfExtents;
@@ -58,7 +60,7 @@ struct DebugShape2d final
 };
 
 /// \brief Attaches debug draw feature to an object.
-struct DebugShape2dComponent final
+struct CelerityRender2dApi DebugShape2dComponent final
 {
     /// \brief Id of an object with Transform2dComponent to which this debug draw shape is attached.
     UniqueId objectId = INVALID_UNIQUE_ID;
@@ -79,7 +81,7 @@ struct DebugShape2dComponent final
     /// \brief Debug draw shape to be rendered.
     DebugShape2d shape;
 
-    struct Reflection final
+    struct CelerityRender2dApi Reflection final
     {
         StandardLayout::FieldId objectId;
         StandardLayout::FieldId debugShapeId;

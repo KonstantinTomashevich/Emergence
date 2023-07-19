@@ -1,5 +1,7 @@
 #pragma once
 
+#include <VirtualFileSystemApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Container/String.hpp>
@@ -42,7 +44,7 @@ constexpr const char PATH_SEPARATOR = '/';
 /// \parblock
 /// You can safely create multiple virtual file systems under one process by creating multiple context instances.
 /// \endparblock
-class Context final
+class VirtualFileSystemApi Context final
 {
 public:
     /// \brief Constructs new empty instance of virtual file system.

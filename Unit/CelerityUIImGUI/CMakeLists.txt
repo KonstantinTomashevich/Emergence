@@ -4,7 +4,8 @@ concrete_sources ("Private/*.cpp" "Resources/Shaders/*.sc")
 
 concrete_require (
         SCOPE PRIVATE
-        ABSTRACT CelerityUI JobDispatcher Log
+        ABSTRACT JobDispatcher Log
         CONCRETE_INTERFACE CelerityLocale
         THIRD_PARTY ImGUI)
+concrete_implements_abstract (CelerityUI)
 register_default_resource_usage_scheme ()

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MathApi.hpp>
+
 #include <type_traits>
 
 #include <Math/NoInitializationFlag.hpp>
@@ -8,7 +10,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (float) Vector4f final
+struct alignas (float) MathApi Vector4f final
 {
     static const Vector4f ZERO;
     static const Vector4f ONE;
@@ -72,7 +74,7 @@ struct alignas (float) Vector4f final
         };
     };
 
-    struct Reflection final
+    struct MathApi Reflection final
     {
         StandardLayout::FieldId x;
         StandardLayout::FieldId y;
@@ -90,9 +92,9 @@ static_assert (std::is_trivially_destructible_v<Vector4f>);
 static_assert (std::is_trivially_copy_assignable_v<Vector4f>);
 static_assert (std::is_trivially_move_assignable_v<Vector4f>);
 
-float Dot (const Vector4f &_first, const Vector4f &_second) noexcept;
+MathApi float Dot (const Vector4f &_first, const Vector4f &_second) noexcept;
 
-Vector4f Lerp (const Vector4f &_begin, const Vector4f &_end, float _t) noexcept;
+MathApi Vector4f Lerp (const Vector4f &_begin, const Vector4f &_end, float _t) noexcept;
 
-bool NearlyEqual (const Vector4f &_first, const Vector4f &_second) noexcept;
+MathApi bool NearlyEqual (const Vector4f &_first, const Vector4f &_second) noexcept;
 } // namespace Emergence::Math

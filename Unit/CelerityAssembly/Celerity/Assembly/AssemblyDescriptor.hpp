@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityAssemblyApi.hpp>
+
 #include <Container/Vector.hpp>
 
 #include <Memory/UniqueString.hpp>
@@ -10,7 +12,7 @@ namespace Emergence::Celerity
 {
 /// \brief Contains info about components that will be attached to
 ///        object or spawned as sub-objects inside assembly routine.
-struct AssemblyDescriptor final
+struct CelerityAssemblyApi AssemblyDescriptor final
 {
     /// \brief Unique id of this descriptor.
     Memory::UniqueString id;
@@ -18,7 +20,7 @@ struct AssemblyDescriptor final
     /// \brief Component data represented as patches that are applied to freshly constructed object.
     Container::Vector<StandardLayout::Patch> components {Memory::Profiler::AllocationGroup::Top ()};
 
-    struct Reflection final
+    struct CelerityAssemblyApi Reflection final
     {
         StandardLayout::FieldId id;
         StandardLayout::Mapping mapping;

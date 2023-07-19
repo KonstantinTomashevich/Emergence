@@ -1,11 +1,13 @@
 #pragma once
 
+#include <MemoryRecordingApi.hpp>
+
 #include <Memory/Profiler/AllocationGroup.hpp>
 
 namespace Emergence::Memory::Recording
 {
 /// \brief Shared constants of MemoryRecording library.
-class Constants final
+class MemoryRecordingApi Constants final
 {
 public:
     Constants () = delete;

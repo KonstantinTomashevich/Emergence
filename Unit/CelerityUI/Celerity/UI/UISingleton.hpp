@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <atomic>
 
 #include <Celerity/Standard/UniqueId.hpp>
@@ -9,7 +11,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Contains common parameters for UI extension.
-struct UISingleton final
+struct CelerityUIApi UISingleton final
 {
     /// \brief Whether Emergence MemoryProfiler should be enabled for UI allocations.
     /// \details Enabling MemoryProfiler can increase memory usage or decrease performance.
@@ -24,7 +26,7 @@ struct UISingleton final
     /// \details Intentionally const to allow simultaneous access from multiple tasks.
     [[nodiscard]] std::uintptr_t GenerateNodeId () const noexcept;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId enableMemoryProfiling;
         StandardLayout::Mapping mapping;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <MemoryApi.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -16,11 +18,11 @@ namespace Emergence::Memory
 ///          cache coherence.
 /// \warning Allocation and deallocation operations are rather slow due to the need to maintain ordering.
 ///          If you need to actively allocate and dealocate objects, use UnorderedPool.
-class OrderedPool final
+class MemoryApi OrderedPool final
 {
 public:
     /// \brief Allows const iteration over acquired chunks.
-    class AcquiredChunkConstIterator final
+    class MemoryApi AcquiredChunkConstIterator final
     {
     public:
         EMERGENCE_FORWARD_ITERATOR_OPERATIONS (AcquiredChunkConstIterator, const void *);
@@ -35,7 +37,7 @@ public:
     };
 
     /// \brief Allows iteration over acquired chunks.
-    class AcquiredChunkIterator final
+    class MemoryApi AcquiredChunkIterator final
     {
     public:
         EMERGENCE_FORWARD_ITERATOR_OPERATIONS (AcquiredChunkIterator, void *);
@@ -119,14 +121,14 @@ private:
 };
 
 /// \brief Wraps OrderedPool::BeginAcquired for foreach sentences.
-OrderedPool::AcquiredChunkConstIterator begin (const OrderedPool &_pool) noexcept;
+OrderedPool::AcquiredChunkConstIterator MemoryApi begin (const OrderedPool &_pool) noexcept;
 
 /// \brief Wraps OrderedPool::EndAcquired for foreach sentences.
-OrderedPool::AcquiredChunkConstIterator end (const OrderedPool &_pool) noexcept;
+OrderedPool::AcquiredChunkConstIterator MemoryApi end (const OrderedPool &_pool) noexcept;
 
 /// \brief Wraps OrderedPool::BeginAcquired for foreach sentences.
-OrderedPool::AcquiredChunkIterator begin (OrderedPool &_pool) noexcept;
+OrderedPool::AcquiredChunkIterator MemoryApi begin (OrderedPool &_pool) noexcept;
 
 /// \brief Wraps OrderedPool::EndAcquired for foreach sentences.
-OrderedPool::AcquiredChunkIterator end (OrderedPool &_pool) noexcept;
+OrderedPool::AcquiredChunkIterator MemoryApi end (OrderedPool &_pool) noexcept;
 } // namespace Emergence::Memory

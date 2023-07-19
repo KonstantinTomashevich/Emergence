@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ContainerApi.hpp>
+
 #include <algorithm>
 #include <vector>
 
@@ -53,18 +55,18 @@ namespace UntypedVectorUtility
 {
 /// \brief Resizes given vector to given size in bytes without initializing content.
 /// \invariant Vector must be empty.
-void InitSize (void *_vector, std::size_t _sizeInBytes) noexcept;
+ContainerApi void InitSize (void *_vector, std::size_t _sizeInBytes) noexcept;
 
 /// \return Pointer to the beginning of vector memory region.
-uint8_t *Begin (void *_vector) noexcept;
+ContainerApi uint8_t *Begin (void *_vector) noexcept;
 
 /// \return Pointer to the ending of vector memory region.
-uint8_t *End (void *_vector) noexcept;
+ContainerApi uint8_t *End (void *_vector) noexcept;
 
 /// \return Pointer to the beginning of vector memory region.
-const std::uint8_t *Begin (const void *_vector) noexcept;
+ContainerApi const std::uint8_t *Begin (const void *_vector) noexcept;
 
 /// \return Pointer to the ending of vector memory region.
-const std::uint8_t *End (const void *_vector) noexcept;
+ContainerApi const std::uint8_t *End (const void *_vector) noexcept;
 } // namespace UntypedVectorUtility
 } // namespace Emergence::Container

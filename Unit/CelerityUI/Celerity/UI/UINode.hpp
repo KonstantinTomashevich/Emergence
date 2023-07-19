@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityUIApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <StandardLayout/Mapping.hpp>
@@ -7,7 +9,7 @@
 namespace Emergence::Celerity
 {
 /// \brief Building block of UI hierarchy and socket for control insertion.
-struct UINode final
+struct CelerityUIApi UINode final
 {
     /// \brief Unique id of this node.
     /// \invariant Generated through UISingleton::GenerateNodeId.
@@ -28,7 +30,7 @@ struct UINode final
     ///          have the biggest one.
     std::uint64_t sortIndex = 0u;
 
-    struct Reflection final
+    struct CelerityUIApi Reflection final
     {
         StandardLayout::FieldId nodeId;
         StandardLayout::FieldId parentId;

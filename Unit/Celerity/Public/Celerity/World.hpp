@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CelerityApi.hpp>
+
 #include <Celerity/Event/EventTrigger.hpp>
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Pipeline.hpp>
@@ -34,7 +36,7 @@ struct WorldSingleton;
 //       game source and engine source, otherwise Chameleon will not be able to generate code for all use cases.
 
 /// \brief Contains configuration for WorldView initialization.
-struct WorldViewConfig final
+struct CelerityApi WorldViewConfig final
 {
     /// \brief Even if these types are not used by the tasks in view pipelines,
     ///        storages for them will be created in this view registry.
@@ -93,7 +95,7 @@ struct WorldViewConfig final
 ///   model. We can solve this by storing asset cache, document model and other framework-level data in the
 ///   root view, while creating a separate child view for each document.
 /// \endparblock
-class WorldView final
+class CelerityApi WorldView final
 {
 public:
     WorldView (const WorldView &_other) = delete;
@@ -174,7 +176,7 @@ private:
 /// \brief Contains basic configuration for WorldSingleton and TimeSingleton.
 /// \details These values can be set through initialization pipeline, therefore
 ///          this structure is only a more convenient wa to do this task.
-struct WorldConfiguration final
+struct CelerityApi WorldConfiguration final
 {
     /// \see TimeSingleton::targetFixedFrameDurationsS
     Container::InplaceVector<float, TimeSingleton::MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS {
@@ -185,7 +187,7 @@ struct WorldConfiguration final
 };
 
 /// \brief Represents whole game level (or world itself), works as conduit for data, events and pipelines.
-class World final
+class CelerityApi World final
 {
 public:
     World (Memory::UniqueString _name, const WorldConfiguration &_configuration = {}) noexcept;
@@ -258,7 +260,7 @@ private:
 };
 
 /// \brief Contains useful functions for tests.
-class WorldTestingUtility final
+class CelerityApi WorldTestingUtility final
 {
 public:
     WorldTestingUtility () = delete;

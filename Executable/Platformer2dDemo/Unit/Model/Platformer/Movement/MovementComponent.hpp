@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Math/Vector2f.hpp>
@@ -9,7 +11,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-struct MovementComponent final
+struct Platformer2dDemoModelApi MovementComponent final
 {
     Emergence::Celerity::UniqueId objectId = Emergence::Celerity::INVALID_UNIQUE_ID;
 
@@ -36,7 +38,7 @@ struct MovementComponent final
     /// \details See ::framesInAir.
     std::uint64_t framesOnGround = 0u;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId objectId;
         Emergence::StandardLayout::FieldId configurationId;

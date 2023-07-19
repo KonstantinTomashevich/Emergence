@@ -1,5 +1,7 @@
 #pragma once
 
+#include <WarehouseApi.hpp>
+
 #include <API/Common/ImplementationBinding.hpp>
 
 #include <Container/Vector.hpp>
@@ -89,7 +91,7 @@ namespace Emergence::Warehouse
 /// \parblock
 /// If singleton has no default constructor, it won't be initialized. In this case ModifySingletonQuery must be used.
 /// \endparblock
-class Registry final
+class WarehouseApi Registry final
 {
 public:
     explicit Registry (Memory::UniqueString _name) noexcept;

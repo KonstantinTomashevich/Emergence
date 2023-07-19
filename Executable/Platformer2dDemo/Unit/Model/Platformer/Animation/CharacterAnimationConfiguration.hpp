@@ -1,10 +1,12 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <Memory/UniqueString.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
-struct CharacterAnimationConfiguration final
+struct Platformer2dDemoModelApi CharacterAnimationConfiguration final
 {
     Emergence::Memory::UniqueString id;
     Emergence::Memory::UniqueString crouchAnimationId;
@@ -15,7 +17,7 @@ struct CharacterAnimationConfiguration final
     Emergence::Memory::UniqueString runAnimationId;
     Emergence::Memory::UniqueString slideAnimationId;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId id;
         Emergence::StandardLayout::FieldId crouchAnimationId;
