@@ -1,8 +1,7 @@
+#include <API/Common/BlockCast.hpp>
 #include <API/Common/Implementation/Iterator.hpp>
 
 #include <Galleon/LongTermContainer.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 #include <Warehouse/Dimension.hpp>
 

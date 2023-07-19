@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 #include <API/Common/Cursor.hpp>
 #include <API/Common/Shortcuts.hpp>

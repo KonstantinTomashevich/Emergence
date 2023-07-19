@@ -26,7 +26,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             Assert=SDL3 CPUProfiler=None Log=SPDLog Memory=Original
             MemoryProfiler=${IMPLEMENTATION} StandardLayoutMapping=Original
 
-            CONCRETE Container Handling SyntaxSugar)
+            CONCRETE Container Handling Threading Time)
 
     if (IMPLEMENTATION STREQUAL "None")
         executable_include (CONCRETE MemoryProfilerStubTests)

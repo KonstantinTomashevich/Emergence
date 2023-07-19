@@ -1,8 +1,8 @@
 #include <fstream>
 
-#include <Assert/Assert.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Assert/Assert.hpp>
 
 #include <VirtualFileSystem/Original/Core.hpp>
 #include <VirtualFileSystem/Original/Wrappers.hpp>

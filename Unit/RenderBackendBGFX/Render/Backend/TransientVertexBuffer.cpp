@@ -1,8 +1,8 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <bgfx/bgfx.h>
 
 #include <Render/Backend/TransientVertexBuffer.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Render::Backend
 {

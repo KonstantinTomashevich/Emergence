@@ -1,6 +1,6 @@
-#include <Galleon/ShortTermContainer.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Galleon/ShortTermContainer.hpp>
 
 #include <Warehouse/InsertShortTermQuery.hpp>
 #include <Warehouse/PreparedQueryBinding.hpp>

@@ -13,7 +13,7 @@
 #include <Pegasus/Constants/VolumetricIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
-#include <SyntaxSugar/SelectType.hpp>
+#include <Traits/SelectType.hpp>
 
 namespace Emergence::Pegasus
 {

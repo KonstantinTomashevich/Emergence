@@ -16,7 +16,7 @@
 
 #include <Log/Log.hpp>
 
-#include <SyntaxSugar/Time.hpp>
+#include <Time/Time.hpp>
 
 namespace Emergence::Celerity::Assembly
 {

@@ -1,8 +1,7 @@
+#include <API/Common/BlockCast.hpp>
 #include <API/Common/Implementation/Iterator.hpp>
 
 #include <Assert/Assert.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
 #include <Memory/Profiler/Original/AllocationGroup.hpp>

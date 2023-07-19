@@ -1,6 +1,6 @@
-#include <Galleon/SingletonContainer.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Galleon/SingletonContainer.hpp>
 
 #include <Warehouse/ModifySingletonQuery.hpp>
 #include <Warehouse/PreparedQueryBinding.hpp>

@@ -1,13 +1,13 @@
 #include <limits>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Celerity/Physics3d/PhysXWorld.hpp>
 #include <Celerity/Physics3d/PhysicsWorld3dSingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Celerity
 {

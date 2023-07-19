@@ -1,7 +1,7 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Memory/Original/UnorderedPool.hpp>
 #include <Memory/UnorderedPool.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Memory
 {

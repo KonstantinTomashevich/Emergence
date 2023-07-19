@@ -5,5 +5,5 @@ concrete_sources ("*.cpp")
 concrete_require (
         SCOPE PRIVATE
         ABSTRACT Log RecordCollection
-        CONCRETE_INTERFACE Container Serialization SyntaxSugar)
+        CONCRETE_INTERFACE Container Serialization)
 concrete_implements_abstract (VirtualFileSystem)

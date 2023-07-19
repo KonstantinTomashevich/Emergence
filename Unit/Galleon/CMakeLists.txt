@@ -5,4 +5,4 @@ concrete_sources ("*cpp")
 concrete_require (
         SCOPE PUBLIC
         ABSTRACT Memory MemoryProfiler RecordCollection
-        CONCRETE_INTERFACE Container Handling SyntaxSugar)
+        CONCRETE_INTERFACE Container Handling)

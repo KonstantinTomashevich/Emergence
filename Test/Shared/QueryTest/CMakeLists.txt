@@ -4,5 +4,5 @@ concrete_sources ("*.cpp")
 
 concrete_require (
         SCOPE PUBLIC
-        CONCRETE_INTERFACE Container SyntaxSugar
+        CONCRETE_INTERFACE Container
         INTERFACE ContextExtension MemoryProfilerStub Testing)

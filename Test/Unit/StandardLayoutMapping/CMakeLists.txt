@@ -4,7 +4,7 @@ concrete_sources ("*.cpp")
 
 concrete_require (
         SCOPE PRIVATE
-        CONCRETE_INTERFACE Container StandardLayoutMappingVisualization SyntaxSugar VisualGraph
+        CONCRETE_INTERFACE Container StandardLayoutMappingVisualization VisualGraph
         INTERFACE MemoryProfilerStub Testing)
 
 abstract_get_implementations (ABSTRACT StandardLayoutMapping OUTPUT IMPLEMENTATIONS)
@@ -16,7 +16,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             MemoryProfiler=Original StandardLayoutMapping=${IMPLEMENTATION}
 
             CONCRETE
-            Container Handling StandardLayoutMappingTests StandardLayoutMappingVisualization SyntaxSugar VisualGraph)
+            Container Handling StandardLayoutMappingTests StandardLayoutMappingVisualization Threading Time VisualGraph)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

@@ -1,14 +1,14 @@
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <xxhash.hpp>
 END_MUTING_WARNINGS
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Hashing/ByteHasher.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Hashing
 {

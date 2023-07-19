@@ -16,7 +16,7 @@ executable_include (
         Log=SPDLog
         Memory=Original MemoryProfiler=Original StandardLayoutMapping=Original
 
-        CONCRETE Container Handling LogTestsDriver LogTestsShared SyntaxSugar)
+        CONCRETE Container Handling LogTestsDriver LogTestsShared Threading Time)
 executable_verify ()
 executable_copy_linked_artefacts ()
 add_dependencies (EmergenceTests TestLogDriver)
@@ -34,7 +34,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             Assert=SDL3 CPUProfiler=None Log=${IMPLEMENTATION} Memory=Original
             MemoryProfiler=Original StandardLayoutMapping=Original
 
-            CONCRETE Container Handling LogTestsApp LogTestsShared SyntaxSugar)
+            CONCRETE Container Handling LogTestsApp LogTestsShared Threading Time)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

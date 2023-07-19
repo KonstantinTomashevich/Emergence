@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 BEGIN_MUTING_PADDING_WARNING
 

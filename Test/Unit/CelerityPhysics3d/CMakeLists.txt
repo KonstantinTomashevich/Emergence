@@ -24,7 +24,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
 
             CONCRETE
             Celerity CelerityPhysics3dTests CelerityTransform Container Flow Handling Math
-            RecordCollectionVisualization Serialization SyntaxSugar TaskCollection VisualGraph)
+            RecordCollectionVisualization Serialization TaskCollection Threading Time VisualGraph)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

@@ -2,7 +2,7 @@
 
 #include <CelerityApi.hpp>
 
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 #include <API/Common/Cursor.hpp>
 

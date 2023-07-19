@@ -11,7 +11,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             Assert=SDL3 CPUProfiler=None Log=SPDLog Memory=${IMPLEMENTATION}
             MemoryProfiler=Original StandardLayoutMapping=Original
 
-            CONCRETE Container Handling MemoryTests SyntaxSugar)
+            CONCRETE Container Handling MemoryTests Threading Time)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

@@ -8,9 +8,9 @@
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
-#include <SyntaxSugar/Time.hpp>
-
 #include <Testing/Testing.hpp>
+
+#include <Time/Time.hpp>
 
 namespace Emergence::Celerity::Test
 {

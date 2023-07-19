@@ -10,7 +10,7 @@ concrete_require (
         SCOPE PRIVATE
 
         CONCRETE_INTERFACE
-        FileSystemTestUtility CelerityRender2d CelerityTransform ResourceContextHolder SDLContextHolder
+        FileSystemTestUtility CelerityRender2d CelerityTransform ResourceContextHolder SDLContextHolder Time
 
         INTERFACE MemoryProfilerStub Testing
         THIRD_PARTY SDL3::SDL3)
@@ -26,7 +26,7 @@ executable_include (
         CONCRETE
         Celerity CelerityAsset CelerityRender2d CelerityRender2dTests CelerityRenderFoundation CelerityTransform
         Container FileSystemTestUtility Flow Handling Math RecordCollectionVisualization ResourceContextHolder
-        SDLContextHolder Serialization SyntaxSugar TaskCollection VisualGraph)
+        SDLContextHolder Serialization TaskCollection Threading Time VisualGraph)
 executable_verify ()
 executable_copy_linked_artefacts ()
 executable_deploy_resource_mount_lists ("${CMAKE_CURRENT_BINARY_DIR}")

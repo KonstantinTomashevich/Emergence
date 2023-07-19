@@ -1,9 +1,9 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Query/Test/Data.hpp>
 #include <Query/Test/SignalQueryTests.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Query::Test::SignalQuery
 {

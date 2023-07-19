@@ -2,10 +2,10 @@
 #include <cmath>
 #include <limits>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Pegasus/Storage.hpp>
 #include <Pegasus/VolumetricIndex.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Pegasus
 {

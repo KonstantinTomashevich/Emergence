@@ -1,13 +1,13 @@
 #pragma once
 
-#include <SyntaxSugarApi.hpp>
+#include <ThreadingApi.hpp>
 
 #include <atomic>
 
 namespace Emergence
 {
 /// \brief RAII guard for busy waiting with std::atomic_flag.
-class SyntaxSugarApi AtomicFlagGuard final
+class ThreadingApi AtomicFlagGuard final
 {
 public:
     AtomicFlagGuard (std::atomic_flag &_flag) noexcept;
@@ -27,8 +27,8 @@ private:
 };
 
 /// \brief Uses spinlock with yield to lock atomic flag.
-SyntaxSugarApi void LockAtomicFlag (std::atomic_flag &_flag) noexcept;
+ThreadingApi void LockAtomicFlag (std::atomic_flag &_flag) noexcept;
 
 /// \brief Unlocks atomic flag by clearing it.
-SyntaxSugarApi void UnlockAtomicFlag (std::atomic_flag &_flag) noexcept;
+ThreadingApi void UnlockAtomicFlag (std::atomic_flag &_flag) noexcept;
 } // namespace Emergence

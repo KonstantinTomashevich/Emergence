@@ -1,13 +1,13 @@
 #include <limits>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <bgfx/bgfx.h>
 
 #include <bx/math.h>
 
 #include <Render/Backend/RendererData.hpp>
 #include <Render/Backend/Viewport.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Render::Backend
 {

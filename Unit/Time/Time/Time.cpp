@@ -1,6 +1,6 @@
 #include <chrono>
 
-#include <SyntaxSugar/Time.hpp>
+#include <Time/Time.hpp>
 
 namespace Emergence
 {

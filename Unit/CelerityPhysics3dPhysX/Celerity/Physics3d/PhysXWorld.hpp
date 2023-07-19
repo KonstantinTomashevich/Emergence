@@ -2,7 +2,7 @@
 
 #include <Container/Variant.hpp>
 
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 #include <API/Common/Shortcuts.hpp>
 

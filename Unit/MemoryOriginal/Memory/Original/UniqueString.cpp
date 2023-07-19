@@ -10,7 +10,7 @@
 #include <Memory/Stack.hpp>
 #include <Memory/UnorderedPool.hpp>
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
+#include <Threading/AtomicFlagGuard.hpp>
 
 namespace Emergence::Memory::Original
 {

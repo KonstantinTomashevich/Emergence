@@ -1,6 +1,6 @@
-#include <Assert/Assert.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Assert/Assert.hpp>
 
 #include <Task/Executor.hpp>
 

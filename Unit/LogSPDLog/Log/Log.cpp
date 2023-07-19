@@ -4,6 +4,8 @@
 #include <atomic>
 #include <memory>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Container/Optional.hpp>
@@ -14,8 +16,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Threading/AtomicFlagGuard.hpp>
 
 namespace Emergence
 {

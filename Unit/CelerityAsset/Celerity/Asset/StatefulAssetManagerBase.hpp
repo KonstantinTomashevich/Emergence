@@ -4,11 +4,9 @@
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/PipelineBuilder.hpp>
 
 #include <Log/Log.hpp>
-
-#include <Celerity/PipelineBuilder.hpp>
-#include <SyntaxSugar/Time.hpp>
 
 namespace Emergence::Celerity
 {

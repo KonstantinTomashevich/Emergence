@@ -1,6 +1,6 @@
-#include <Galleon/LongTermContainer.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Galleon/LongTermContainer.hpp>
 
 #include <Warehouse/InsertLongTermQuery.hpp>
 #include <Warehouse/PreparedQueryBinding.hpp>

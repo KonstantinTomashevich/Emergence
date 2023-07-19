@@ -1,4 +1,5 @@
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/BlockCast.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Physics2d/Box2dAccessSingleton.hpp>
@@ -25,8 +26,6 @@ BEGIN_MUTING_WARNINGS
 #define B2_USER_SETTINGS
 #include <box2d/box2d.h>
 END_MUTING_WARNINGS
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Celerity::Physics2dSimulation
 {

@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
+#include <Threading/AtomicFlagGuard.hpp>
 
 namespace Emergence::Memory::Profiler::Original
 {

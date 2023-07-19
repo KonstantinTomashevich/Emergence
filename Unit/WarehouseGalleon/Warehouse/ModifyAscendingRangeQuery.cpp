@@ -1,8 +1,7 @@
+#include <API/Common/BlockCast.hpp>
 #include <API/Common/Implementation/Cursor.hpp>
 
 #include <Galleon/LongTermContainer.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 #include <Warehouse/ModifyAscendingRangeQuery.hpp>
 #include <Warehouse/PreparedQueryBinding.hpp>

@@ -1,3 +1,5 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <RecordCollection/Test/Scenario.hpp>
 
 #include <Reference/Test/Tests.hpp>
@@ -7,8 +9,6 @@
 #include <Query/Test/SignalQueryTests.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 using namespace Emergence::RecordCollection::Test;
 

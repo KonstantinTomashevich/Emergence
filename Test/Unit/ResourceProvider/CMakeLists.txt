@@ -17,7 +17,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             RecordCollection=Pegasus ResourceProvider=${IMPLEMENTATION} StandardLayoutMapping=Original
             VirtualFileSystem=Original
 
-            CONCRETE Container Handling ResourceProviderTests Serialization SyntaxSugar)
+            CONCRETE Container Handling ResourceProviderTests Serialization Threading Time)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

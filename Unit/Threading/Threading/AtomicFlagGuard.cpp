@@ -2,7 +2,7 @@
 
 #include <CPU/Profiler.hpp>
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
+#include <Threading/AtomicFlagGuard.hpp>
 
 namespace Emergence
 {

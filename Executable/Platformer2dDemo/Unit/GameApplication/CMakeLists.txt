@@ -7,6 +7,6 @@ concrete_require (SCOPE PRIVATE
         CONCRETE_INTERFACE
         ${GAME_NAME}Logic ${GAME_NAME}Model ${GAME_NAME}Resources CelerityLocale CelerityPhysics2dDebugDraw
         CelerityRender2d CelerityRenderFoundation CelerityResourceObject CelerityTransform MemoryRecording
-        Serialization
+        Serialization Time
         INTERFACE ResourceProviderHelpers VirtualFileSystemHelpers
         THIRD_PARTY SDL3::SDL3)

@@ -1,4 +1,5 @@
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/BlockCast.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/Physics3d/CollisionShape3dComponent.hpp>
@@ -32,8 +33,6 @@ BEGIN_MUTING_WARNINGS
 #include <extensions/PxRigidBodyExt.h>
 #include <pvd/PxPvdTransport.h>
 END_MUTING_WARNINGS
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Celerity::Physics3dSimulation
 {

@@ -1,7 +1,7 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Memory/Original/Stack.hpp>
 #include <Memory/Stack.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Memory
 {

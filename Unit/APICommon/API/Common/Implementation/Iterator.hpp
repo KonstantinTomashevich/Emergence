@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <API/Common/BlockCast.hpp>
 
 /// \brief Implements all operations except dereference for forward iterator
 ///        that uses other forward iterator as backend.

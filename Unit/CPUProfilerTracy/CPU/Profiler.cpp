@@ -1,6 +1,6 @@
-#include <CPU/Profiler.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <CPU/Profiler.hpp>
 
 #include <tracy/Tracy.hpp>
 

@@ -9,7 +9,7 @@ executable_include (
         Assert=SDL3 CPUProfiler=None Log=SPDLog Memory=Original
         MemoryProfiler=Original StandardLayoutMapping=Original
 
-        CONCRETE Container Handling MemoryRecording MemoryRecordingClientApplication Serialization SyntaxSugar)
+        CONCRETE Container Handling MemoryRecording MemoryRecordingClientApplication Serialization Threading Time)
 executable_verify ()
 executable_copy_linked_artefacts ()
 

@@ -33,8 +33,8 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             Warehouse=${IMPLEMENTATION} WarehouseTestsVisualization=${IMPLEMENTATION}
 
             CONCRETE
-            Container Handling QueryTest RecordCollectionVisualization ReferenceTest SyntaxSugar
-            VisualGraph WarehouseTests WarehouseVisualization)
+            Container Handling QueryTest RecordCollectionVisualization ReferenceTest
+            Threading Time VisualGraph WarehouseTests WarehouseVisualization)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

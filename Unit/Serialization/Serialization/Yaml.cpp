@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Log/Log.hpp>
@@ -10,8 +12,6 @@
 
 #include <StandardLayout/Patch.hpp>
 #include <StandardLayout/PatchBuilder.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 // We're linking to static library, but define is not passed to us for some reason.
 // Therefore, we need to add it manually.

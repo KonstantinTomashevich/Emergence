@@ -12,7 +12,7 @@ executable_include (
 
         CONCRETE
         Celerity CelerityTests Container Flow Handling Math RecordCollectionVisualization
-        Serialization SyntaxSugar TaskCollection VisualGraph)
+        Serialization TaskCollection Threading Time VisualGraph)
 executable_verify ()
 executable_copy_linked_artefacts ()
 

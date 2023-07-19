@@ -135,7 +135,6 @@ This architecture aims to:
   implementation of abstract unit above.
 - [StandardLayoutMappingVisualization<sup>Concrete</sup>](./Unit/StandardLayoutMappingVisualization/README.md): provides
   functions for [StandardLayoutMapping](./Unit/StandardLayoutMapping/README.md) runtime structure visualization.
-- [SyntaxSugar<sup>Concrete</sup>](./Unit/SyntaxSugar/README.md): contains syntax sugar for other units.
 - [TaskCollection<sup>Concrete</sup>](./Unit/TaskCollection/README.md): intermediate format for storing tasks that may
   depend on each other.
 - [TaskExecutor<sup>Abstract</sup>](./Unit/TaskExecutor/README.md): provides execution interface for tasks, stored
@@ -146,6 +145,11 @@ This architecture aims to:
   abstract unit above.
 - [Testing<sup>Interface</sup>](./Unit/Testing/README.md): hides selected testing framework under minimal set of
   framework-agnostic macros.
+- [Threading<sup>Concrete</sup>](./Unit/Threading/README.md): provides utilities for multithreading code like atomic
+  lock guard.
+- [Time<sup>Concrete</sup>](./Unit/Time/README.md): provides utilities for code that needs to work with time.
+- [Traits<sup>Interface</sup>](./Unit/Traits/README.md): provides various simple utilities for working with templates
+  and unions.
 - [VirtualFileSystem<sup>Abstract</sup>](./Unit/VirtualFileSystem/README.md): provides file system abstraction layer
   that supports mounting of real file system directories and read-only binary packages (for optimized reading).
 - [VirtualFileSystemHelpers<sup>Interface</sup>](./Unit/VirtualFileSystemHelpers/README.md): inline helper functions

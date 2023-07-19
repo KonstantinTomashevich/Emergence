@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Container/Optional.hpp>
@@ -13,8 +15,6 @@
 
 #include <StandardLayout/Patch.hpp>
 #include <StandardLayout/PatchBuilder.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Serialization::Binary
 {

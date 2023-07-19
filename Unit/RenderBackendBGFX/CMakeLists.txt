@@ -1,5 +1,5 @@
 register_concrete (RenderBackendBGFX)
 concrete_include (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 concrete_sources ("*.cpp")
-concrete_require (SCOPE PRIVATE ABSTRACT Log CONCRETE_INTERFACE SyntaxSugar THIRD_PARTY bgfx bimg bx)
+concrete_require (SCOPE PRIVATE ABSTRACT Log CONCRETE_INTERFACE THIRD_PARTY bgfx bimg bx)
 concrete_implements_abstract (RenderBackend)

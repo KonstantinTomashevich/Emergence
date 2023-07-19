@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Galleon/CargoDeck.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Galleon/CargoDeck.hpp>
 
 namespace Emergence::Warehouse
 {

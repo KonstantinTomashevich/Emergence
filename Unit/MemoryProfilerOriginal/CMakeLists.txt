@@ -1,5 +1,5 @@
 register_concrete (MemoryProfilerOriginal)
 concrete_include (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 concrete_sources ("*.cpp")
-concrete_require (SCOPE PRIVATE ABSTRACT Assert CONCRETE_INTERFACE Container Handling SyntaxSugar)
+concrete_require (SCOPE PRIVATE ABSTRACT Assert CONCRETE_INTERFACE Container Handling Threading Time)
 concrete_implements_abstract (MemoryProfiler)

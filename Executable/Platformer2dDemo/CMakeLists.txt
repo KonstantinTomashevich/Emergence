@@ -17,7 +17,7 @@ shared_library_include (
 
         CONCRETE
         Celerity Container Flow Handling Math MemoryRecording RecordCollectionVisualization ResourceObject
-        Serialization SyntaxSugar TaskCollection VisualGraph)
+        Serialization TaskCollection Threading Time VisualGraph)
 
 if (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING)
     shared_library_include (SCOPE PUBLIC ABSTRACT CPUProfiler=None MemoryProfiler=None)

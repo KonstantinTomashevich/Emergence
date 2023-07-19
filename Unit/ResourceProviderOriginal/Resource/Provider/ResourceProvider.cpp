@@ -1,9 +1,9 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Resource/Provider/Original/ResourceProvider.hpp>
 #include <Resource/Provider/ResourceProvider.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Resource::Provider
 {

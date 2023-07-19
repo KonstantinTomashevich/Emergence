@@ -46,12 +46,12 @@
 
 #include <Resource/Provider/ResourceProvider.hpp>
 
-#include <SyntaxSugar/Time.hpp>
-
 #include <Testing/FileSystemTestUtility.hpp>
 #include <Testing/ResourceContextHolder.hpp>
 #include <Testing/SDLContextHolder.hpp>
 #include <Testing/Testing.hpp>
+
+#include <Time/Time.hpp>
 
 #include <VirtualFileSystem/Reader.hpp>
 

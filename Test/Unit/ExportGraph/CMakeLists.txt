@@ -26,7 +26,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             Assert=SDL3 CPUProfiler=None ExportGraph=${IMPLEMENTATION} ExportGraphTestsExpectation=${IMPLEMENTATION}
             Log=SPDLog Memory=Original MemoryProfiler=Original StandardLayoutMapping=Original
 
-            CONCRETE Container ExportGraphTests Handling SyntaxSugar VisualGraph)
+            CONCRETE Container ExportGraphTests Handling Threading Time VisualGraph)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

@@ -1,6 +1,6 @@
-#include <Galleon/CargoDeck.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Galleon/CargoDeck.hpp>
 
 #include <Warehouse/Registry.hpp>
 #include <Warehouse/RegistryData.hpp>

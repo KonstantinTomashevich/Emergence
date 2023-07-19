@@ -1,4 +1,4 @@
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 #include <limits>
 
@@ -9,11 +9,11 @@ BEGIN_MUTING_WARNINGS
 #include <box2d/box2d.h>
 END_MUTING_WARNINGS
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Celerity/Physics2d/PhysicsWorld2dSingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Celerity
 {

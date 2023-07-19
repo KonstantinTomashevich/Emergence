@@ -1,3 +1,5 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Celerity/Model/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
@@ -6,8 +8,6 @@
 #include <Celerity/Transform/TransformVisualSync.hpp>
 
 #include <Math/Scalar.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Celerity
 {

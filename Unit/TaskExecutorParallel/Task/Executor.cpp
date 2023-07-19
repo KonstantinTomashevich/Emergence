@@ -1,5 +1,7 @@
 #include <atomic>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Container/Vector.hpp>
@@ -8,10 +10,9 @@
 
 #include <Job/Dispatcher.hpp>
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
-#include <SyntaxSugar/BlockCast.hpp>
-
 #include <Task/Executor.hpp>
+
+#include <Threading/AtomicFlagGuard.hpp>
 
 namespace Emergence::Task
 {

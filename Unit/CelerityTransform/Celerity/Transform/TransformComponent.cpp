@@ -3,6 +3,8 @@
 
 #include <StandardLayout/MappingRegistration.hpp>
 
+#include <Threading/AtomicFlagGuard.hpp>
+
 namespace Emergence::Celerity
 {
 template <typename Transform>

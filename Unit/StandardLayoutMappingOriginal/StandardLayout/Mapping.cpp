@@ -1,11 +1,10 @@
+#include <API/Common/BlockCast.hpp>
 #include <API/Common/Implementation/Iterator.hpp>
 
 #include <Assert/Assert.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::StandardLayout
 {

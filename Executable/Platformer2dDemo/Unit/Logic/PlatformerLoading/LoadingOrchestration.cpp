@@ -37,7 +37,7 @@
 #include <Root/LevelSelectionSingleton.hpp>
 #include <Root/LevelsConfigurationSingleton.hpp>
 
-#include <SyntaxSugar/Time.hpp>
+#include <Time/Time.hpp>
 
 namespace PlatformerLoadingOrchestration
 {

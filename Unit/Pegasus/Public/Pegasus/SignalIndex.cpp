@@ -1,9 +1,9 @@
 #include <algorithm>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Pegasus/SignalIndex.hpp>
 #include <Pegasus/Storage.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Pegasus
 {

@@ -1,4 +1,4 @@
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 #include <Assert/Assert.hpp>
 

@@ -42,7 +42,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             CONCRETE
             Celerity CelerityAsset CelerityInput CelerityLocale CelerityRenderFoundation CelerityUITests
             CelerityTransform Container FileSystemTestUtility Flow Handling Math RecordCollectionVisualization
-            ResourceContextHolder SDLContextHolder Serialization SyntaxSugar TaskCollection VisualGraph)
+            ResourceContextHolder SDLContextHolder Serialization TaskCollection Threading Time VisualGraph)
     executable_verify ()
     executable_copy_linked_artefacts ()
     executable_deploy_resource_mount_lists ("${CMAKE_CURRENT_BINARY_DIR}")

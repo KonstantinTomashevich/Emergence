@@ -1,8 +1,8 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Container/StringBuilder.hpp>
 
 #include <RecordCollection/Visualization.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::RecordCollection::Visualization
 {

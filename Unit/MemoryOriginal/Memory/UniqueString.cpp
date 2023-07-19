@@ -1,7 +1,7 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Memory/Original/UniqueString.hpp>
 #include <Memory/UniqueString.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Memory
 {

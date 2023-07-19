@@ -1,8 +1,8 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Query/Test/Data.hpp>
 
 #include <Reference/Test/Tests.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 #include <Testing/Testing.hpp>
 

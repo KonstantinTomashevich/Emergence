@@ -8,7 +8,7 @@ concrete_require (
 
         CONCRETE_INTERFACE
         ${GAME_NAME}Model CelerityLocale CelerityPhysics2dDebugDraw CelerityRender2d
-        CelerityResourceObject CelerityTransform CelerityResourceObject Serialization)
+        CelerityResourceObject CelerityTransform CelerityResourceObject Serialization Time)
 
 concrete_require (
         SCOPE PUBLIC

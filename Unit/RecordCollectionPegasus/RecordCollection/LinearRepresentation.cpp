@@ -1,3 +1,4 @@
+#include <API/Common/BlockCast.hpp>
 #include <API/Common/Implementation/Cursor.hpp>
 
 #include <Assert/Assert.hpp>
@@ -7,8 +8,6 @@
 #include <Pegasus/OrderedIndex.hpp>
 
 #include <RecordCollection/LinearRepresentation.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::RecordCollection
 {

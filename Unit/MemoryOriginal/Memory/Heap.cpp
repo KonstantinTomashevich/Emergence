@@ -1,7 +1,7 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Memory/Heap.hpp>
 #include <Memory/Original/AlignedAllocation.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Memory
 {

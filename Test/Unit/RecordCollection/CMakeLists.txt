@@ -17,8 +17,8 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             MemoryProfiler=Original RecordCollection=${IMPLEMENTATION} StandardLayoutMapping=Original
 
             CONCRETE
-            Container Handling QueryTest RecordCollectionTests RecordCollectionVisualization
-            ReferenceTest SyntaxSugar VisualGraph)
+            Container Handling QueryTest RecordCollectionTests RecordCollectionVisualization ReferenceTest Threading
+            Time VisualGraph)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

@@ -1,3 +1,5 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <bgfx/bgfx.h>
@@ -5,8 +7,6 @@
 #include <Container/Vector.hpp>
 
 #include <Render/Backend/FrameBuffer.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Render::Backend
 {

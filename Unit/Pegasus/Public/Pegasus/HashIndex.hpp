@@ -15,7 +15,7 @@
 #include <Pegasus/Constants/HashIndex.hpp>
 #include <Pegasus/IndexBase.hpp>
 
-#include <SyntaxSugar/Union.hpp>
+#include <Traits/Union.hpp>
 
 namespace Emergence::Pegasus
 {

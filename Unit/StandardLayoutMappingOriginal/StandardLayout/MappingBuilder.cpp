@@ -1,9 +1,9 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Container/StringBuilder.hpp>
 
 #include <StandardLayout/MappingBuilder.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::StandardLayout
 {

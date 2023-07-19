@@ -1,13 +1,13 @@
 #include <limits>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <bgfx/bgfx.h>
 
 #include <Render/Backend/Renderer.hpp>
 #include <Render/Backend/RendererData.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Render::Backend
 {

@@ -1,11 +1,11 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Container/StringBuilder.hpp>
 
 #include <Query/Test/DataTypes.hpp>
 
 #include <RecordCollection/Test/Scenario.hpp>
 #include <RecordCollection/Visualization.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 #include <Testing/Testing.hpp>
 

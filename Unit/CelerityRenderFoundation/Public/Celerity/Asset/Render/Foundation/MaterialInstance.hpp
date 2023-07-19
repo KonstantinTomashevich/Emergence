@@ -10,7 +10,7 @@
 
 #include <StandardLayout/Mapping.hpp>
 
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 namespace Emergence::Celerity
 {

@@ -1,8 +1,8 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <StandardLayout/Original/PlainPatch.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::StandardLayout
 {

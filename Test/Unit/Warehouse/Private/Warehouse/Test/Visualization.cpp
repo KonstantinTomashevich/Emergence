@@ -1,6 +1,6 @@
-#include <Query/Test/DataTypes.hpp>
+#include <API/Common/BlockCast.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Query/Test/DataTypes.hpp>
 
 #include <Testing/Testing.hpp>
 

@@ -1,10 +1,10 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <StandardLayout/Field.hpp>
 #include <StandardLayout/Mapping.hpp>
 #include <StandardLayout/Original/PlainMapping.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence
 {

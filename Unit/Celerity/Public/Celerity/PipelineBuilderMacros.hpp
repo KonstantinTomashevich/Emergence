@@ -1,9 +1,9 @@
 #pragma once
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Celerity/Event/CascadeRemover.hpp>
 #include <Celerity/PipelineBuilder.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 // This file contains macros, that shorten TaskConstructor query creation calls.
 // These macros provide no additional logic and work as syntax sugar, that makes calls less verbose.

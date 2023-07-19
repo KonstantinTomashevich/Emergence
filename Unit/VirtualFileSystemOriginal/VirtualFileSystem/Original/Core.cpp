@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <fstream>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <Assert/Assert.hpp>
 
 #include <Log/Log.hpp>
@@ -10,8 +12,6 @@
 #include <StandardLayout/MappingRegistration.hpp>
 
 #include <Serialization/Binary.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 #include <VirtualFileSystem/Original/Core.hpp>
 #include <VirtualFileSystem/Original/PackageFile.hpp>

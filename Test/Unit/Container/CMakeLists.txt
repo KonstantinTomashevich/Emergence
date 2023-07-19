@@ -9,7 +9,7 @@ executable_include (
         Assert=SDL3 CPUProfiler=None Log=SPDLog Memory=Original
         MemoryProfiler=Original StandardLayoutMapping=Original
 
-        CONCRETE Container ContainerTests Handling SyntaxSugar)
+        CONCRETE Container ContainerTests Handling Threading Time)
 executable_verify ()
 executable_copy_linked_artefacts ()
 

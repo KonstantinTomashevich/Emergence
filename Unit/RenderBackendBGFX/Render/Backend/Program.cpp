@@ -2,13 +2,13 @@
 
 #include <cstring>
 
+#include <API/Common/BlockCast.hpp>
+
 #include <bgfx/bgfx.h>
 
 #include <Log/Log.hpp>
 
 #include <Render/Backend/Program.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::Render::Backend
 {

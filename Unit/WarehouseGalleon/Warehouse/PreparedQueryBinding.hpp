@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <API/Common/BlockCast.hpp>
 
 #include <Warehouse/RegistryData.hpp>
 #include <Warehouse/VisualizationDriver.hpp>

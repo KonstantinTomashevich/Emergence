@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SyntaxSugar/BlockCast.hpp>
+#include <API/Common/BlockCast.hpp>
 
 /// \brief Binds all read cursor operations to implementation read cursor.
 /// \see EMERGENCE_READ_CURSOR_OPERATIONS

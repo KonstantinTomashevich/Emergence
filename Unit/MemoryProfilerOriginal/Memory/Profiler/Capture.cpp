@@ -1,4 +1,5 @@
 #include <API/Common/Implementation/Iterator.hpp>
+#include <API/Common/BlockCast.hpp>
 
 #include <Assert/Assert.hpp>
 
@@ -7,8 +8,7 @@
 #include <Memory/Profiler/Original/Capture.hpp>
 #include <Memory/Profiler/Original/ProfilingLock.hpp>
 
-#include <SyntaxSugar/BlockCast.hpp>
-#include <SyntaxSugar/Time.hpp>
+#include <Time/Time.hpp>
 
 namespace Emergence::Memory::Profiler
 {

@@ -13,7 +13,7 @@
 #    include <stacktrace>
 #endif
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
+#include <Threading/AtomicFlagGuard.hpp>
 
 namespace Emergence
 {

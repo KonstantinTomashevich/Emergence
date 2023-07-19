@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SyntaxSugar/MuteWarnings.hpp>
+#include <API/Common/MuteWarnings.hpp>
 
 BEGIN_MUTING_WARNINGS
 #include <foundation/PxQuat.h>

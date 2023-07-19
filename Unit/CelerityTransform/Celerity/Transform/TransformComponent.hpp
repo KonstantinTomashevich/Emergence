@@ -9,8 +9,6 @@
 #include <Math/Transform2d.hpp>
 #include <Math/Transform3d.hpp>
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
-
 namespace Emergence::Celerity
 {
 template <typename Transform>

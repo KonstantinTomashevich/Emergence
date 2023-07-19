@@ -2,7 +2,7 @@
 
 #include <Memory/Profiler/Original/EventManager.hpp>
 
-#include <SyntaxSugar/Time.hpp>
+#include <Time/Time.hpp>
 
 namespace Emergence::Memory::Profiler::Original
 {

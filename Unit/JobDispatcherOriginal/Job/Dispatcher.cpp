@@ -1,11 +1,12 @@
+#include <API/Common/BlockCast.hpp>
+
 #include <Container/Vector.hpp>
 
 #include <CPU/Profiler.hpp>
 
 #include <Job/Dispatcher.hpp>
 
-#include <SyntaxSugar/AtomicFlagGuard.hpp>
-#include <SyntaxSugar/BlockCast.hpp>
+#include <Threading/AtomicFlagGuard.hpp>
 
 namespace Emergence::Job
 {

@@ -2,8 +2,6 @@
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
-#include <SyntaxSugar/Time.hpp>
-
 #include <Celerity/Physics3d/CollisionShape3dComponent.hpp>
 #include <Celerity/Physics3d/DynamicsMaterial3d.hpp>
 #include <Celerity/Physics3d/Events.hpp>

@@ -1,9 +1,9 @@
 #include <Memory/Recording/RuntimeReporter.hpp>
 #include <Memory/Recording/Track.hpp>
 
-#include <SyntaxSugar/Time.hpp>
-
 #include <Testing/Testing.hpp>
+
+#include <Time/Time.hpp>
 
 using namespace Emergence::Memory;
 using namespace Emergence::Memory::Literals;

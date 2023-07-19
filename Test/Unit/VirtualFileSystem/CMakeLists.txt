@@ -11,7 +11,7 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             Assert=SDL3 CPUProfiler=None Hashing=XXHash Log=SPDLog Memory=Original MemoryProfiler=Original
             RecordCollection=Pegasus StandardLayoutMapping=Original VirtualFileSystem=${IMPLEMENTATION}
 
-            CONCRETE Container Handling VirtualFileSystemTests Serialization SyntaxSugar)
+            CONCRETE Container Handling VirtualFileSystemTests Serialization Threading Time)
     executable_verify ()
     executable_copy_linked_artefacts ()
 

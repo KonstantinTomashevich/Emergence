@@ -1,3 +1,4 @@
+#include <API/Common/BlockCast.hpp>
 #include <API/Common/Implementation/Cursor.hpp>
 #include <API/Common/Implementation/Iterator.hpp>
 
@@ -6,8 +7,6 @@
 #include <Pegasus/HashIndex.hpp>
 
 #include <RecordCollection/PointRepresentation.hpp>
-
-#include <SyntaxSugar/BlockCast.hpp>
 
 namespace Emergence::RecordCollection
 {

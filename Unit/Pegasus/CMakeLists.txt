@@ -11,8 +11,8 @@ concrete_require (SCOPE PRIVATE ABSTRACT Hashing)
 concrete_require (
         SCOPE PUBLIC
         ABSTRACT StandardLayoutMapping Memory MemoryProfiler
-        CONCRETE_INTERFACE Container Handling SyntaxSugar
-        INTERFACE APICommon)
+        CONCRETE_INTERFACE Container Handling
+        INTERFACE APICommon Traits)
 
 if (PEGASUS_PROFILE STREQUAL "Standard")
     concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/ConstantsStandard")

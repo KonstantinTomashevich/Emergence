@@ -9,7 +9,7 @@ executable_include (
         Assert=SDL3 CPUProfiler=None Hashing=XXHash Log=SPDLog Memory=Original MemoryProfiler=Original
         RecordCollection=Pegasus ResourceProvider=Original StandardLayoutMapping=Original VirtualFileSystem=Original
 
-        CONCRETE Container Handling ResourceCooking ResourceCookingTests Serialization SyntaxSugar)
+        CONCRETE Container Handling ResourceCooking ResourceCookingTests Serialization Threading Time)
 executable_verify ()
 executable_copy_linked_artefacts ()
 
