@@ -23,12 +23,12 @@
 
 namespace Emergence::Celerity::Test
 {
-static constexpr KeyCode KEY_RETURN = 1u;
-static constexpr KeyCode KEY_ESCAPE = 2u;
+static constexpr InputStorage::KeyCode KEY_RETURN = 1u;
+static constexpr InputStorage::KeyCode KEY_ESCAPE = 2u;
 
-KeyCodeMapping GetKeyCodeMapping ()
+InputStorage::KeyCodeMapping GetKeyCodeMapping ()
 {
-    KeyCodeMapping mapping;
+    InputStorage::KeyCodeMapping mapping;
     memset (&mapping, 0u, sizeof (mapping));
     mapping.keyReturn = KEY_RETURN;
     mapping.keyEscape = KEY_ESCAPE;
@@ -37,7 +37,7 @@ KeyCodeMapping GetKeyCodeMapping ()
 
 struct Frame
 {
-    Container::Vector<InputEvent> inputEvents;
+    Container::Vector<InputStorage::InputEvent> inputEvents;
     ControlManagement::Frame controlManagementFrame;
     UpdateResultCheck::Frame resultCheckFrame;
 };
@@ -56,7 +56,7 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     }
 
     World world {Emergence::Memory::UniqueString {"TestWorld"}, {{1.0f / 60.0f}}};
-    FrameInputAccumulator inputAccumulator;
+    InputStorage::FrameInputAccumulator inputAccumulator;
     AssetReferenceBindingList binding {GetAssetBindingAllocationGroup ()};
     AssetReferenceBindingEventMap assetReferenceBindingEventMap;
     GetUIAssetUsage (binding);
@@ -94,7 +94,7 @@ static void ExecuteScenario (const Container::Vector<Frame> &_frames)
     for (const auto &frame : _frames)
     {
         Testing::SDLContextHolder::Get ().Frame ();
-        for (const InputEvent &event : frame.inputEvents)
+        for (const InputStorage::InputEvent &event : frame.inputEvents)
         {
             inputAccumulator.RecordEvent (event);
         }
@@ -109,6 +109,7 @@ using namespace Emergence::Celerity::Test::ControlManagement::Tasks;
 using namespace Emergence::Celerity::Test::UpdateResultCheck::Tasks;
 using namespace Emergence::Celerity::Test;
 using namespace Emergence::Celerity;
+using namespace Emergence::InputStorage;
 using namespace Emergence::Memory::Literals;
 using namespace Emergence::Testing;
 

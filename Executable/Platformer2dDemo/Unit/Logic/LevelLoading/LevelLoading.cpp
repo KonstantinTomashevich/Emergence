@@ -1,7 +1,7 @@
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeAssemblyComponent.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
-#include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Resource/Object/Messages.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>

@@ -3,7 +3,7 @@
 #include <CelerityApi.hpp>
 
 #include <Celerity/Event/EventTrigger.hpp>
-#include <Celerity/Model/TimeSingleton.hpp>
+#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/Query/ModifySingletonQuery.hpp>
 

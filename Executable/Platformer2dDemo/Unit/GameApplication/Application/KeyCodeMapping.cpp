@@ -2,7 +2,7 @@
 
 #include <SDL3/SDL_keycode.h>
 
-Emergence::Celerity::KeyCodeMapping GetKeyCodeMapping () noexcept
+Emergence::InputStorage::KeyCodeMapping GetKeyCodeMapping () noexcept
 {
     return {
         SDLK_RETURN,

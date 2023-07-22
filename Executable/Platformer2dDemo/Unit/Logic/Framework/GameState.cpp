@@ -53,7 +53,7 @@ ViewDropHandle GameState::ConstructViewDropHandle () noexcept
     return {this};
 }
 
-Emergence::Celerity::FrameInputAccumulator *GameState::GetFrameInputAccumulator () noexcept
+Emergence::InputStorage::FrameInputAccumulator *GameState::GetFrameInputAccumulator () noexcept
 {
     return &frameInputAccumulator;
 }

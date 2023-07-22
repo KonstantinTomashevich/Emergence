@@ -4,6 +4,7 @@
 
 using namespace Emergence::Celerity::Test;
 using namespace Emergence::Celerity;
+using namespace Emergence::InputStorage;
 using namespace Emergence::Memory::Literals;
 
 BEGIN_SUITE (Trigger)
@@ -17,8 +18,8 @@ TEST_CASE (KeyDownOnState)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 0u, Emergence::Celerity::KeyState::DOWN}},
-                              {200u, KeyboardEvent {1u, 1u, 0u, Emergence::Celerity::KeyState::DOWN}},
+                              {100u, KeyboardEvent {0u, 0u, 0u, KeyState::DOWN}},
+                              {200u, KeyboardEvent {1u, 1u, 0u, KeyState::DOWN}},
                           },
                           0u,
                           {{0u, {{"TestGroup"_us, "TestAction1"_us}}}}},
@@ -26,7 +27,7 @@ TEST_CASE (KeyDownOnState)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {1u, 1u, 0u, Emergence::Celerity::KeyState::UP}},
+                              {100u, KeyboardEvent {1u, 1u, 0u, KeyState::UP}},
                           },
                           0u,
                           {{0u, {{"TestGroup"_us, "TestAction1"_us}}}}},
@@ -35,7 +36,7 @@ TEST_CASE (KeyDownOnState)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 0u, Emergence::Celerity::KeyState::UP}},
+                              {100u, KeyboardEvent {0u, 0u, 0u, KeyState::UP}},
                           },
                           0u,
                           {{0u, {}}}},
@@ -59,8 +60,8 @@ TEST_CASE (KeyDownOnStateChanged)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 0u, Emergence::Celerity::KeyState::DOWN}},
-                              {200u, KeyboardEvent {1u, 1u, 0u, Emergence::Celerity::KeyState::DOWN}},
+                              {100u, KeyboardEvent {0u, 0u, 0u, KeyState::DOWN}},
+                              {200u, KeyboardEvent {1u, 1u, 0u, KeyState::DOWN}},
                           },
                           0u,
                           {{0u, {{"TestGroup"_us, "TestAction1"_us}}}}},
@@ -68,7 +69,7 @@ TEST_CASE (KeyDownOnStateChanged)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {1u, 1u, 0u, Emergence::Celerity::KeyState::UP}},
+                              {100u, KeyboardEvent {1u, 1u, 0u, KeyState::UP}},
                           },
                           0u,
                           {{0u, {}}}},
@@ -77,7 +78,7 @@ TEST_CASE (KeyDownOnStateChanged)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 0u, Emergence::Celerity::KeyState::UP}},
+                              {100u, KeyboardEvent {0u, 0u, 0u, KeyState::UP}},
                           },
                           0u,
                           {{0u, {}}}},
@@ -101,8 +102,8 @@ TEST_CASE (KeyUpOnStateChanged)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 0u, Emergence::Celerity::KeyState::DOWN}},
-                              {200u, KeyboardEvent {1u, 1u, 0u, Emergence::Celerity::KeyState::DOWN}},
+                              {100u, KeyboardEvent {0u, 0u, 0u, KeyState::DOWN}},
+                              {200u, KeyboardEvent {1u, 1u, 0u, KeyState::DOWN}},
                           },
                           0u,
                           {{0u, {}}}},
@@ -110,7 +111,7 @@ TEST_CASE (KeyUpOnStateChanged)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {1u, 1u, 0u, Emergence::Celerity::KeyState::UP}},
+                              {100u, KeyboardEvent {1u, 1u, 0u, KeyState::UP}},
                           },
                           0u,
                           {{0u, {}}}},
@@ -119,7 +120,7 @@ TEST_CASE (KeyUpOnStateChanged)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 0u, Emergence::Celerity::KeyState::UP}},
+                              {100u, KeyboardEvent {0u, 0u, 0u, KeyState::UP}},
                           },
                           0u,
                           {{0u, {{"TestGroup"_us, "TestAction1"_us}}}}},
@@ -143,7 +144,7 @@ TEST_CASE (KeyDownOnStateChangedQualifiersFound)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 1u, Emergence::Celerity::KeyState::DOWN}},
+                              {100u, KeyboardEvent {0u, 0u, 1u, KeyState::DOWN}},
                           },
                           0u,
                           {{0u, {{"TestGroup"_us, "TestAction1"_us}}}}},
@@ -167,7 +168,7 @@ TEST_CASE (KeyDownOnStateChangedQualifiersMissing)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 0u, Emergence::Celerity::KeyState::DOWN}},
+                              {100u, KeyboardEvent {0u, 0u, 0u, KeyState::DOWN}},
                           },
                           0u,
                           {{0u, {}}}},
@@ -191,7 +192,7 @@ TEST_CASE (KeyDownOnStateQualifiers)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 1u, Emergence::Celerity::KeyState::DOWN}},
+                              {100u, KeyboardEvent {0u, 0u, 1u, KeyState::DOWN}},
                           },
                           0u,
                           {{0u, {{"TestGroup"_us, "TestAction1"_us}}}}},
@@ -201,7 +202,7 @@ TEST_CASE (KeyDownOnStateQualifiers)
                           {},
                           {},
                           {
-                              {100u, KeyboardEvent {0u, 0u, 0u, Emergence::Celerity::KeyState::UP}},
+                              {100u, KeyboardEvent {0u, 0u, 0u, KeyState::UP}},
                           },
                           0u,
                           {{0u, {}}}},

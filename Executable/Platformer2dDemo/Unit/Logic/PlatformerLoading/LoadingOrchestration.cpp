@@ -1,7 +1,7 @@
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Input/InputTriggers.hpp>
 #include <Celerity/Locale/LocaleSingleton.hpp>
-#include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/Physics2d/DynamicsMaterial2d.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>

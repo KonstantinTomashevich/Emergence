@@ -19,7 +19,7 @@ class ResultChecker final : public TaskExecutorBase<ResultChecker>
 {
 public:
     ResultChecker (TaskConstructor &_constructor,
-                   FrameInputAccumulator *_inputAccumulator,
+                   InputStorage::FrameInputAccumulator *_inputAccumulator,
                    Container::Vector<Frame> _frames) noexcept;
 
     void Execute () noexcept;
@@ -41,13 +41,13 @@ private:
     FetchValueQuery fetchLabelByNodeId;
     FetchValueQuery fetchWindowByNodeId;
 
-    FrameInputAccumulator *inputAccumulator;
+    InputStorage::FrameInputAccumulator *inputAccumulator;
     std::uint64_t currentFrameIndex = 0u;
     Container::Vector<Frame> frames;
 };
 
 ResultChecker::ResultChecker (TaskConstructor &_constructor,
-                              FrameInputAccumulator *_inputAccumulator,
+                              InputStorage::FrameInputAccumulator *_inputAccumulator,
                               Container::Vector<Frame> _frames) noexcept
     : TaskExecutorBase (_constructor),
 
@@ -84,7 +84,7 @@ void ResultChecker::Execute () noexcept
 
 void ResultChecker::CompareInputEvents () noexcept
 {
-    Container::Vector<InputEvent> extractedEvents;
+    Container::Vector<InputStorage::InputEvent> extractedEvents;
     for (auto eventIterator = inputAccumulator->EventsBegin (); eventIterator != inputAccumulator->EventsEnd ();
          ++eventIterator)
     {
@@ -92,7 +92,7 @@ void ResultChecker::CompareInputEvents () noexcept
     }
 
     CHECK_EQUAL (extractedEvents.size (), frames[currentFrameIndex].expectedInputLeft.size ());
-    for (const InputEvent &event : extractedEvents)
+    for (const InputStorage::InputEvent &event : extractedEvents)
     {
         const std::size_t found = std::count (extractedEvents.begin (), extractedEvents.end (), event);
         const std::size_t expected = std::count (frames[currentFrameIndex].expectedInputLeft.begin (),
@@ -226,7 +226,7 @@ void ResultChecker::ExecuteTasks () noexcept
 }
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        FrameInputAccumulator *_inputAccumulator,
+                        InputStorage::FrameInputAccumulator *_inputAccumulator,
                         Container::Vector<Frame> _frames) noexcept
 {
     _pipelineBuilder.AddTask (Memory::UniqueString {"UpdateResultChecker"})

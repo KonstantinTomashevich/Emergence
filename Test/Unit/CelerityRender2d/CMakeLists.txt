@@ -10,7 +10,7 @@ concrete_require (
         SCOPE PRIVATE
 
         CONCRETE_INTERFACE
-        FileSystemTestUtility CelerityRender2d CelerityTransform ResourceContextHolder SDLContextHolder Time
+        FileSystemTestUtility CelerityRender2dLogic CelerityTransformLogic ResourceContextHolder SDLContextHolder Time
 
         INTERFACE MemoryProfilerStub Testing
         THIRD_PARTY SDL3::SDL3)
@@ -24,7 +24,8 @@ executable_include (
         StandardLayoutMapping=Original TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
 
         CONCRETE
-        Celerity CelerityAsset CelerityRender2d CelerityRender2dTests CelerityRenderFoundation CelerityTransform
+        Celerity CelerityAssetLogic CelerityAssetModel CelerityRender2dLogic CelerityRender2dModel CelerityRender2dTests
+        CelerityRenderFoundationLogic CelerityRenderFoundationModel CelerityTransformLogic CelerityTransformModel
         Container FileSystemTestUtility Flow Handling Math RecordCollectionVisualization ResourceContextHolder
         SDLContextHolder Serialization TaskCollection Threading Time VisualGraph)
 executable_verify ()

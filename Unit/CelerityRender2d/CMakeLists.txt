@@ -1,6 +1,0 @@
-register_concrete (CelerityRender2d)
-concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
-concrete_sources ("Public/*.cpp" "Private/*.cpp" "Resources/Shaders/*.sc")
-concrete_require (SCOPE PUBLIC CONCRETE_INTERFACE CelerityRenderFoundation)
-concrete_require (SCOPE PRIVATE ABSTRACT JobDispatcher Log CONCRETE_INTERFACE CelerityTransform)
-register_default_resource_usage_scheme ()

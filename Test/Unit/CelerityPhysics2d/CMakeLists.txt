@@ -4,21 +4,22 @@ concrete_sources ("*.cpp")
 
 concrete_require (
         SCOPE PRIVATE
-        ABSTRACT CelerityPhysics2d
-        CONCRETE_INTERFACE CelerityTransform
+        ABSTRACT CelerityPhysics2dLogic
+        CONCRETE_INTERFACE CelerityTransformLogic
         INTERFACE MemoryProfilerStub Testing)
 
-abstract_get_implementations (ABSTRACT CelerityPhysics2d OUTPUT IMPLEMENTATIONS)
+abstract_get_implementations (ABSTRACT CelerityPhysics2dLogic OUTPUT IMPLEMENTATIONS)
 foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
     register_executable (TestCelerityPhysics2d${IMPLEMENTATION})
     executable_include (
             ABSTRACT
-            Assert=SDL3 CelerityPhysics2d=${IMPLEMENTATION} CPUProfiler=None Hashing=XXHash JobDispatcher=Original
-            Log=SPDLog Memory=Original MemoryProfiler=Original RecordCollection=Pegasus ResourceProvider=Original
-            StandardLayoutMapping=Original TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
+            Assert=SDL3 CelerityPhysics2dLogic=${IMPLEMENTATION} CelerityPhysics2dModel=${IMPLEMENTATION}
+            CPUProfiler=None Hashing=XXHash JobDispatcher=Original Log=SPDLog Memory=Original MemoryProfiler=Original
+            RecordCollection=Pegasus ResourceProvider=Original StandardLayoutMapping=Original TaskExecutor=Parallel
+            VirtualFileSystem=Original Warehouse=Galleon
 
             CONCRETE
-            Celerity CelerityPhysics2dTests CelerityTransform Container Flow Handling Math
+            Celerity CelerityPhysics2dTests CelerityTransformLogic CelerityTransformModel Container Flow Handling Math
             RecordCollectionVisualization Serialization TaskCollection Threading Time VisualGraph)
     executable_verify ()
     executable_copy_linked_artefacts ()

@@ -201,7 +201,7 @@ void Application::EventLoop () noexcept
     while (running)
     {
         SDL_Event event;
-        Emergence::Celerity::FrameInputAccumulator *inputAccumulator = gameState->GetFrameInputAccumulator ();
+        Emergence::InputStorage::FrameInputAccumulator *inputAccumulator = gameState->GetFrameInputAccumulator ();
 
         while (SDL_PollEvent (&event))
         {
@@ -212,44 +212,44 @@ void Application::EventLoop () noexcept
             }
             else if ((event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) && !event.key.repeat)
             {
-                Emergence::Celerity::KeyboardEvent inputEvent {
-                    static_cast<Emergence::Celerity::KeyCode> (event.key.keysym.sym),
-                    static_cast<Emergence::Celerity::ScanCode> (event.key.keysym.scancode),
-                    static_cast<Emergence::Celerity::QualifiersMask> (event.key.keysym.mod),
-                    event.type == SDL_EVENT_KEY_DOWN ? Emergence::Celerity::KeyState::DOWN :
-                                                       Emergence::Celerity::KeyState::UP,
+                Emergence::InputStorage::KeyboardEvent inputEvent {
+                    static_cast<Emergence::InputStorage::KeyCode> (event.key.keysym.sym),
+                    static_cast<Emergence::InputStorage::ScanCode> (event.key.keysym.scancode),
+                    static_cast<Emergence::InputStorage::QualifiersMask> (event.key.keysym.mod),
+                    event.type == SDL_EVENT_KEY_DOWN ? Emergence::InputStorage::KeyState::DOWN :
+                                                       Emergence::InputStorage::KeyState::UP,
                 };
 
                 inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
             }
             else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP)
             {
-                Emergence::Celerity::MouseButton button = Emergence::Celerity::MouseButton::LEFT;
+                Emergence::InputStorage::MouseButton button = Emergence::InputStorage::MouseButton::LEFT;
                 switch (event.button.button)
                 {
                 case SDL_BUTTON_LEFT:
-                    button = Emergence::Celerity::MouseButton::LEFT;
+                    button = Emergence::InputStorage::MouseButton::LEFT;
                     break;
                 case SDL_BUTTON_MIDDLE:
-                    button = Emergence::Celerity::MouseButton::MIDDLE;
+                    button = Emergence::InputStorage::MouseButton::MIDDLE;
                     break;
                 case SDL_BUTTON_RIGHT:
-                    button = Emergence::Celerity::MouseButton::RIGHT;
+                    button = Emergence::InputStorage::MouseButton::RIGHT;
                     break;
                 case SDL_BUTTON_X1:
-                    button = Emergence::Celerity::MouseButton::X1;
+                    button = Emergence::InputStorage::MouseButton::X1;
                     break;
                 case SDL_BUTTON_X2:
-                    button = Emergence::Celerity::MouseButton::X2;
+                    button = Emergence::InputStorage::MouseButton::X2;
                     break;
                 }
 
-                Emergence::Celerity::MouseButtonEvent inputEvent {
+                Emergence::InputStorage::MouseButtonEvent inputEvent {
                     static_cast<std::int32_t> (event.button.x),
                     static_cast<std::int32_t> (event.button.y),
                     button,
-                    event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? Emergence::Celerity::KeyState::DOWN :
-                                                                Emergence::Celerity::KeyState::UP,
+                    event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ? Emergence::InputStorage::KeyState::DOWN :
+                                                                Emergence::InputStorage::KeyState::UP,
                     event.button.clicks,
                 };
 
@@ -257,7 +257,7 @@ void Application::EventLoop () noexcept
             }
             else if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
-                Emergence::Celerity::MouseMotionEvent inputEvent {
+                Emergence::InputStorage::MouseMotionEvent inputEvent {
                     static_cast<std::int32_t> (event.motion.x - event.motion.xrel),
                     static_cast<std::int32_t> (event.motion.y - event.motion.yrel),
                     static_cast<std::int32_t> (event.motion.x),
@@ -268,7 +268,7 @@ void Application::EventLoop () noexcept
             }
             else if (event.type == SDL_EVENT_MOUSE_WHEEL)
             {
-                Emergence::Celerity::MouseWheelEvent inputEvent {
+                Emergence::InputStorage::MouseWheelEvent inputEvent {
                     event.wheel.x,
                     event.wheel.y,
                 };
@@ -277,7 +277,7 @@ void Application::EventLoop () noexcept
             }
             else if (event.type == SDL_EVENT_TEXT_INPUT)
             {
-                Emergence::Celerity::TextInputEvent inputEvent;
+                Emergence::InputStorage::TextInputEvent inputEvent;
                 static_assert (sizeof (inputEvent.utf8Value) >= sizeof (event.text.text));
                 strcpy (inputEvent.utf8Value.data (), event.text.text);
                 inputAccumulator->RecordEvent ({SDLTicksToTime (event.text.timestamp), inputEvent});

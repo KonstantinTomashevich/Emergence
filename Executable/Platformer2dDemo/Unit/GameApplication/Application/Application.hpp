@@ -4,7 +4,6 @@
 
 #include <Application/Settings.hpp>
 
-#include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/World.hpp>
 
 #include <Memory/Recording/StreamSerializer.hpp>

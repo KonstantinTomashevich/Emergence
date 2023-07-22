@@ -4,5 +4,5 @@ concrete_sources ("*.cpp")
 
 concrete_require (SCOPE PRIVATE
         ABSTRACT Log
-        CONCRETE_INTERFACE ${GAME_NAME}Logic ${GAME_NAME}Resources CommandLine ResourceCooking Serialization
+        CONCRETE_INTERFACE ${GAME_NAME}Model ${GAME_NAME}Resources CommandLine ResourceCooking Serialization
         INTERFACE ResourceProviderHelpers VirtualFileSystemHelpers)

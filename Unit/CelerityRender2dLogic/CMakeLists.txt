@@ -1,0 +1,5 @@
+register_concrete (CelerityRender2dLogic)
+concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
+concrete_sources ("Public/*.cpp" "Private/*.cpp")
+concrete_require (SCOPE PUBLIC CONCRETE_INTERFACE CelerityRender2dModel CelerityRenderFoundationLogic)
+concrete_require (SCOPE PRIVATE ABSTRACT JobDispatcher Log CONCRETE_INTERFACE CelerityTransformLogic)

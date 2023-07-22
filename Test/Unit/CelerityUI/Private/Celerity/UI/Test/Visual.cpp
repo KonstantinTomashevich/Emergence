@@ -168,7 +168,7 @@ static void ExecuteScenario (Container::String _passName, Container::Vector<Cont
     using namespace Memory::Literals;
 
     World world {Emergence::Memory::UniqueString {"TestWorld"}, {{1.0f / 60.0f}}};
-    FrameInputAccumulator inputAccumulator;
+    InputStorage::FrameInputAccumulator inputAccumulator;
     AssetReferenceBindingList binding {GetAssetBindingAllocationGroup ()};
     AssetReferenceBindingEventMap assetReferenceBindingEventMap;
     GetUIAssetUsage (binding);

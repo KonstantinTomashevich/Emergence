@@ -1,7 +1,7 @@
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Input/InputActionComponent.hpp>
 #include <Celerity/Input/InputSubscriptionComponent.hpp>
-#include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 
 #include <Configuration/WorldStates.hpp>

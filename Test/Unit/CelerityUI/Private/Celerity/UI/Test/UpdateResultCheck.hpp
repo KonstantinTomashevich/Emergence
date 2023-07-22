@@ -1,12 +1,13 @@
 #pragma once
 
-#include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/Input/InputActionHolder.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/UI/InputControl.hpp>
 
 #include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
+
+#include <InputStorage/FrameInputAccumulator.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
@@ -76,11 +77,11 @@ using Task = Container::Variant<Tasks::ExpectCheckboxValue,
 struct Frame final
 {
     Container::Vector<InputActionHolder> expectedInput;
-    Container::Vector<InputEvent> expectedInputLeft;
+    Container::Vector<InputStorage::InputEvent> expectedInputLeft;
     Container::Vector<Task> tasks;
 };
 
 void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                        FrameInputAccumulator *_inputAccumulator,
+                        InputStorage::FrameInputAccumulator *_inputAccumulator,
                         Container::Vector<Frame> _frames) noexcept;
 } // namespace Emergence::Celerity::Test::UpdateResultCheck

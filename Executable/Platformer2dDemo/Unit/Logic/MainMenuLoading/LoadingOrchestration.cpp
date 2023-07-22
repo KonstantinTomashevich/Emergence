@@ -1,6 +1,6 @@
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Locale/LocaleSingleton.hpp>
-#include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>

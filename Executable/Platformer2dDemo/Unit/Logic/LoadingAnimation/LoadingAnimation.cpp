@@ -2,8 +2,8 @@
 
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
-#include <Celerity/Model/TimeSingleton.hpp>
-#include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/TimeSingleton.hpp>
+#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
 #include <Celerity/Render/2d/Render2dSingleton.hpp>

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <Platformer2dDemoModelApi.hpp>
+
 #include <StandardLayout/Mapping.hpp>
 
-struct PlatformerLoadingSingleton final
+struct Platformer2dDemoModelApi PlatformerLoadingSingleton final
 {
     bool assetsLoaded = false;
 
@@ -17,7 +19,7 @@ struct PlatformerLoadingSingleton final
 
     std::uint64_t loadingStartTimeNs = 0u;
 
-    struct Reflection final
+    struct Platformer2dDemoModelApi Reflection final
     {
         Emergence::StandardLayout::FieldId assetsLoaded;
         Emergence::StandardLayout::FieldId characterAnimationConfigurationsLoaded;

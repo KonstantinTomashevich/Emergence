@@ -1,5 +1,0 @@
-register_concrete (CelerityRenderFoundation)
-concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
-concrete_sources ("Public/*.cpp" "Private/*.cpp")
-concrete_require (SCOPE PUBLIC ABSTRACT RenderBackend ResourceProvider CONCRETE_INTERFACE Celerity CelerityAsset Math)
-concrete_require (SCOPE PRIVATE ABSTRACT JobDispatcher Log)

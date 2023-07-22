@@ -4,12 +4,13 @@ concrete_sources ("*.cpp")
 
 concrete_require (
         SCOPE PRIVATE
-        ABSTRACT CelerityPhysics2d CelerityUI Log
+        ABSTRACT CelerityPhysics2dLogic CelerityUILogic Log
 
         CONCRETE_INTERFACE
-        ${GAME_NAME}Model CelerityLocale CelerityPhysics2dDebugDraw CelerityRender2d
-        CelerityResourceObject CelerityTransform CelerityResourceObject Serialization Time)
+        ${GAME_NAME}Model CelerityLocaleLogic CelerityPhysics2dDebugDrawLogic CelerityRender2dLogic
+        CelerityResourceObjectLogic CelerityTransformLogic CelerityResourceObjectLogic Serialization Time)
 
 concrete_require (
         SCOPE PUBLIC
-        CONCRETE_INTERFACE Celerity CelerityAsset CelerityAssembly CelerityInput CelerityResourceConfig ResourceObject)
+        CONCRETE_INTERFACE
+        Celerity CelerityAssetLogic CelerityAssemblyLogic CelerityInputLogic CelerityResourceConfigLogic ResourceObject)

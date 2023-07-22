@@ -4,9 +4,10 @@
 
 #include <functional>
 
-#include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/PipelineBuilder.hpp>
 #include <Celerity/World.hpp>
+
+#include <InputStorage/FrameInputAccumulator.hpp>
 
 #include <Resource/Provider/ResourceProvider.hpp>
 
@@ -75,7 +76,7 @@ public:
 
     ViewDropHandle ConstructViewDropHandle () noexcept;
 
-    Emergence::Celerity::FrameInputAccumulator *GetFrameInputAccumulator () noexcept;
+    Emergence::InputStorage::FrameInputAccumulator *GetFrameInputAccumulator () noexcept;
 
     Emergence::Resource::Provider::ResourceProvider *GetResourceProvider () const noexcept;
 
@@ -90,7 +91,7 @@ private:
     friend class ViewDropHandle;
 
     Emergence::Celerity::World world;
-    Emergence::Celerity::FrameInputAccumulator frameInputAccumulator;
+    Emergence::InputStorage::FrameInputAccumulator frameInputAccumulator;
     Emergence::Resource::Provider::ResourceProvider *resourceProvider;
 
     Emergence::Container::HashMap<Emergence::Memory::UniqueString, WorldStateDefinition> worldStates {

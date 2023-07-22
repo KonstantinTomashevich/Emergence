@@ -16,7 +16,7 @@ shared_library_include (
         VirtualFileSystem=Original Warehouse=Galleon
 
         CONCRETE
-        Celerity Container Flow Handling Math MemoryRecording RecordCollectionVisualization ResourceObject
+        Celerity Container Flow Handling InputStorage Math MemoryRecording RecordCollectionVisualization ResourceObject
         Serialization TaskCollection Threading Time VisualGraph)
 
 if (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING)
@@ -27,30 +27,44 @@ endif ()
 
 shared_library_verify ()
 
-register_shared_library (${GAME_NAME}SharedGame)
+register_shared_library (${GAME_NAME}SharedModel)
 shared_library_include (
         SCOPE PUBLIC
 
         ABSTRACT
-        CelerityPhysics2d=Box2d CelerityUI=ImGUI
+        CelerityPhysics2dModel=Box2d CelerityUIModel=ImGUI
 
         CONCRETE
-        ${GAME_NAME}Logic ${GAME_NAME}Model ${GAME_NAME}Resources CelerityAsset CelerityAssembly CelerityInput
-        CelerityLocale CelerityPhysics2dDebugDraw CelerityRenderFoundation CelerityResourceConfig CelerityRender2d
-        CelerityResourceObject CelerityTransform)
+        ${GAME_NAME}Model CelerityAssetModel CelerityAssemblyModel CelerityInputModel CelerityLocaleModel
+        CelerityPhysics2dDebugDrawModel CelerityRenderFoundationModel CelerityResourceConfigModel CelerityRender2dModel
+        CelerityResourceObjectModel CelerityTransformModel)
 shared_library_link_shared_library (PUBLIC "${GAME_NAME}SharedBase")
 shared_library_verify ()
 
+register_shared_library (${GAME_NAME}SharedLogic)
+shared_library_include (
+        SCOPE PUBLIC
+
+        ABSTRACT
+        CelerityPhysics2dLogic=Box2d CelerityUILogic=ImGUI
+
+        CONCRETE
+        ${GAME_NAME}Logic ${GAME_NAME}Resources CelerityAssetLogic CelerityAssemblyLogic CelerityInputLogic
+        CelerityLocaleLogic CelerityPhysics2dDebugDrawLogic CelerityRenderFoundationLogic CelerityResourceConfigLogic
+        CelerityRender2dLogic CelerityResourceObjectLogic CelerityTransformLogic)
+shared_library_link_shared_library (PUBLIC "${GAME_NAME}SharedModel")
+shared_library_verify ()
+
 register_executable (${GAME_NAME}ResourceCooker)
-executable_include (CONCRETE ${GAME_NAME}ResourceCookerApplication CommandLine ResourceCooking)
-executable_link_shared_libraries (${GAME_NAME}SharedGame)
+executable_include (CONCRETE ${GAME_NAME}ResourceCookerApplication ${GAME_NAME}Resources CommandLine ResourceCooking)
+executable_link_shared_libraries (${GAME_NAME}SharedModel)
 executable_verify ()
 executable_copy_linked_artefacts ()
 set_target_properties ("${GAME_NAME}ResourceCooker" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}")
 
 register_executable (${GAME_NAME}Game)
 executable_include (CONCRETE ${GAME_NAME}GameApplication)
-executable_link_shared_libraries (${GAME_NAME}SharedGame)
+executable_link_shared_libraries (${GAME_NAME}SharedLogic)
 executable_verify ()
 executable_copy_linked_artefacts ()
 

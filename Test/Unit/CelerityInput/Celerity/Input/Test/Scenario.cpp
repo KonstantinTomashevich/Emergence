@@ -242,7 +242,7 @@ void ExecuteScenario (const Container::Vector<Update> &_updates,
 
     World world {"TestWorld"_us, WorldConfiguration {}};
     PipelineBuilder builder {world.GetRootView ()};
-    FrameInputAccumulator inputAccumulator;
+    InputStorage::FrameInputAccumulator inputAccumulator;
 
     builder.Begin ("FixedUpdate"_us, PipelineType::FIXED);
 
@@ -279,7 +279,7 @@ void ExecuteScenario (const Container::Vector<Update> &_updates,
             {
                 if constexpr (std::is_same_v<NormalUpdate, std::decay_t<decltype (_update)>>)
                 {
-                    for (const InputEvent &event : _update.inputEvents)
+                    for (const InputStorage::InputEvent &event : _update.inputEvents)
                     {
                         inputAccumulator.RecordEvent (event);
                     }

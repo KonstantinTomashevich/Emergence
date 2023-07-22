@@ -1,5 +1,0 @@
-register_concrete (CelerityLocale)
-concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-concrete_sources ("*.cpp")
-concrete_require (SCOPE PUBLIC ABSTRACT ResourceProvider CONCRETE_INTERFACE Celerity)
-concrete_require (SCOPE PRIVATE ABSTRACT JobDispatcher Log CONCRETE_INTERFACE Serialization)

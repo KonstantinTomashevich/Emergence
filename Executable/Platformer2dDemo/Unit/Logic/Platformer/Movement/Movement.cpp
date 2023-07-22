@@ -1,8 +1,8 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Input/InputActionComponent.hpp>
-#include <Celerity/Model/TimeSingleton.hpp>
-#include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/TimeSingleton.hpp>
+#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/Physics2d/CollisionContact2d.hpp>
 #include <Celerity/Physics2d/CollisionShape2dComponent.hpp>
 #include <Celerity/Physics2d/Events.hpp>

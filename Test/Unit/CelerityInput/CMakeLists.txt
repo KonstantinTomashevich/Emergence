@@ -3,7 +3,7 @@ concrete_include (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 concrete_sources ("*.cpp")
 concrete_require (
         SCOPE PRIVATE
-        CONCRETE_INTERFACE CelerityInput CelerityTransform
+        CONCRETE_INTERFACE CelerityInputLogic CelerityTransformLogic
         INTERFACE MemoryProfilerStub Testing)
 
 register_executable (TestCelerityInput)
@@ -14,8 +14,9 @@ executable_include (
         TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
 
         CONCRETE
-        Celerity CelerityInput CelerityInputTests CelerityTransform Container Flow Handling Math
-        RecordCollectionVisualization Serialization TaskCollection Threading Time VisualGraph)
+        Celerity CelerityInputLogic CelerityInputModel CelerityInputTests CelerityTransformLogic CelerityTransformModel
+        Container Flow Handling InputStorage Math RecordCollectionVisualization Serialization TaskCollection Threading
+        Time VisualGraph)
 executable_verify ()
 executable_copy_linked_artefacts ()
 

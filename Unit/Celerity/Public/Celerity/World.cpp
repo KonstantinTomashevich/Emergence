@@ -1,5 +1,5 @@
-#include <Celerity/Model/TimeSingleton.hpp>
-#include <Celerity/Model/WorldSingleton.hpp>
+#include <Celerity/TimeSingleton.hpp>
+#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/World.hpp>
 

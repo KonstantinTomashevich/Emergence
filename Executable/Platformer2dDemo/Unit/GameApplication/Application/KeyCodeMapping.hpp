@@ -1,5 +1,5 @@
 #pragma once
 
-#include <Celerity/Input/Keyboard.hpp>
+#include <InputStorage/Keyboard.hpp>
 
-Emergence::Celerity::KeyCodeMapping GetKeyCodeMapping () noexcept;
+Emergence::InputStorage::KeyCodeMapping GetKeyCodeMapping () noexcept;

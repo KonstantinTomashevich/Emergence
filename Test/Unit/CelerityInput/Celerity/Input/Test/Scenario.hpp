@@ -1,12 +1,13 @@
 #pragma once
 
-#include <Celerity/Input/FrameInputAccumulator.hpp>
 #include <Celerity/Input/InputAction.hpp>
 #include <Celerity/Input/InputTriggers.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
 
 #include <Container/Variant.hpp>
 #include <Container/Vector.hpp>
+
+#include <InputStorage/FrameInputAccumulator.hpp>
 
 #include <Memory/Profiler/Test/DefaultAllocationGroupStub.hpp>
 
@@ -35,8 +36,8 @@ struct NormalUpdate final
     Container::Vector<SubscriptionInfo> subscriptionsToAdd;
     Container::Vector<SubscriptionInfo> subscriptionsToRemove;
     Container::Vector<ExternalAction> externalActions;
-    Container::Vector<InputEvent> inputEvents;
-    QualifiersMask currentQualifiersMask = 0u;
+    Container::Vector<InputStorage::InputEvent> inputEvents;
+    InputStorage::QualifiersMask currentQualifiersMask = 0u;
     Container::Vector<ActionExpectation> expectations;
 };
 
@@ -52,9 +53,9 @@ using Update = Container::Variant<NormalUpdate, FixedUpdate>;
 struct KeyTriggerSetup final
 {
     InputAction actionToSend;
-    ScanCode triggerCode = 0u;
-    QualifiersMask expectedQualifiers = 0u;
-    KeyState triggerTargetState = KeyState::DOWN;
+    InputStorage::ScanCode triggerCode = 0u;
+    InputStorage::QualifiersMask expectedQualifiers = 0u;
+    InputStorage::KeyState triggerTargetState = InputStorage::KeyState::DOWN;
     KeyTriggerType triggerType = KeyTriggerType::ON_STATE;
     InputActionDispatchType dispatchType = InputActionDispatchType::NORMAL;
 };

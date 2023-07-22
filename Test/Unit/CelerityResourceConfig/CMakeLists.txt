@@ -4,7 +4,7 @@ concrete_sources ("*.cpp")
 
 concrete_require (
         SCOPE PRIVATE
-        CONCRETE_INTERFACE CelerityResourceConfig Serialization
+        CONCRETE_INTERFACE CelerityResourceConfigLogic Serialization
         INTERFACE MemoryProfilerStub Testing)
 
 register_executable (TestCelerityResourceConfig)
@@ -15,8 +15,8 @@ executable_include (
         TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
 
         CONCRETE
-        Celerity CelerityResourceConfig CelerityResourceConfigTests Container Flow Handling Math
-        RecordCollectionVisualization Serialization TaskCollection Threading Time VisualGraph)
+        Celerity CelerityResourceConfigLogic CelerityResourceConfigModel CelerityResourceConfigTests Container Flow
+        Handling Math RecordCollectionVisualization Serialization TaskCollection Threading Time VisualGraph)
 executable_verify ()
 executable_copy_linked_artefacts ()
 
