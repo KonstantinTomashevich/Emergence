@@ -98,6 +98,7 @@ static EntryType QueryType (Original::VirtualFileSystem *_owner, const Original:
         case Original::EntryType::FILE_SYSTEM_LINK:
             return EntryType::DIRECTORY;
 
+        case Original::EntryType::VIRTUAL_FILE:
         case Original::EntryType::PACKAGE_FILE:
             return EntryType::FILE;
 
@@ -206,6 +207,9 @@ static std::chrono::time_point<std::chrono::file_clock> QueryLastWriteTime (Orig
         case Original::EntryType::VIRTUAL_DIRECTORY:
         case Original::EntryType::FILE_SYSTEM_LINK:
             return {};
+
+        case Original::EntryType::VIRTUAL_FILE:
+            return _owner->GetVirtualFileLastWriteTime (_object.entryId);
 
         case Original::EntryType::PACKAGE_FILE:
             return std::filesystem::last_write_time (_owner->GetPackageFilePath (_object.entryId));

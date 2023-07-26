@@ -1,10 +1,13 @@
+#include <fstream>
+
 #include <API/Common/BlockCast.hpp>
 
 #include <Assert/Assert.hpp>
 
-#include <fstream>
+#include <Container/Variant.hpp>
 
 #include <VirtualFileSystem/Original/Core.hpp>
+#include <VirtualFileSystem/Original/VirtualFileBuffer.hpp>
 #include <VirtualFileSystem/Original/Wrappers.hpp>
 #include <VirtualFileSystem/Reader.hpp>
 
@@ -191,12 +194,28 @@ private:
 struct ReaderImplementationData
 {
     ReaderImplementationData (FILE *_source, std::uint64_t _offset, std::uint64_t _size) noexcept
-        : buffer (_source, _offset, _size),
-          input (&buffer)
+        : buffer (std::in_place_type<BoundedFileReadBuffer>, _source, _offset, _size),
+          input (&std::get<BoundedFileReadBuffer> (buffer))
     {
     }
 
-    BoundedFileReadBuffer buffer;
+    ReaderImplementationData (Original::VirtualFileData *_file) noexcept
+        : buffer (std::in_place_type<Original::VirtualFileReadBuffer>, _file),
+          input (&std::get<Original::VirtualFileReadBuffer> (buffer))
+    {
+    }
+
+    [[nodiscard]] bool IsOpen () const noexcept
+    {
+        return std::visit (
+            [] (auto &_buffer)
+            {
+                return _buffer.IsOpen ();
+            },
+            buffer);
+    }
+
+    Container::Variant<BoundedFileReadBuffer, Original::VirtualFileReadBuffer> buffer;
     std::istream input;
 };
 
@@ -204,7 +223,17 @@ Reader::Reader (const Entry &_entry) noexcept
 {
     const auto &entryData = block_cast<Original::EntryImplementationData> (_entry.data);
     Original::FileReadContext context = entryData.owner->OpenFileForRead (entryData.object);
-    new (&data) ReaderImplementationData {context.file, context.offset, context.size};
+
+    switch (context.type)
+    {
+    case Original::FileIOContextType::REAL_FILE:
+        new (&data) ReaderImplementationData {context.realFile.file, context.realFile.offset, context.realFile.size};
+        break;
+
+    case Original::FileIOContextType::VIRTUAL_FILE:
+        new (&data) ReaderImplementationData {context.virtualFile};
+        break;
+    }
 }
 
 Reader::~Reader () noexcept
@@ -214,7 +243,7 @@ Reader::~Reader () noexcept
 
 bool Reader::IsValid () const noexcept
 {
-    return block_cast<ReaderImplementationData> (data).buffer.IsOpen () &&
+    return block_cast<ReaderImplementationData> (data).IsOpen () &&
            !block_cast<ReaderImplementationData> (data).input.fail ();
 }
 

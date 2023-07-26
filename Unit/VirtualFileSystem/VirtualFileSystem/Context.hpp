@@ -40,6 +40,14 @@ constexpr const char PATH_SEPARATOR = '/';
 /// Virtual file system provides tools for building such files and is able to mount them like directories.
 /// \endparblock
 ///
+/// \par Virtual files
+/// \parblock
+/// There is support for virtual files that are fully stored in memory. This files imitate real files and support every
+/// virtual file system operation that can be done to real files. Virtual files are created automatically when
+/// ::CreateFile does not point to any location in real file system. This type of files provides fast in-memory storage
+/// for cases where we need to store large amount of data without spending time on saving it to hard drive.
+/// \endparblock
+///
 /// \par Multiple virtual file systems
 /// \parblock
 /// You can safely create multiple virtual file systems under one process by creating multiple context instances.
@@ -63,7 +71,9 @@ public:
     [[nodiscard]] Entry GetRoot () const noexcept;
 
     /// \brief Creates empty file with given name that is child of given virtual file system entry.
-    /// \invariant Given parent entry must be mappable to real file system path, we do not support fully virtual files.
+    /// \invariant If given parent entry is mappable to real file system path, real file will be created.
+    ///            Otherwise, virtual in-memory file will be created. Warning: virtual files are lost after
+    ///            context destruction.
     Entry CreateFile (const Entry &_parent, const std::string_view &_fileName) noexcept;
 
     /// \brief Creates new directory with given name that is child of given virtual file system entry.

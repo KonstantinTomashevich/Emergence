@@ -4,7 +4,10 @@
 
 #include <Assert/Assert.hpp>
 
+#include <Container/Variant.hpp>
+
 #include <VirtualFileSystem/Original/Core.hpp>
+#include <VirtualFileSystem/Original/VirtualFileBuffer.hpp>
 #include <VirtualFileSystem/Original/Wrappers.hpp>
 #include <VirtualFileSystem/Writer.hpp>
 
@@ -160,17 +163,31 @@ private:
     char buffer[BUFFER_SIZE];
 };
 
-struct ImplementationData final
+struct WriterImplementationData final
 {
-    ImplementationData (FILE *_file) noexcept
-        : file (_file),
-          buffer (_file),
-          output (&buffer)
+    WriterImplementationData (FILE *_file) noexcept
+        : buffer (std::in_place_type<CFileWriteBuffer>, _file),
+          output (&std::get<CFileWriteBuffer> (buffer))
     {
     }
 
-    FILE *file = nullptr;
-    CFileWriteBuffer buffer;
+    WriterImplementationData (Original::VirtualFileData *_file) noexcept
+        : buffer (std::in_place_type<Original::VirtualFileWriteBuffer>, _file),
+          output (&std::get<Original::VirtualFileWriteBuffer> (buffer))
+    {
+    }
+
+    [[nodiscard]] bool IsOpen () const noexcept
+    {
+        return std::visit (
+            [] (auto &_buffer)
+            {
+                return _buffer.IsOpen ();
+            },
+            buffer);
+    }
+
+    Container::Variant<CFileWriteBuffer, Original::VirtualFileWriteBuffer> buffer;
     std::ostream output;
 };
 
@@ -178,22 +195,32 @@ Writer::Writer (const Entry &_entry) noexcept
 {
     const auto &entryData = block_cast<Original::EntryImplementationData> (_entry.data);
     Original::FileWriteContext context = entryData.owner->OpenFileForWrite (entryData.object);
-    new (&data) ImplementationData {context.file};
+
+    switch (context.type)
+    {
+    case Original::FileIOContextType::REAL_FILE:
+        new (&data) WriterImplementationData {context.realFile};
+        break;
+
+    case Original::FileIOContextType::VIRTUAL_FILE:
+        new (&data) WriterImplementationData {context.virtualFile};
+        break;
+    }
 }
 
 Writer::~Writer () noexcept
 {
-    block_cast<ImplementationData> (data).~ImplementationData ();
+    block_cast<WriterImplementationData> (data).~WriterImplementationData ();
 }
 
 bool Writer::IsValid () const noexcept
 {
-    return block_cast<ImplementationData> (data).buffer.IsOpen () &&
-           !block_cast<ImplementationData> (data).output.fail ();
+    return block_cast<WriterImplementationData> (data).IsOpen () &&
+           !block_cast<WriterImplementationData> (data).output.fail ();
 }
 
 std::ostream &Writer::OutputStream () noexcept
 {
-    return block_cast<ImplementationData> (data).output;
+    return block_cast<WriterImplementationData> (data).output;
 }
 } // namespace Emergence::VirtualFileSystem

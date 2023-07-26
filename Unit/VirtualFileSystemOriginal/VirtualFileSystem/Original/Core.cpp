@@ -133,6 +133,40 @@ const Object::Reflection &Object::Reflect () noexcept
     return reflection;
 }
 
+VirtualFileData::VirtualFileData () noexcept = default;
+
+VirtualFileData::~VirtualFileData () noexcept
+{
+    Reset ();
+}
+
+void VirtualFileData::Reset () noexcept
+{
+    VirtualFileChunk *currentChunk = firstChunk;
+    while (currentChunk)
+    {
+        VirtualFileChunk *nextChunk = currentChunk->next;
+        chunkHeap->Release (currentChunk, sizeof (VirtualFileChunk) + currentChunk->size);
+        currentChunk = nextChunk;
+    }
+
+    firstChunk = nullptr;
+    lastChunk = nullptr;
+    size = 0u;
+    lastWriteTime = std::chrono::file_clock::now ();
+}
+
+const VirtualFileData::Reflection &VirtualFileData::Reflect () noexcept
+{
+    static const Reflection reflection = [] ()
+    {
+        EMERGENCE_MAPPING_REGISTRATION_BEGIN (VirtualFileData);
+        EMERGENCE_MAPPING_REGISTRATION_END ();
+    }();
+
+    return reflection;
+}
+
 const PackageFileData::Reflection &PackageFileData::Reflect () noexcept
 {
     static const Reflection reflection = [] ()
@@ -157,6 +191,10 @@ Entry::~Entry () noexcept
     switch (type)
     {
     case EntryType::VIRTUAL_DIRECTORY:
+        break;
+
+    case EntryType::VIRTUAL_FILE:
+        virtualFile.~VirtualFileData ();
         break;
 
     case EntryType::PACKAGE_FILE:
@@ -223,6 +261,7 @@ VirtualFileSystem::Cursor::Cursor (VirtualFileSystem *_owner, const Object &_sou
                 _owner->entriesByParentId.ReadPoint (&_source.entryId)};
             break;
 
+        case EntryType::VIRTUAL_FILE:
         case EntryType::PACKAGE_FILE:
         case EntryType::WEAK_FILE_LINK:
             EMERGENCE_ASSERT (false);
@@ -339,7 +378,8 @@ VirtualFileSystem::VirtualFileSystem () noexcept
       entriesByParentIdAndName (
           entries.CreatePointRepresentation ({Entry::Reflect ().parentId, Entry::Reflect ().name})),
       fileSystemLinkEntries (entries.CreateSignalRepresentation (
-          Entry::Reflect ().type, array_cast<EntryType, sizeof (std::uint64_t)> (EntryType::FILE_SYSTEM_LINK)))
+          Entry::Reflect ().type, array_cast<EntryType, sizeof (std::uint64_t)> (EntryType::FILE_SYSTEM_LINK))),
+      virtualFileChunkHeap (Memory::Profiler::AllocationGroup {"VirtualFiles"_us})
 {
     auto inserter = entries.AllocateAndInsert ();
     auto *root = static_cast<Entry *> (inserter.Allocate ());
@@ -505,6 +545,12 @@ Object VirtualFileSystem::FindChild (const Object &_object, const std::string_vi
                 return {};
             }
 
+            case EntryType::VIRTUAL_FILE:
+                EMERGENCE_LOG (WARNING, "VirtualFileSystem: Unable to get child \"", _name, "\" because path \"",
+                               ExtractFullVirtualPath (_object),
+                               "\" points to virtual file that cannot have children.");
+                return {};
+
             case EntryType::PACKAGE_FILE:
                 EMERGENCE_LOG (WARNING, "VirtualFileSystem: Unable to get child \"", _name, "\" because path \"",
                                ExtractFullVirtualPath (_object),
@@ -626,18 +672,58 @@ Object VirtualFileSystem::CreateFile (const Object &_parent, const std::string_v
 
     case ObjectType::ENTRY:
     {
-        auto entryCursor = entriesById.ReadPoint (&_parent.entryId);
-        if (const auto *entry = static_cast<const Entry *> (*entryCursor))
+        bool createVirtualFile = false;
         {
-            if (entry->type == EntryType::FILE_SYSTEM_LINK)
+            auto entryCursor = entriesById.ReadPoint (&_parent.entryId);
+            if (const auto *entry = static_cast<const Entry *> (*entryCursor))
             {
-                return createFileAtPath (std::filesystem::path (entry->filesystemLink).append (_fileName));
+                switch (entry->type)
+                {
+                case EntryType::VIRTUAL_DIRECTORY:
+                    createVirtualFile = true;
+                    break;
+
+                case EntryType::VIRTUAL_FILE:
+                case EntryType::WEAK_FILE_LINK:
+                case EntryType::PACKAGE_FILE:
+                    EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to create child file for \"",
+                                   ExtractFullVirtualPath (_parent), "\" as it does not point to any directory.");
+                    return {};
+
+                case EntryType::FILE_SYSTEM_LINK:
+                    return createFileAtPath (std::filesystem::path (entry->filesystemLink).append (_fileName));
+                }
+            }
+        }
+
+        if (createVirtualFile)
+        {
+            {
+                struct
+                {
+                    EntryId parentId;
+                    Memory::UniqueString childName;
+                } query {_parent.entryId, Memory::UniqueString {_fileName}};
+
+                auto entryCursor = entriesByParentIdAndName.ReadPoint (&query);
+                if (*entryCursor)
+                {
+                    EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to create child file for \"",
+                                   ExtractFullVirtualPath (_parent), "\" as it already exists.");
+                    return {};
+                }
             }
 
-            EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to create child file for \"",
-                           ExtractFullVirtualPath (_parent),
-                           "\" as it does not point to any real file system location.");
-            return {};
+            auto inserter = entries.AllocateAndInsert ();
+            auto *entry = static_cast<Entry *> (inserter.Allocate ());
+            entry->id = nextEntryId++;
+            entry->parentId = _parent.entryId;
+            entry->name = Memory::UniqueString {_fileName};
+            entry->type = EntryType::VIRTUAL_FILE;
+            new (&entry->virtualFile) VirtualFileData ();
+            entry->virtualFile.chunkHeap = &virtualFileChunkHeap;
+            entry->virtualFile.lastWriteTime = std::chrono::file_clock::now ();
+            return {entry->id};
         }
 
         EMERGENCE_ASSERT (false);
@@ -672,6 +758,12 @@ Object VirtualFileSystem::CreateDirectory (const Object &_parent, const std::str
                 case EntryType::VIRTUAL_DIRECTORY:
                     createVirtualDirectory = true;
                     break;
+
+                case EntryType::VIRTUAL_FILE:
+                    EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to create child directory \"", _directoryName,
+                                   "\" because path \"", ExtractFullVirtualPath (_parent),
+                                   "\" points to virtual file that cannot have children.");
+                    return {};
 
                 case EntryType::PACKAGE_FILE:
                     EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to create child directory \"", _directoryName,
@@ -834,6 +926,7 @@ Object VirtualFileSystem::MakeDirectories (const Object &_parent, const std::str
                 case EntryType::FILE_SYSTEM_LINK:
                     break;
 
+                case EntryType::VIRTUAL_FILE:
                 case EntryType::PACKAGE_FILE:
                 case EntryType::WEAK_FILE_LINK:
                     EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to serve make directories request as \"",
@@ -1123,6 +1216,16 @@ Memory::UniqueString VirtualFileSystem::GetEntryName (EntryId _id) const noexcep
     return entry->name;
 }
 
+std::chrono::time_point<std::chrono::file_clock> VirtualFileSystem::GetVirtualFileLastWriteTime (
+    EntryId _id) const noexcept
+{
+    auto entryCursor = entriesById.ReadPoint (&_id);
+    const auto *entry = static_cast<const Entry *> (*entryCursor);
+    EMERGENCE_ASSERT (entry);
+    EMERGENCE_ASSERT (entry->type == EntryType::VIRTUAL_FILE);
+    return entry->virtualFile.lastWriteTime;
+}
+
 Container::Utf8String VirtualFileSystem::GetPackageFilePath (EntryId _id) const noexcept
 {
     auto entryCursor = entriesById.ReadPoint (&_id);
@@ -1162,11 +1265,23 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object) const
                            "\" for read: it points to directory instead of file.");
             return {};
 
+        case EntryType::VIRTUAL_FILE:
+        {
+            FileReadContext context;
+            context.type = FileIOContextType::VIRTUAL_FILE;
+            context.virtualFile = &entry->virtualFile;
+            return context;
+        }
+
         case EntryType::PACKAGE_FILE:
         {
             FILE *packageFile = fopen (entry->packageFile.path.c_str (), "rb");
             fseek (packageFile, static_cast<long> (entry->packageFile.offset), SEEK_SET);
-            return {packageFile, entry->packageFile.offset, entry->packageFile.size};
+
+            FileReadContext context;
+            context.type = FileIOContextType::REAL_FILE;
+            context.realFile = {packageFile, entry->packageFile.offset, entry->packageFile.size};
+            return context;
         }
 
         case EntryType::WEAK_FILE_LINK:
@@ -1189,7 +1304,10 @@ FileReadContext VirtualFileSystem::OpenFileForRead (const Object &_object) const
             fseek (file, 0u, SEEK_SET);
         }
 
-        return {file, 0u, size};
+        FileReadContext context;
+        context.type = FileIOContextType::REAL_FILE;
+        context.realFile = {file, 0u, size};
+        return context;
     }
     }
 
@@ -1218,6 +1336,14 @@ FileWriteContext VirtualFileSystem::OpenFileForWrite (const Object &_object) con
                            "\" for write: it points to directory instead of file.");
             return {};
 
+        case EntryType::VIRTUAL_FILE:
+        {
+            FileWriteContext context;
+            context.type = FileIOContextType::VIRTUAL_FILE;
+            context.virtualFile = &entry->virtualFile;
+            return context;
+        }
+
         case EntryType::PACKAGE_FILE:
             EMERGENCE_LOG (ERROR, "VirtualFileSystem: Unable to open file \"", ExtractFullVirtualPath (_object),
                            "\" for write: package files are read-only.");
@@ -1233,7 +1359,10 @@ FileWriteContext VirtualFileSystem::OpenFileForWrite (const Object &_object) con
 
     case ObjectType::PATH:
     {
-        return {fopen (_object.path.c_str (), "wb")};
+        FileWriteContext context;
+        context.type = FileIOContextType::REAL_FILE;
+        context.realFile = fopen (_object.path.c_str (), "wb");
+        return context;
     }
     }
 

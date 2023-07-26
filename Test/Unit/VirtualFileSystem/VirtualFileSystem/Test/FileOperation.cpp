@@ -19,10 +19,10 @@ using namespace Emergence::VirtualFileSystem::Test;
 
 BEGIN_SUITE (FileOperation)
 
-TEST_CASE (CreateFileUnmapped)
+TEST_CASE (CreateFileVirtual)
 {
     Context context;
-    CHECK (!context.CreateFile (context.GetRoot (), "test.txt"));
+    CHECK (context.CreateFile (context.GetRoot (), "test.txt"));
 }
 
 TEST_CASE (CreateVirtualDirectory)
@@ -230,18 +230,13 @@ TEST_CASE (DeleteFileMounted)
     CHECK (!std::filesystem::exists (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "test.txt")));
 }
 
-TEST_CASE (DeleteFileMounted)
+TEST_CASE (DeleteFileVirtual)
 {
     std::filesystem::remove_all (testDirectory);
     std::filesystem::create_directories (testDirectory);
 
     Context context;
-    REQUIRE (context.Mount (context.GetRoot (),
-                            MountConfiguration {MountSource::FILE_SYSTEM, testDirectory, testDirectory}));
-
-    Entry mounted {context, testDirectory};
-    CHECK (context.Delete (context.CreateFile (mounted, "test.txt"), false, true));
-    CHECK (!std::filesystem::exists (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "test.txt")));
+    CHECK (context.Delete (context.CreateFile (context.GetRoot (), "test.txt"), false, true));
 }
 
 TEST_CASE (DeleteWeakFileLinkKeepsFile)
@@ -296,7 +291,7 @@ TEST_CASE (DeleteMountedDeleteReal)
     CHECK (!std::filesystem::exists (EMERGENCE_BUILD_STRING (testDirectory, PATH_SEPARATOR, "test.txt")));
 }
 
-TEST_CASE (DeleteVirtualRecursive)
+TEST_CASE (DeleteVirtualDirectoryRecursive)
 {
     Context context;
     Utf8String path {EMERGENCE_BUILD_STRING ("Resources", PATH_SEPARATOR, "Platformer", PATH_SEPARATOR, "Game")};
@@ -306,7 +301,7 @@ TEST_CASE (DeleteVirtualRecursive)
     CHECK (!Entry {context, path});
 }
 
-TEST_CASE (DeleteVirtualNonRecursive)
+TEST_CASE (DeleteVirtualDirectoryNonRecursive)
 {
     Context context;
     Utf8String path {EMERGENCE_BUILD_STRING ("Resources", PATH_SEPARATOR, "Platformer", PATH_SEPARATOR, "Game")};
@@ -314,7 +309,7 @@ TEST_CASE (DeleteVirtualNonRecursive)
     CHECK (!context.Delete (Entry {context, "Resources"}, false, false));
 }
 
-TEST_CASE (IterateVirtual)
+TEST_CASE (IterateVirtualDirectory)
 {
     Context context;
     context.CreateDirectory (context.GetRoot (), "Resources");

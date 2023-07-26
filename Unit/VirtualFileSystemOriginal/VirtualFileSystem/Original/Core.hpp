@@ -70,9 +70,44 @@ constexpr EntryId ROOT_ID = 0u;
 enum class EntryType : uint8_t
 {
     VIRTUAL_DIRECTORY = 0u,
+    VIRTUAL_FILE,
     PACKAGE_FILE,
     FILE_SYSTEM_LINK,
     WEAK_FILE_LINK,
+};
+
+struct VirtualFileChunk final
+{
+    VirtualFileChunk *next = nullptr;
+    VirtualFileChunk *previous = nullptr;
+    std::uint64_t size = 0u;
+    std::uint64_t used = 0u;
+    std::uint8_t data[0u];
+};
+
+static_assert (std::is_trivially_destructible_v<VirtualFileChunk>);
+
+struct VirtualFileData final
+{
+    EMERGENCE_STATIONARY_DATA_TYPE (VirtualFileData);
+
+    void Reset () noexcept;
+
+    VirtualFileChunk *firstChunk = nullptr;
+    VirtualFileChunk *lastChunk = nullptr;
+    std::uint64_t size = 0u;
+
+    Memory::Heap *chunkHeap = nullptr;
+
+    std::chrono::time_point<std::chrono::file_clock> lastWriteTime =
+        std::chrono::time_point<std::chrono::file_clock>::min ();
+
+    struct Reflection final
+    {
+        StandardLayout::Mapping mapping;
+    };
+
+    static const Reflection &Reflect () noexcept;
 };
 
 struct PackageFileData final
@@ -94,15 +129,7 @@ struct PackageFileData final
 
 struct Entry final
 {
-    Entry () noexcept;
-
-    Entry (const Entry &_other) = delete;
-
-    Entry (Entry &&_other) = delete;
-
-    ~Entry () noexcept;
-
-    EMERGENCE_DELETE_ASSIGNMENT (Entry);
+    EMERGENCE_STATIONARY_DATA_TYPE (Entry);
 
     EntryId id = INVALID_ID;
 
@@ -114,6 +141,10 @@ struct Entry final
 
     union
     {
+        /// \details Mutable because of IO write access that changes last
+        ///          write time and chunks, but is guaranteed to be unique.
+        mutable VirtualFileData virtualFile;
+
         PackageFileData packageFile;
         Container::Utf8String filesystemLink;
         Object weakFileLink;
@@ -125,6 +156,7 @@ struct Entry final
         StandardLayout::FieldId parentId;
         StandardLayout::FieldId name;
         StandardLayout::FieldId type;
+        StandardLayout::FieldId virtualFile;
         StandardLayout::FieldId packageFile;
         StandardLayout::FieldId filesystemLink;
         StandardLayout::FieldId weakFileLink;
@@ -134,16 +166,39 @@ struct Entry final
     static const Reflection &Reflect () noexcept;
 };
 
-struct FileReadContext final
+enum class FileIOContextType
+{
+    REAL_FILE,
+    VIRTUAL_FILE
+};
+
+struct RealFileReadContext final
 {
     FILE *file = nullptr;
     std::uint64_t offset = 0u;
     std::uint64_t size = 0u;
 };
 
+static_assert (std::is_trivially_destructible_v<RealFileReadContext>);
+
+struct FileReadContext final
+{
+    FileIOContextType type = FileIOContextType::REAL_FILE;
+    union
+    {
+        RealFileReadContext realFile {};
+        VirtualFileData *virtualFile;
+    };
+};
+
 struct FileWriteContext final
 {
-    FILE *file = nullptr;
+    FileIOContextType type = FileIOContextType::REAL_FILE;
+    union
+    {
+        FILE *realFile = nullptr;
+        VirtualFileData *virtualFile;
+    };
 };
 
 class VirtualFileSystem
@@ -209,6 +264,9 @@ public:
 
     [[nodiscard]] Memory::UniqueString GetEntryName (EntryId _id) const noexcept;
 
+    [[nodiscard]] std::chrono::time_point<std::chrono::file_clock> GetVirtualFileLastWriteTime (
+        EntryId _id) const noexcept;
+
     [[nodiscard]] Container::Utf8String GetPackageFilePath (EntryId _id) const noexcept;
 
     [[nodiscard]] Object GetWeakFileLinkTarget (EntryId _id) const noexcept;
@@ -227,5 +285,6 @@ private:
     mutable RecordCollection::SignalRepresentation fileSystemLinkEntries;
 
     EntryId nextEntryId = ROOT_ID + 1u;
+    Memory::Heap virtualFileChunkHeap;
 };
 } // namespace Emergence::VirtualFileSystem::Original
