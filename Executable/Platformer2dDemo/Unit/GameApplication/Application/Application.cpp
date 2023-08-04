@@ -181,7 +181,7 @@ void Application::InitNexus () noexcept
 
     nexus = new (nexusHeap.Acquire (sizeof (Emergence::Celerity::Nexus), alignof (Emergence::Celerity::Nexus)))
         Emergence::Celerity::Nexus {
-            bootstrap, "GameWorld"_us, {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, {}}, &nexusUserContext};
+            bootstrap, "GameWorld"_us, {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}}, &nexusUserContext};
 
     nexus->GetRootNode ()->ScheduleBootstrap (
         {false,

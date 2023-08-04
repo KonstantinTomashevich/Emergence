@@ -334,7 +334,7 @@ NexusNode *Nexus::CreateChildNode (NexusNode *_parent, Memory::UniqueString _nam
 {
     EMERGENCE_ASSERT (_parent);
     auto *newNode = new (nodeHeap.Acquire (sizeof (NexusNode), alignof (NexusNode)))
-        NexusNode {this, world.CreateView (_parent->view, _name, {})};
+        NexusNode {this, world.CreateView (_parent->view, _name)};
     _parent->children.emplace_back (newNode);
     return newNode;
 }

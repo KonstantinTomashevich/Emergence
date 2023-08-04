@@ -35,19 +35,6 @@ struct WorldSingleton;
 //       performance without losing Celerity features, but it has one significant downside: we can no longer separate
 //       game source and engine source, otherwise Chameleon will not be able to generate code for all use cases.
 
-/// \brief Contains configuration for WorldView initialization.
-struct CelerityApi WorldViewConfig final
-{
-    // TODO: Type enforcement seems like shady yet useful feature, that won't work well with Nexus.
-    //       Should we cut it?
-
-    /// \brief Even if these types are not used by the tasks in view pipelines,
-    ///        storages for them will be created in this view registry.
-    /// \invariant For any path from root view to any child view, any type can not be mentioned in this
-    ///            set more than once. So, if type is enforced in parent view, child views can not enforce it.
-    Container::HashSet<StandardLayout::Mapping> enforcedTypes {Memory::Profiler::AllocationGroup::Top ()};
-};
-
 /// \brief Combination of World data partition that is visible to this view and pipelines that operate on this
 ///        partition. Provides way to split World into partitions that can be added or removed during World lifetime.
 ///
@@ -141,7 +128,7 @@ private:
         Container::TypedOrderedPool<OnChangeEventTriggerInstanceRow> onChange;
     };
 
-    WorldView (World *_world, WorldView *_parent, Memory::UniqueString _name, const WorldViewConfig &_config) noexcept;
+    WorldView (World *_world, WorldView *_parent, Memory::UniqueString _name) noexcept;
 
     ~WorldView () noexcept;
 
@@ -168,7 +155,6 @@ private:
     World *world = nullptr;
     WorldView *parent = nullptr;
     Memory::UniqueString name;
-    WorldViewConfig config;
 
     Warehouse::Registry localRegistry;
     Memory::OrderedPool pipelinePool;
@@ -186,15 +172,12 @@ private:
 
 /// \brief Contains basic configuration for WorldSingleton and TimeSingleton.
 /// \details These values can be set through initialization pipeline, therefore
-///          this structure is only a more convenient wa to do this task.
+///          this structure is only a more convenient way to do this task.
 struct CelerityApi WorldConfiguration final
 {
     /// \see TimeSingleton::targetFixedFrameDurationsS
     Container::InplaceVector<float, TimeSingleton::MAXIMUM_TARGET_FIXED_DURATIONS> targetFixedFrameDurationsS {
         1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f};
-
-    /// \brief Configuration for the root WorldView.
-    WorldViewConfig rootViewConfig {};
 };
 
 /// \brief Represents whole game level (or world itself), works as conduit for data, events and pipelines.
@@ -217,7 +200,7 @@ public:
 
     /// \brief Constructs new view inside this world.
     /// \invariant _parent belongs to this world.
-    WorldView *CreateView (WorldView *_parent, Memory::UniqueString _name, const WorldViewConfig &_config) noexcept;
+    WorldView *CreateView (WorldView *_parent, Memory::UniqueString _name) noexcept;
 
     /// \brief Drops given view from this world.
     /// \invariant _view belongs to this world.

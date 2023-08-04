@@ -87,12 +87,10 @@ static constexpr std::size_t PIPELINES_ON_PAGE = 4u;
 
 WorldView::WorldView (World *_world,
                       WorldView *_parent,
-                      Memory::UniqueString _name,
-                      const WorldViewConfig &_config) noexcept
+                      Memory::UniqueString _name) noexcept
     : world (_world),
       parent (_parent),
       name (_name),
-      config ({Container::HashSet<StandardLayout::Mapping> {Memory::Profiler::AllocationGroup {"EnforcedTypes"_us}}}),
 
       localRegistry (_name),
       pipelinePool (Memory::Profiler::AllocationGroup {"Pipelines"_us}, sizeof (Pipeline), PIPELINES_ON_PAGE),
@@ -106,34 +104,6 @@ WorldView::WorldView (World *_world,
       eventProductionForbiddenInChildren (Memory::Profiler::AllocationGroup::Top ()),
       pipelineExecutionSection (*_name, static_cast<std::uint32_t> (reinterpret_cast<std::uintptr_t> (*_name)))
 {
-    for (const StandardLayout::Mapping &enforcedType : _config.enforcedTypes)
-    {
-        // Can only be enforced implicitly for root view.
-        EMERGENCE_ASSERT (enforcedType != TimeSingleton::Reflect ().mapping);
-        EMERGENCE_ASSERT (enforcedType != WorldSingleton::Reflect ().mapping);
-
-        config.enforcedTypes.emplace (enforcedType);
-
-        // We disable garbage collection for enforced types, as they might never be referenced in parent view, but used
-        // only in child views instead. To ensure fully predictable behaviour where children can use enforced types in
-        // order to pass data during transition, we have to disable garbage collection for these types.
-        localRegistry.SetGarbageCollectionEnabled (enforcedType, false);
-    }
-
-#if defined(EMERGENCE_ASSERT_ENABLED)
-    // Validate that there is no enforcement overlaps.
-    WorldView *viewToCheck = parent;
-
-    while (viewToCheck)
-    {
-        for (const StandardLayout::Mapping &enforcedType : config.enforcedTypes)
-        {
-            EMERGENCE_ASSERT (!viewToCheck->config.enforcedTypes.contains (enforcedType));
-        }
-
-        viewToCheck = viewToCheck->parent;
-    }
-#endif
 }
 
 WorldView::~WorldView () noexcept
@@ -249,7 +219,7 @@ WorldView &WorldView::FindViewForType (const StandardLayout::Mapping &_type) noe
     WorldView *currentView = this;
     while (currentView)
     {
-        if (currentView->config.enforcedTypes.contains (_type) || currentView->localRegistry.IsTypeUsed (_type))
+        if (currentView->localRegistry.IsTypeUsed (_type))
         {
             return *currentView;
         }
@@ -347,8 +317,7 @@ World::World (Memory::UniqueString _name, const WorldConfiguration &_configurati
           Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup {_name}, "RootView"_us},
           this,
           nullptr,
-          "Root"_us,
-          _configuration.rootViewConfig)),
+          "Root"_us)),
       modifyTime (rootView.localRegistry.ModifySingleton (TimeSingleton::Reflect ().mapping)),
       modifyWorld (rootView.localRegistry.ModifySingleton (WorldSingleton::Reflect ().mapping)),
       updateSection (*_name, static_cast<std::uint32_t> (reinterpret_cast<std::uintptr_t> (*_name)))
@@ -368,7 +337,7 @@ WorldView *World::GetRootView () noexcept
     return &rootView;
 }
 
-WorldView *World::CreateView (WorldView *_parent, Memory::UniqueString _name, const WorldViewConfig &_config) noexcept
+WorldView *World::CreateView (WorldView *_parent, Memory::UniqueString _name) noexcept
 {
     EMERGENCE_ASSERT (_parent);
     EnsureViewIsOwned (_parent);
@@ -377,7 +346,7 @@ WorldView *World::CreateView (WorldView *_parent, Memory::UniqueString _name, co
         Memory::Profiler::AllocationGroup {_parent->childrenHeap.GetAllocationGroup (), _name}.PlaceOnTop ();
 
     auto *view = new (_parent->childrenHeap.Acquire (sizeof (WorldView), alignof (WorldView)))
-        WorldView (this, _parent, _name, _config);
+        WorldView (this, _parent, _name);
 
     _parent->childrenViews.emplace_back (view);
     return view;

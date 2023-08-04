@@ -264,23 +264,21 @@ void RegisterTestEvents (World &_world)
          TestComponent::Reflect ().mapping,
          {{TestComponent::Reflect ().objectId, TestComponentRemovedNormalEvent::Reflect ().objectId}}});
 }
+} // namespace Emergence::Celerity::Test
 
-void TestObjectAndEventPropagationToRoot (bool _explicit)
+using namespace Emergence;
+using namespace Emergence::Celerity;
+using namespace Emergence::Celerity::Test;
+
+BEGIN_SUITE (WorldViewHierarchy)
+
+TEST_CASE (Propagation)
 {
-    WorldConfiguration configuration;
-    if (_explicit)
-    {
-        configuration.rootViewConfig.enforcedTypes.emplace (TestComponent::Reflect ().mapping);
-        configuration.rootViewConfig.enforcedTypes.emplace (TestComponentAddedNormalEvent::Reflect ().mapping);
-        configuration.rootViewConfig.enforcedTypes.emplace (TestComponentChangedNormalEvent::Reflect ().mapping);
-        configuration.rootViewConfig.enforcedTypes.emplace (TestComponentRemovedNormalEvent::Reflect ().mapping);
-    }
-
-    World world {"TestWorld"_us, configuration};
+    World world {"TestWorld"_us, {}};
     RegisterTestEvents (world);
 
-    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us, {});
-    WorldView *secondView = world.CreateView (world.GetRootView (), "Second"_us, {});
+    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us);
+    WorldView *secondView = world.CreateView (world.GetRootView (), "Second"_us);
 
     const ComponentVerificationFrame allComponents {
         TestComponent {0u, 1.5f, 1.5f},
@@ -288,29 +286,26 @@ void TestObjectAndEventPropagationToRoot (bool _explicit)
         TestComponent {2u, 4.9f, 0.7f},
     };
 
-    if (!_explicit)
-    {
-        PipelineBuilder rootBuilder {world.GetRootView ()};
-        rootBuilder.Begin ("Update"_us, PipelineType::NORMAL);
-        rootBuilder.AddCheckpoint (EDITION_FINISHED_CHECKPOINT);
+    PipelineBuilder rootBuilder {world.GetRootView ()};
+    rootBuilder.Begin ("Update"_us, PipelineType::NORMAL);
+    rootBuilder.AddCheckpoint (EDITION_FINISHED_CHECKPOINT);
 
-        rootBuilder.AddTask ("ComponentVerifier"_us)
-            .SetExecutor<ComponentVerifier> (Container::Vector<ComponentVerificationFrame> {{}, allComponents});
+    rootBuilder.AddTask ("ComponentVerifier"_us)
+        .SetExecutor<ComponentVerifier> (Container::Vector<ComponentVerificationFrame> {{}, allComponents});
 
-        rootBuilder.AddTask ("EventVerifier"_us)
-            .SetExecutor<EventVerifier> (
-                Container::Vector<EventVerificationFrame> {{},
+    rootBuilder.AddTask ("EventVerifier"_us)
+        .SetExecutor<EventVerifier> (
+            Container::Vector<EventVerificationFrame> {{},
+                                                       {
                                                            {
-                                                               {
-                                                                   TestComponentAddedNormalEvent {0u},
-                                                                   TestComponentAddedNormalEvent {1u},
-                                                                   TestComponentAddedNormalEvent {2u},
-                                                               },
-                                                               {},
-                                                               {},
-                                                           }});
-        REQUIRE (rootBuilder.End ());
-    }
+                                                               TestComponentAddedNormalEvent {0u},
+                                                               TestComponentAddedNormalEvent {1u},
+                                                               TestComponentAddedNormalEvent {2u},
+                                                           },
+                                                           {},
+                                                           {},
+                                                       }});
+    REQUIRE (rootBuilder.End ());
 
     PipelineBuilder firstViewBuilder {firstView};
     firstViewBuilder.Begin ("Update"_us, PipelineType::NORMAL);
@@ -354,31 +349,14 @@ void TestObjectAndEventPropagationToRoot (bool _explicit)
     world.Update ();
     world.Update ();
 }
-} // namespace Emergence::Celerity::Test
-
-using namespace Emergence;
-using namespace Emergence::Celerity;
-using namespace Emergence::Celerity::Test;
-
-BEGIN_SUITE (WorldViewHierarchy)
-
-TEST_CASE (ImplicitPropagation)
-{
-    TestObjectAndEventPropagationToRoot (false);
-}
-
-TEST_CASE (ExplicitPropagation)
-{
-    TestObjectAndEventPropagationToRoot (true);
-}
 
 TEST_CASE (NoPropagation)
 {
     World world {"TestWorld"_us};
     RegisterTestEvents (world);
 
-    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us, {});
-    WorldView *secondView = world.CreateView (world.GetRootView (), "Second"_us, {});
+    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us);
+    WorldView *secondView = world.CreateView (world.GetRootView (), "Second"_us);
 
     PipelineBuilder firstViewBuilder {firstView};
     firstViewBuilder.Begin ("Update"_us, PipelineType::NORMAL);
@@ -438,8 +416,8 @@ TEST_CASE (EventOnlyPropagation)
     World world {"TestWorld"_us};
     RegisterTestEvents (world);
 
-    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us, {});
-    WorldView *secondView = world.CreateView (world.GetRootView (), "Second"_us, {});
+    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us);
+    WorldView *secondView = world.CreateView (world.GetRootView (), "Second"_us);
 
     PipelineBuilder rootBuilder {world.GetRootView ()};
     rootBuilder.Begin ("Update"_us, PipelineType::NORMAL);
@@ -516,7 +494,7 @@ TEST_CASE (RemovalEventsOnDrop)
 {
     World world {"TestWorld"_us};
     RegisterTestEvents (world);
-    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us, {});
+    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us);
 
     PipelineBuilder rootBuilder {world.GetRootView ()};
     rootBuilder.Begin ("Update"_us, PipelineType::NORMAL);
@@ -567,85 +545,11 @@ TEST_CASE (RemovalEventsOnDrop)
     world.Update ();
 }
 
-TEST_CASE (MultiLevel)
-{
-    WorldConfiguration configuration;
-    configuration.rootViewConfig.enforcedTypes.emplace (TestComponent::Reflect ().mapping);
-    configuration.rootViewConfig.enforcedTypes.emplace (TestComponentAddedNormalEvent::Reflect ().mapping);
-    configuration.rootViewConfig.enforcedTypes.emplace (TestComponentChangedNormalEvent::Reflect ().mapping);
-    configuration.rootViewConfig.enforcedTypes.emplace (TestComponentRemovedNormalEvent::Reflect ().mapping);
-
-    World world {"TestWorld"_us, configuration};
-    RegisterTestEvents (world);
-
-    WorldView *firstIntermediateView = world.CreateView (world.GetRootView (), "FirstIntermediate"_us, {});
-    WorldView *firstView = world.CreateView (firstIntermediateView, "First"_us, {});
-    WorldView *secondIntermediateView = world.CreateView (world.GetRootView (), "SecondIntermediate"_us, {});
-    WorldView *secondView = world.CreateView (secondIntermediateView, "Second"_us, {});
-
-    PipelineBuilder rootBuilder {world.GetRootView ()};
-    rootBuilder.Begin ("Update"_us, PipelineType::NORMAL);
-    rootBuilder.AddCheckpoint (EDITION_FINISHED_CHECKPOINT);
-
-    const ComponentVerificationFrame allComponents {
-        TestComponent {0u, 1.5f, 1.5f},
-        TestComponent {1u, 2.5f, 3.5f},
-        TestComponent {2u, 4.9f, 0.7f},
-    };
-
-    rootBuilder.AddTask ("ComponentVerifier"_us)
-        .SetExecutor<ComponentVerifier> (Container::Vector<ComponentVerificationFrame> {{}, allComponents});
-
-    REQUIRE (rootBuilder.End ());
-
-    PipelineBuilder firstViewBuilder {firstView};
-    firstViewBuilder.Begin ("Update"_us, PipelineType::NORMAL);
-    firstViewBuilder.AddCheckpoint (EDITION_FINISHED_CHECKPOINT);
-
-    firstViewBuilder.AddTask ("Editor"_us)
-        .SetExecutor<Editor> (Container::Vector<EditionFrame> {{
-            {
-                TestComponent {0u, 1.5f, 1.5f},
-            },
-            {},
-            {},
-        }});
-
-    firstViewBuilder.AddTask ("ComponentVerifier"_us)
-        .SetExecutor<ComponentVerifier> (
-            Container::Vector<ComponentVerificationFrame> {{
-                                                               TestComponent {0u, 1.5f, 1.5f},
-                                                           },
-                                                           allComponents});
-    REQUIRE (firstViewBuilder.End ());
-
-    PipelineBuilder secondViewBuilder {secondView};
-    secondViewBuilder.Begin ("Update"_us, PipelineType::NORMAL);
-    secondViewBuilder.AddCheckpoint (EDITION_FINISHED_CHECKPOINT);
-
-    secondViewBuilder.AddTask ("Editor"_us)
-        .SetExecutor<Editor> (Container::Vector<EditionFrame> {{
-            {
-                TestComponent {1u, 2.5f, 3.5f},
-                TestComponent {2u, 4.9f, 0.7f},
-            },
-            {},
-            {},
-        }});
-
-    secondViewBuilder.AddTask ("ComponentVerifier"_us)
-        .SetExecutor<ComponentVerifier> (Container::Vector<ComponentVerificationFrame> {allComponents, allComponents});
-    REQUIRE (secondViewBuilder.End ());
-
-    world.Update ();
-    world.Update ();
-}
-
 TEST_CASE (AllEventTypes)
 {
     World world {"TestWorld"_us};
     RegisterTestEvents (world);
-    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us, {});
+    WorldView *firstView = world.CreateView (world.GetRootView (), "First"_us);
 
     PipelineBuilder rootBuilder {world.GetRootView ()};
     rootBuilder.Begin ("Update"_us, PipelineType::NORMAL);
