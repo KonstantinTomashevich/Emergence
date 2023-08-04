@@ -1,17 +1,21 @@
 #include <limits>
 
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
-#include <Celerity/TimeSingleton.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
 #include <Celerity/Render/2d/Render2dSingleton.hpp>
 #include <Celerity/Render/2d/World2dRenderPass.hpp>
 #include <Celerity/Render/Foundation/MaterialInstance.hpp>
+#include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Resource/Object/Messages.hpp>
+#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/Transform/TransformVisualSync.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Configuration/VisibilityMask.hpp>
 
@@ -89,8 +93,12 @@ Manager::Manager (Emergence::Celerity::TaskConstructor &_constructor) noexcept
       editUniformVector4fByAssetIdAndName (
           EDIT_VALUE_2F (Emergence::Celerity::UniformVector4fValue, assetId, uniformName))
 {
+    _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::TransformVisualSync::Checkpoint::STARTED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
 }
 
 void Manager::Execute () noexcept

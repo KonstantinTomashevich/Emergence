@@ -4,13 +4,15 @@
 
 namespace Emergence::Celerity
 {
-EventRegistrar::EventRegistrar (World *_world) noexcept
+EventRegistrar::EventRegistrar (World *_world, [[maybe_unused]] bool unsafe) noexcept
     : world (_world)
 {
     EMERGENCE_ASSERT (world);
     // There should be no pipelines and no child views, because events augment pipeline building process.
-    EMERGENCE_ASSERT (world->rootView.pipelinePool.BeginAcquired () == world->rootView.pipelinePool.EndAcquired () &&
-                      world->rootView.childrenViews.empty ());
+    // If unsafe was passed, we think that user is responsible for recreating all the pipelines.
+    EMERGENCE_ASSERT (unsafe ||
+                      (world->rootView.pipelinePool.BeginAcquired () == world->rootView.pipelinePool.EndAcquired () &&
+                       world->rootView.childrenViews.empty ()));
 
     // In case we are reusing world and there are old schemes.
     for (World::EventScheme &scheme : world->eventSchemes)

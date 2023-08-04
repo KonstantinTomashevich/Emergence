@@ -257,6 +257,13 @@ bool Registry::IsTypeUsed (const StandardLayout::Mapping &_typeMapping) const no
            internal.deck->IsSingletonContainerAllocated (_typeMapping);
 }
 
+void Registry::SetGarbageCollectionEnabled (bool _enabled) noexcept
+{
+    const auto &internal = block_cast<RegistryData> (data);
+    EMERGENCE_ASSERT (internal.deck);
+    internal.deck->SetGarbageCollectionEnabled (_enabled);
+}
+
 void Registry::SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typeMapping, bool _enabled) noexcept
 {
     const auto &internal = block_cast<RegistryData> (data);

@@ -24,7 +24,7 @@ enum class WorldUpdateMode
     ///          - Fixed pipeline is executed each frame with zero time step to compensate for changes made by
     ///            normal and custom, for example loading, pipelines. Fixed pipeline should not advance simulation
     ///            in any way.
-    FROZEN
+    FROZEN // TODO: Seems like a problem for editors and such. Can we cut this feature out?
 };
 
 /// \brief Singleton for world<->tasks communication and global utility like id generation.
@@ -38,6 +38,14 @@ struct CelerityApi WorldSingleton final
 
     /// \brief Current update mode for the game world.
     WorldUpdateMode updateMode = WorldUpdateMode::SIMULATING;
+
+    /// \brief Count of existing context escapes that are currently being used outside of Celerity.
+    std::atomic_uintptr_t contextEscapeCounter = 0u;
+
+    /// \brief Whether it is allowed to escape Celerity context right now.
+    /// \details Some framework features might work only if there are no context escapes. In that cases they
+    ///          need to forbid context escape using this flag and wait till existing escapes return.
+    bool contextEscapeAllowed = true;
 
     /// \invariant Do not access directly, use ::GenerateId.
     std::atomic_uintptr_t idCounter = 0u;

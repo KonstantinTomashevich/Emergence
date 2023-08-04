@@ -4,8 +4,6 @@
 
 #include <Celerity/PipelineBuilder.hpp>
 
-#include <Framework/GameState.hpp>
-
 namespace MainMenuLoadingOrchestration
 {
 struct Platformer2dDemoLogicApi Checkpoint final
@@ -16,7 +14,5 @@ struct Platformer2dDemoLogicApi Checkpoint final
     static const Emergence::Memory::UniqueString FINISHED;
 };
 
-Platformer2dDemoLogicApi void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
-                                                 const ViewDropHandle &_viewDropHandle,
-                                                 Emergence::Celerity::WorldView *_ownerView) noexcept;
+Platformer2dDemoLogicApi void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept;
 } // namespace MainMenuLoadingOrchestration

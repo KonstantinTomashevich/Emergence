@@ -1,7 +1,6 @@
 #include <Celerity/Asset/AssetManagerSingleton.hpp>
 #include <Celerity/Input/InputTriggers.hpp>
 #include <Celerity/Locale/LocaleSingleton.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/Physics2d/DynamicsMaterial2d.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Camera2dComponent.hpp>
@@ -9,12 +8,15 @@
 #include <Celerity/Render/Foundation/Viewport.hpp>
 #include <Celerity/Resource/Config/Messages.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/UI/UIRenderPass.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Configuration/Localization.hpp>
 #include <Configuration/VisibilityMask.hpp>
 
-#include <Framework/GameState.hpp>
+#include <GameCore/GameStateSingleton.hpp>
+#include <GameCore/LevelsConfigurationSingleton.hpp>
 
 #include <LevelLoading/LevelLoading.hpp>
 #include <LevelLoading/LevelLoadingSingleton.hpp>
@@ -34,9 +36,6 @@
 
 #include <Render/Backend/Configuration.hpp>
 
-#include <Root/LevelSelectionSingleton.hpp>
-#include <Root/LevelsConfigurationSingleton.hpp>
-
 #include <Time/Time.hpp>
 
 namespace PlatformerLoadingOrchestration
@@ -49,25 +48,23 @@ const Emergence::Memory::UniqueString Checkpoint::FINISHED {"PlatformerLoadingOr
 class LoadingOrchestrator final : public Emergence::Celerity::TaskExecutorBase<LoadingOrchestrator>
 {
 public:
-    LoadingOrchestrator (Emergence::Celerity::TaskConstructor &_constructor,
-                         const ViewDropHandle &_viewDropHandle,
-                         Emergence::Celerity::WorldView *_ownerView) noexcept;
+    LoadingOrchestrator (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
 
     void Execute () noexcept;
 
 private:
-    void SpawnViewports (const Emergence::Celerity::WorldSingleton *_world) noexcept;
+    void SpawnViewports () noexcept;
 
     void InitInput () noexcept;
 
     Emergence::Celerity::FetchSingletonQuery fetchAssetManager;
     Emergence::Celerity::FetchSingletonQuery fetchLevelsConfiguration;
-    Emergence::Celerity::FetchSingletonQuery fetchLevelSelection;
+    Emergence::Celerity::FetchSingletonQuery fetchWorld;
+    Emergence::Celerity::ModifySingletonQuery modifyGameState;
     Emergence::Celerity::ModifySingletonQuery modifyLevelLoading;
     Emergence::Celerity::ModifySingletonQuery modifyLoadingAnimation;
     Emergence::Celerity::ModifySingletonQuery modifyLocale;
     Emergence::Celerity::ModifySingletonQuery modifyPlatformerLoading;
-    Emergence::Celerity::ModifySingletonQuery modifyWorld;
 
     Emergence::Celerity::InsertShortTermQuery insertConfigRequest;
     Emergence::Celerity::FetchSequenceQuery fetchConfigResponse;
@@ -80,24 +77,19 @@ private:
     Emergence::Celerity::InsertLongTermQuery insertUIPass;
 
     Emergence::Celerity::InsertLongTermQuery insertKeyTrigger;
-
-    ViewDropHandle viewDropHandle;
-    Emergence::Celerity::WorldView *ownerView;
 };
 
-LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &_constructor,
-                                          const ViewDropHandle &_viewDropHandle,
-                                          Emergence::Celerity::WorldView *_ownerView) noexcept
+LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : TaskExecutorBase (_constructor),
 
       fetchAssetManager (FETCH_SINGLETON (Emergence::Celerity::AssetManagerSingleton)),
       fetchLevelsConfiguration (FETCH_SINGLETON (LevelsConfigurationSingleton)),
-      fetchLevelSelection (FETCH_SINGLETON (LevelSelectionSingleton)),
+      fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
+      modifyGameState (MODIFY_SINGLETON (GameStateSingleton)),
       modifyLevelLoading (MODIFY_SINGLETON (LevelLoadingSingleton)),
       modifyLoadingAnimation (MODIFY_SINGLETON (LoadingAnimationSingleton)),
       modifyLocale (MODIFY_SINGLETON (Emergence::Celerity::LocaleSingleton)),
       modifyPlatformerLoading (MODIFY_SINGLETON (PlatformerLoadingSingleton)),
-      modifyWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
 
       insertConfigRequest (INSERT_SHORT_TERM (Emergence::Celerity::ResourceConfigRequest)),
       fetchConfigResponse (FETCH_SEQUENCE (Emergence::Celerity::ResourceConfigLoadedResponse)),
@@ -109,11 +101,9 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
       insertWorldPass (INSERT_LONG_TERM (Emergence::Celerity::World2dRenderPass)),
       insertUIPass (INSERT_LONG_TERM (Emergence::Celerity::UIRenderPass)),
 
-      insertKeyTrigger (INSERT_LONG_TERM (Emergence::Celerity::KeyTrigger)),
-
-      viewDropHandle (_viewDropHandle),
-      ownerView (_ownerView)
+      insertKeyTrigger (INSERT_LONG_TERM (Emergence::Celerity::KeyTrigger))
 {
+    _constructor.DependOn (Emergence::Celerity::TransformHierarchyCleanup::Checkpoint::FINISHED);
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (LevelLoading::Checkpoint::STARTED);
@@ -122,6 +112,15 @@ LoadingOrchestrator::LoadingOrchestrator (Emergence::Celerity::TaskConstructor &
 
 void LoadingOrchestrator::Execute () noexcept
 {
+    auto gameStateCursor = modifyGameState.Execute();
+    auto *gameState = static_cast<GameStateSingleton *>(*gameStateCursor);
+
+    if (gameState->state != GameState::PLATFORMER_LOADING)
+    {
+        // Waiting for transition to happen.
+        return;
+    }
+
     auto platformerLoadingCursor = modifyPlatformerLoading.Execute ();
     auto *platformerLoading = static_cast<PlatformerLoadingSingleton *> (*platformerLoadingCursor);
 
@@ -173,21 +172,15 @@ void LoadingOrchestrator::Execute () noexcept
         }
     }
 
-    auto worldCursor = modifyWorld.Execute ();
-    auto *world = static_cast<Emergence::Celerity::WorldSingleton *> (*worldCursor);
-
-    auto levelSelectionCursor = fetchLevelSelection.Execute ();
-    const auto *levelSelection = static_cast<const LevelSelectionSingleton *> (*levelSelectionCursor);
-
     auto levelLoadingCursor = modifyLevelLoading.Execute ();
     auto *levelLoading = static_cast<LevelLoadingSingleton *> (*levelLoadingCursor);
 
     // Load level only after all configs are loaded.
     if (platformerLoading->dynamicsMaterialsLoaded)
     {
-        if (!*levelLoading->levelName && *levelSelection->selectedLevelName)
+        if (!*levelLoading->levelName && *gameState->lastRequest.levelName)
         {
-            levelLoading->levelName = levelSelection->selectedLevelName;
+            levelLoading->levelName = gameState->lastRequest.levelName;
         }
     }
 
@@ -215,10 +208,9 @@ void LoadingOrchestrator::Execute () noexcept
         platformerLoading->dynamicsMaterialsLoaded && locale->loadedLocale == locale->targetLocale)
     {
         loadingAnimation->required = false;
-        world->updateMode = Emergence::Celerity::WorldUpdateMode::SIMULATING;
-        SpawnViewports (world);
+        SpawnViewports ();
         InitInput ();
-        viewDropHandle.RequestViewDrop (ownerView);
+        gameState->request.state = GameState::PLATFORMER_GAME;
 
         const std::uint64_t loadingTimeNs =
             Emergence::Time::NanosecondsSinceStartup () - platformerLoading->loadingStartTimeNs;
@@ -230,15 +222,17 @@ void LoadingOrchestrator::Execute () noexcept
     else
     {
         loadingAnimation->required = true;
-        world->updateMode = Emergence::Celerity::WorldUpdateMode::FROZEN;
     }
 }
 
-void LoadingOrchestrator::SpawnViewports (const Emergence::Celerity::WorldSingleton *_world) noexcept
+void LoadingOrchestrator::SpawnViewports () noexcept
 {
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
+
     auto transformCursor = insertTransform.Execute ();
     auto *cameraTransform = static_cast<Emergence::Celerity::Transform2dComponent *> (++transformCursor);
-    cameraTransform->SetObjectId (_world->GenerateId ());
+    cameraTransform->SetObjectId (world->GenerateId ());
     cameraTransform->SetVisualLocalTransform ({{0.0f, 0.0f}, 0.0f, {1.0f, 1.0f}});
 
     auto cameraCursor = insertCamera.Execute ();
@@ -318,13 +312,11 @@ void LoadingOrchestrator::InitInput () noexcept
     rollTrigger->dispatchType = Emergence::Celerity::InputActionDispatchType::FIXED_PERSISTENT;
 }
 
-void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
-                        const ViewDropHandle &_viewDropHandle,
-                        Emergence::Celerity::WorldView *_ownerView) noexcept
+void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
     _pipelineBuilder.AddCheckpoint (Checkpoint::STARTED);
     _pipelineBuilder.AddCheckpoint (Checkpoint::FINISHED);
     _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"PlatformerLoadingOrchestrator"})
-        .SetExecutor<LoadingOrchestrator> (_viewDropHandle, _ownerView);
+        .SetExecutor<LoadingOrchestrator> ();
 }
 } // namespace PlatformerLoadingOrchestration

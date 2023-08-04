@@ -2,6 +2,7 @@
 #include <Celerity/Resource/Config/Loading.hpp>
 #include <Celerity/Resource/Config/LoadingStateSingleton.hpp>
 #include <Celerity/Resource/Config/Messages.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Job/Dispatcher.hpp>
 
@@ -34,11 +35,13 @@ private:
 
     PerTypeData *FindTypeData (const StandardLayout::Mapping &_mapping) noexcept;
 
-    void ProcessRequests (ResourceConfigLoadingStateSingleton *_loadingState) noexcept;
+    void ProcessRequests (const WorldSingleton *_world, ResourceConfigLoadingStateSingleton *_loadingState) noexcept;
 
-    void ProcessLoading (ResourceConfigLoadingStateSingleton *_loadingState) noexcept;
+    void ProcessLoading (const WorldSingleton *_world, ResourceConfigLoadingStateSingleton *_loadingState) noexcept;
 
+    FetchSingletonQuery fetchWorld;
     ModifySingletonQuery modifyLoadingState;
+
     ModifySequenceQuery modifyRequest;
     ModifySequenceQuery modifyResponse;
     InsertShortTermQuery insertResponse;
@@ -52,7 +55,9 @@ Loader::Loader (TaskConstructor &_constructor,
                 const Container::Vector<ResourceConfigTypeMeta> &_supportedTypes) noexcept
     : TaskExecutorBase (_constructor),
 
+      fetchWorld (FETCH_SINGLETON (WorldSingleton)),
       modifyLoadingState (MODIFY_SINGLETON (ResourceConfigLoadingStateSingleton)),
+
       modifyRequest (MODIFY_SEQUENCE (ResourceConfigRequest)),
       modifyResponse (MODIFY_SEQUENCE (ResourceConfigLoadedResponse)),
       insertResponse (INSERT_SHORT_TERM (ResourceConfigLoadedResponse)),
@@ -76,10 +81,14 @@ void Loader::Execute () noexcept
     {
     }
 
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const WorldSingleton *> (*worldCursor);
+
     auto loadingStateCursor = modifyLoadingState.Execute ();
     auto *loadingState = static_cast<ResourceConfigLoadingStateSingleton *> (*loadingStateCursor);
-    ProcessRequests (loadingState);
-    ProcessLoading (loadingState);
+
+    ProcessRequests (world, loadingState);
+    ProcessLoading (world, loadingState);
 }
 
 Loader::PerTypeData *Loader::FindTypeData (const StandardLayout::Mapping &_mapping) noexcept
@@ -95,8 +104,13 @@ Loader::PerTypeData *Loader::FindTypeData (const StandardLayout::Mapping &_mappi
     return nullptr;
 }
 
-void Loader::ProcessRequests (ResourceConfigLoadingStateSingleton *_loadingState) noexcept
+void Loader::ProcessRequests (const WorldSingleton *_world, ResourceConfigLoadingStateSingleton *_loadingState) noexcept
 {
+    if (!_world->contextEscapeAllowed)
+    {
+        return;
+    }
+
     auto responseCursor = insertResponse.Execute ();
     for (auto requestCursor = modifyRequest.Execute ();
          auto *request = static_cast<ResourceConfigRequest *> (*requestCursor); ~requestCursor)
@@ -132,6 +146,7 @@ void Loader::ProcessRequests (ResourceConfigLoadingStateSingleton *_loadingState
                     Handling::Handle<ResourceConfigLoadingSharedState> sharedState =
                         _loadingState->loadingStates.emplace_back (
                             new ResourceConfigLoadingSharedState {request->type});
+                    sharedState->ReportEscaped (_world);
 
                     Job::Dispatcher::Global ().Dispatch (
                         Job::Priority::BACKGROUND,
@@ -189,7 +204,7 @@ void Loader::ProcessRequests (ResourceConfigLoadingStateSingleton *_loadingState
     }
 }
 
-void Loader::ProcessLoading (ResourceConfigLoadingStateSingleton *_loadingState) noexcept
+void Loader::ProcessLoading (const WorldSingleton *_world, ResourceConfigLoadingStateSingleton *_loadingState) noexcept
 {
     auto responseCursor = insertResponse.Execute ();
     for (auto iterator = _loadingState->loadingStates.begin (); iterator != _loadingState->loadingStates.end ();)
@@ -228,12 +243,15 @@ void Loader::ProcessLoading (ResourceConfigLoadingStateSingleton *_loadingState)
                                sharedState->configType.GetName (), "\".");
             }
 
+            sharedState->ReportReturned (_world);
             iterator = Container::EraseExchangingWithLast (_loadingState->loadingStates, iterator);
             break;
 
         case ResourceConfigLoadingState::FAILED:
             EMERGENCE_LOG (ERROR, "ResourceConfigLoading: Failed to load configs of type \"",
                            sharedState->configType.GetName (), "\".");
+
+            sharedState->ReportReturned (_world);
             iterator = Container::EraseExchangingWithLast (_loadingState->loadingStates, iterator);
             break;
         }

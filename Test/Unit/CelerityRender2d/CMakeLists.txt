@@ -30,7 +30,7 @@ executable_include (
         SDLContextHolder Serialization TaskCollection Threading Time VisualGraph)
 executable_verify ()
 executable_copy_linked_artefacts ()
-executable_deploy_resource_mount_lists ("${CMAKE_CURRENT_BINARY_DIR}")
 
+group_deploy_resource_mount_lists (TARGETS TestCelerityRender2d OUTPUT "${CMAKE_CURRENT_BINARY_DIR}")
 add_test (NAME "TestCelerityRender2d" COMMAND TestCelerityRender2d)
 add_dependencies (EmergenceTests TestCelerityRender2d)

@@ -128,32 +128,19 @@ function (register_test_default_resource_usage_scheme)
 endfunction ()
 
 # File-private function, intended only for internal use.
-# Part of private_request_resource_usage_merged_info routine, adds given target resource usage to merged lists.
-function (private_add_direct_resources_to_merged_resources TARGET)
-    get_target_property (SOURCES "${TARGET}" RESOURCE_DIRECTORY_SOURCES)
-    get_target_property (OUTPUTS "${TARGET}" RESOURCE_DIRECTORY_OUTPUTS)
-    get_target_property (GROUPS "${TARGET}" RESOURCE_DIRECTORY_GROUPS)
-
-    if (SOURCES STREQUAL "SOURCES-NOTFOUND" OR
-            OUTPUTS STREQUAL "OUTPUTS-NOTFOUND" OR
-            GROUPS STREQUAL "GROUPS-NOTFOUND")
-        return ()
-    endif ()
-
-    set (LOCAL_MERGED_SOURCES "${MERGED_SOURCES}")
-    set (LOCAL_MERGED_OUTPUTS "${MERGED_OUTPUTS}")
-    set (LOCAL_MERGED_GROUPS "${MERGED_GROUPS}")
-
-    foreach (USAGE IN ZIP_LISTS SOURCES OUTPUTS GROUPS)
+# Merges two resource usage lists. First list variables are expected to be named `${FIRST_PREFIX}_*` and
+# second one is `${SECOND_PREFIX}_*`. Result of merging is stored in `${FIRST_PREFIX}_*` variables.
+function (private_append_resources FIRST_PREFIX SECOND_PREFIX)
+    foreach (USAGE IN ZIP_LISTS ${SECOND_PREFIX}_SOURCES ${SECOND_PREFIX}_OUTPUTS ${SECOND_PREFIX}_GROUPS)
         set (USAGE_SOURCE "${USAGE_0}")
         set (USAGE_OUTPUT "${USAGE_1}")
         set (USAGE_GROUP "${USAGE_2}")
 
-        list (FIND LOCAL_MERGED_OUTPUTS "${USAGE_OUTPUT}" OUTPUT_INDEX)
+        list (FIND ${FIRST_PREFIX}_OUTPUTS "${USAGE_OUTPUT}" OUTPUT_INDEX)
         if (NOT OUTPUT_INDEX EQUAL -1)
-            list (GET LOCAL_MERGED_GROUPS ${OUTPUT_INDEX} SAME_OUTPUT_GROUP)
+            list (GET ${FIRST_PREFIX}_GROUPS ${OUTPUT_INDEX} SAME_OUTPUT_GROUP)
             if (USAGE_GROUP STREQUAL SAME_OUTPUT_GROUP)
-                list (GET LOCAL_MERGED_GROUPS ${OUTPUT_INDEX} SAME_OUTPUT_SOURCE)
+                list (GET ${FIRST_PREFIX}_SOURCES ${OUTPUT_INDEX} SAME_OUTPUT_SOURCE)
                 if (USAGE_SOURCE STREQUAL SAME_OUTPUT_SOURCE)
                     continue ()
                 else ()
@@ -162,14 +149,33 @@ function (private_add_direct_resources_to_merged_resources TARGET)
             endif ()
         endif ()
 
-        list (APPEND LOCAL_MERGED_SOURCES "${USAGE_SOURCE}")
-        list (APPEND LOCAL_MERGED_OUTPUTS "${USAGE_OUTPUT}")
-        list (APPEND LOCAL_MERGED_GROUPS "${USAGE_GROUP}")
+        list (APPEND ${FIRST_PREFIX}_SOURCES "${USAGE_SOURCE}")
+        list (APPEND ${FIRST_PREFIX}_OUTPUTS "${USAGE_OUTPUT}")
+        list (APPEND ${FIRST_PREFIX}_GROUPS "${USAGE_GROUP}")
     endforeach ()
 
-    set (MERGED_SOURCES "${LOCAL_MERGED_SOURCES}" PARENT_SCOPE)
-    set (MERGED_OUTPUTS "${LOCAL_MERGED_OUTPUTS}" PARENT_SCOPE)
-    set (MERGED_GROUPS "${LOCAL_MERGED_GROUPS}" PARENT_SCOPE)
+    set (${FIRST_PREFIX}_SOURCES "${${FIRST_PREFIX}_SOURCES}" PARENT_SCOPE)
+    set (${FIRST_PREFIX}_OUTPUTS "${${FIRST_PREFIX}_OUTPUTS}" PARENT_SCOPE)
+    set (${FIRST_PREFIX}_GROUPS "${${FIRST_PREFIX}_GROUPS}" PARENT_SCOPE)
+endfunction ()
+
+# File-private function, intended only for internal use.
+# Part of private_request_resource_usage_merged_info routine, adds given target resource usage to merged lists.
+function (private_add_direct_resources_to_merged_resources TARGET)
+    get_target_property (LOCAL_SOURCES "${TARGET}" RESOURCE_DIRECTORY_SOURCES)
+    get_target_property (LOCAL_OUTPUTS "${TARGET}" RESOURCE_DIRECTORY_OUTPUTS)
+    get_target_property (LOCAL_GROUPS "${TARGET}" RESOURCE_DIRECTORY_GROUPS)
+
+    if (LOCAL_SOURCES STREQUAL "LOCAL_SOURCES-NOTFOUND" OR
+            LOCAL_OUTPUTS STREQUAL "LOCAL_OUTPUTS-NOTFOUND" OR
+            LOCAL_GROUPS STREQUAL "LOCAL_GROUPS-NOTFOUND")
+        return ()
+    endif ()
+
+    private_append_resources ("MERGED" "LOCAL")
+    set (MERGED_SOURCES "${MERGED_SOURCES}" PARENT_SCOPE)
+    set (MERGED_OUTPUTS "${MERGED_OUTPUTS}" PARENT_SCOPE)
+    set (MERGED_GROUPS "${MERGED_GROUPS}" PARENT_SCOPE)
 endfunction ()
 
 # File-private function, intended only for internal use.
@@ -210,23 +216,33 @@ function (private_request_resource_usage_merged_info TARGET)
     set (MERGED_GROUPS "${LOCAL_MERGED_GROUPS}" PARENT_SCOPE)
 endfunction ()
 
-# Deploys mount lists for all resources, used by currently registered executable and its dependencies, into given
-# deploy directory. One mount list is created for every group: MountCoreResources.yaml, MountTestResources.yaml, etc.
+# Deploys mount lists for all resources, used by targets from given list and their dependencies, into given deploy
+# directory. One mount list is created for every group: MountCoreResources.yaml, MountTestResources.yaml, etc.
 # Mount grouping makes it easy to mount and unmount resources at runtime using game-specific logic: for example
 # mount and register one resource set for jungle environment and other for desert environment (while using core
 # resource group all the time).
-function (executable_deploy_resource_mount_lists DEPLOY_DIRECTORY)
-    if (NOT DEFINED ARTEFACT_NAME)
-        message (FATAL_ERROR "Expected to be called as part of executable configuration routine!")
+function (group_deploy_resource_mount_lists)
+    cmake_parse_arguments (GROUP "" "OUTPUT" "TARGETS" ${ARGV})
+    if (DEFINED GROUP_UNPARSED_ARGUMENTS OR
+            NOT DEFINED GROUP_OUTPUT OR
+            NOT DEFINED GROUP_TARGETS)
+        message (FATAL_ERROR "Incorrect function arguments!")
     endif ()
 
-    private_request_resource_usage_merged_info ("${ARTEFACT_NAME}")
+    set (GROUP_MERGED_SOURCES)
+    set (GROUP_MERGED_OUTPUTS)
+    set (GROUP_MERGED_GROUPS)
+
+    foreach (TARGET ${GROUP_TARGETS})
+        private_request_resource_usage_merged_info ("${TARGET}")
+        private_append_resources ("GROUP_MERGED" "MERGED")
+    endforeach ()
 
     # Make sure that deploy root exists.
-    file (MAKE_DIRECTORY "${DEPLOY_DIRECTORY}")
+    file (MAKE_DIRECTORY "${GROUP_OUTPUT}")
     set (MOUNT_LIST_GROUPS)
 
-    foreach (USAGE IN ZIP_LISTS MERGED_SOURCES MERGED_OUTPUTS MERGED_GROUPS)
+    foreach (USAGE IN ZIP_LISTS GROUP_MERGED_SOURCES GROUP_MERGED_OUTPUTS GROUP_MERGED_GROUPS)
         set (USAGE_SOURCE "${USAGE_0}")
         set (USAGE_OUTPUT "${USAGE_1}")
         set (USAGE_GROUP "${USAGE_2}")
@@ -251,7 +267,7 @@ function (executable_deploy_resource_mount_lists DEPLOY_DIRECTORY)
 
     foreach (GROUP ${MOUNT_LIST_GROUPS})
         set (MOUNT_LIST_VARIABLE "MOUNT_LIST_${GROUP}")
-        file (WRITE "${DEPLOY_DIRECTORY}/Mount${GROUP}.yaml" "${${MOUNT_LIST_VARIABLE}}")
+        file (WRITE "${GROUP_OUTPUT}/Mount${GROUP}.yaml" "${${MOUNT_LIST_VARIABLE}}")
     endforeach ()
 endfunction ()
 
@@ -302,7 +318,7 @@ endfunction ()
 # - SPIRV: Compile to SPIRV format.
 # At least one of the formats should be enabled.
 function (register_bgfx_shaders)
-    cmake_parse_arguments ("SHADER" "DX11;SPIRV" "SOURCE;OUTPUT" "" ${ARGV})
+    cmake_parse_arguments (SHADER "DX11;SPIRV" "SOURCE;OUTPUT" "" ${ARGV})
     if (DEFINED SHADER_UNPARSED_ARGUMENTS OR
             NOT DEFINED SHADER_SOURCE OR
             NOT DEFINED SHADER_OUTPUT)
@@ -361,71 +377,75 @@ function (register_bgfx_shaders)
     endforeach ()
 endfunction ()
 
-# Sets up resource cooking targets and distribution packaging targets for executable that is being configured.
+# Sets up resource cooking targets and distribution packaging targets for given group of targets.
 # Arguments:
+#    NAME: Name of the packaging configuration to be created.
+#    TARGETS: List of targets that need to be packaged. For example, game executable and runtime linked libraries.
 #    COOKER: Target executable that is used for cooking resources. Must accept following parameters:
 #        --groupName: Name of the mount group to fetch mount list and correctly name final results.
 #        --mountListDirectory: Path to directory with all mount lists of given target.
 #        --workspace: Path to the workspace directory.
 #    COOKING_WORKSPACE: Path to directory where cooking routines may store intermediate files and final results.
-#    MOUNT_LIST_DIRECTORY: Path to directory where all mount lists of TARGET are stored.
+#    MOUNT_LIST_DIRECTORY: Path to directory where all mount lists of targets are stored.
 #    PACKAGING_OUTPUT: Path to directory when packaging result (game and resources) should be stored.
-function (executable_setup_resource_cooking_and_packaging)
-    if (NOT DEFINED ARTEFACT_NAME)
-        message (FATAL_ERROR "Expected to be called as part of executable configuration routine!")
-    endif ()
-
-    cmake_parse_arguments ("SETUP" "" "COOKER;COOKING_WORKSPACE;MOUNT_LIST_DIRECTORY;PACKAGING_OUTPUT" "" ${ARGV})
+function (group_setup_resource_cooking_and_packaging)
+    cmake_parse_arguments (SETUP "" "NAME;COOKER;COOKING_WORKSPACE;MOUNT_LIST_DIRECTORY;PACKAGING_OUTPUT" "TARGETS" ${ARGV})
     if (DEFINED SETUP_UNPARSED_ARGUMENTS OR
+            NOT DEFINED SETUP_NAME OR
             NOT DEFINED SETUP_COOKER OR
             NOT DEFINED SETUP_COOKING_WORKSPACE OR
             NOT DEFINED SETUP_MOUNT_LIST_DIRECTORY OR
-            NOT DEFINED SETUP_PACKAGING_OUTPUT)
+            NOT DEFINED SETUP_PACKAGING_OUTPUT OR
+            NOT DEFINED SETUP_TARGETS)
         message (FATAL_ERROR "Incorrect function arguments!")
     endif ()
 
-    private_request_resource_usage_merged_info ("${ARTEFACT_NAME}")
-    set (UNIQUE_GROUPS)
+    set (GROUP_MERGED_SOURCES)
+    set (GROUP_MERGED_OUTPUTS)
+    set (GROUP_MERGED_GROUPS)
 
-    foreach (GROUP ${MERGED_GROUPS})
+    foreach (TARGET ${SETUP_TARGETS})
+        private_request_resource_usage_merged_info ("${TARGET}")
+        private_append_resources ("GROUP_MERGED" "MERGED")
+    endforeach ()
+    
+    set (UNIQUE_GROUPS)
+    foreach (GROUP ${GROUP_MERGED_GROUPS})
         list (FIND UNIQUE_GROUPS "${GROUP}" GROUP_INDEX_IN_LIST)
         if (GROUP_INDEX_IN_LIST EQUAL -1)
             list (APPEND UNIQUE_GROUPS "${GROUP}")
         endif ()
     endforeach ()
 
-    set (COOKING_MAIN_TARGET "${ARTEFACT_NAME}AllResourceCooking")
+    set (COOKING_MAIN_TARGET "${SETUP_NAME}AllResourceCooking")
     add_custom_target (
             "${COOKING_MAIN_TARGET}"
-            COMMENT "Cooking all resources for executable \"${ARTEFACT_NAME}\".")
+            COMMENT "Cooking all resources for executable \"${SETUP_NAME}\".")
 
-    set (COOKING_MAIN_CLEAN_TARGET "${ARTEFACT_NAME}AllResourceCookingClean")
+    set (COOKING_MAIN_CLEAN_TARGET "${SETUP_NAME}AllResourceCookingClean")
     add_custom_target (
             "${COOKING_MAIN_CLEAN_TARGET}"
-            COMMENT "Cleaning cooking workspace of executable \"${ARTEFACT_NAME}\".")
+            COMMENT "Cleaning cooking workspace of executable \"${SETUP_NAME}\".")
 
-    set (PACKAGING_MAIN_TARGET "${ARTEFACT_NAME}Packaging")
+    set (PACKAGING_MAIN_TARGET "${SETUP_NAME}Packaging")
     add_custom_target (
             "${PACKAGING_MAIN_TARGET}"
-            COMMENT "Packaging executable \"${ARTEFACT_NAME}\"."
-            COMMAND
-            ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${ARTEFACT_NAME}> "${SETUP_PACKAGING_OUTPUT}"
-            VERBATIM)
-    add_dependencies ("${PACKAGING_MAIN_TARGET}" ${ARTEFACT_NAME})
+            COMMENT "Packaging group \"${SETUP_NAME}\".")
+    add_dependencies ("${PACKAGING_MAIN_TARGET}" ${SETUP_TARGETS})
 
-    set (PACKAGING_CLEAN_TARGET "${ARTEFACT_NAME}PackageClean")
+    set (PACKAGING_CLEAN_TARGET "${SETUP_NAME}PackageClean")
     add_custom_target (
             "${PACKAGING_CLEAN_TARGET}"
-            COMMENT "Cleaning packaging output of executable \"${ARTEFACT_NAME}\"."
+            COMMENT "Cleaning packaging output of executable \"${SETUP_NAME}\"."
             COMMAND ${CMAKE_COMMAND} -E remove_directory "${SETUP_PACKAGING_OUTPUT}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${SETUP_PACKAGING_OUTPUT}"
             VERBATIM)
 
     foreach (GROUP ${UNIQUE_GROUPS})
-        set (COOKING_TARGET "${ARTEFACT_NAME}${GROUP}Cooking")
+        set (COOKING_TARGET "${SETUP_NAME}${GROUP}Cooking")
         add_custom_target (
                 "${COOKING_TARGET}"
-                COMMENT "Cooking resource group \"${GROUP}\" for executable \"${ARTEFACT_NAME}\"."
+                COMMENT "Cooking resource group \"${GROUP}\" for executable \"${SETUP_NAME}\"."
                 COMMAND
                 $<TARGET_FILE:${SETUP_COOKER}>
                 "--groupName" "${GROUP}"
@@ -436,18 +456,18 @@ function (executable_setup_resource_cooking_and_packaging)
         add_dependencies ("${COOKING_TARGET}" "${SETUP_COOKER}")
         add_dependencies ("${COOKING_MAIN_TARGET}" "${COOKING_TARGET}")
 
-        set (COOKING_CLEAN_TARGET "${ARTEFACT_NAME}${GROUP}CookingClean")
+        set (COOKING_CLEAN_TARGET "${SETUP_NAME}${GROUP}CookingClean")
         add_custom_target (
                 "${COOKING_CLEAN_TARGET}"
-                COMMENT "Cleaning cooking workspace for \"${GROUP}\" for executable \"${ARTEFACT_NAME}\"."
+                COMMENT "Cleaning cooking workspace for \"${GROUP}\" for executable \"${SETUP_NAME}\"."
                 COMMAND ${CMAKE_COMMAND} -E remove_directory "${SETUP_COOKING_WORKSPACE}/${GROUP}"
                 VERBATIM)
         add_dependencies ("${COOKING_MAIN_CLEAN_TARGET}" "${COOKING_CLEAN_TARGET}")
 
-        set (PACKAGING_TARGET "${ARTEFACT_NAME}${GROUP}Packaging")
+        set (PACKAGING_TARGET "${SETUP_NAME}${GROUP}Packaging")
         add_custom_target (
                 "${PACKAGING_TARGET}"
-                COMMENT "Packaging resource group \"${GROUP}\" for executable \"${ARTEFACT_NAME}\"."
+                COMMENT "Packaging resource group \"${GROUP}\" for executable \"${SETUP_NAME}\"."
                 COMMAND
                 ${CMAKE_COMMAND} -E copy_directory
                 "${SETUP_COOKING_WORKSPACE}/${GROUP}/FinalResult" "${SETUP_PACKAGING_OUTPUT}"
@@ -456,25 +476,32 @@ function (executable_setup_resource_cooking_and_packaging)
         add_dependencies ("${PACKAGING_TARGET}" "${PACKAGING_CLEAN_TARGET}" "${COOKING_TARGET}")
         add_dependencies ("${PACKAGING_MAIN_TARGET}" "${PACKAGING_TARGET}")
     endforeach ()
-
-    find_linked_shared_libraries (TARGET "${ARTEFACT_NAME}" OUTPUT REQUIRED_LIBRARIES)
-    foreach (LIBRARY_TARGET ${REQUIRED_LIBRARIES})
-        set (PACKAGING_TARGET "${ARTEFACT_NAME}${LIBRARY_TARGET}Packaging")
+    
+    set (RUNTIME_OBJECTS_TO_COPY ${SETUP_TARGETS})
+    foreach (TARGET ${SETUP_TARGETS})
+        find_linked_shared_libraries (TARGET "${TARGET}" OUTPUT REQUIRED_LIBRARIES)
+        list (APPEND RUNTIME_OBJECTS_TO_COPY ${REQUIRED_LIBRARIES})
+    endforeach ()
+    
+    list (REMOVE_DUPLICATES RUNTIME_OBJECTS_TO_COPY)
+    foreach (OBJECT_TARGET ${RUNTIME_OBJECTS_TO_COPY})
+        set (PACKAGING_TARGET "${SETUP_NAME}${OBJECT_TARGET}Packaging")
         string (REPLACE "::" "_" PACKAGING_TARGET "${PACKAGING_TARGET}")
+        get_target_property (TARGET_TYPE "${OBJECT_TARGET}" TYPE)
 
-        if (UNIX)
+        if (UNIX AND TARGET_TYPE STREQUAL "SHARED_LIBRARY")
             add_custom_target (
                     ${PACKAGING_TARGET}
-                    COMMENT "Packaging shared library \"${LIBRARY_TARGET}\" for executable \"${ARTEFACT_NAME}\"."
+                    COMMENT "Packaging shared library \"${OBJECT_TARGET}\" for executable \"${SETUP_NAME}\"."
                     COMMAND
-                    ${CMAKE_COMMAND} -E copy $<TARGET_SONAME_FILE:${LIBRARY_TARGET}> "${SETUP_PACKAGING_OUTPUT}"
+                    ${CMAKE_COMMAND} -E copy $<TARGET_SONAME_FILE:${OBJECT_TARGET}> "${SETUP_PACKAGING_OUTPUT}"
                     VERBATIM)
         else ()
             add_custom_target (
                     ${PACKAGING_TARGET}
-                    COMMENT "Packaging shared library \"${LIBRARY_TARGET}\" for executable \"${ARTEFACT_NAME}\"."
+                    COMMENT "Packaging shared library \"${OBJECT_TARGET}\" for executable \"${SETUP_NAME}\"."
                     COMMAND
-                    ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${LIBRARY_TARGET}> "${SETUP_PACKAGING_OUTPUT}"
+                    ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${OBJECT_TARGET}> "${SETUP_PACKAGING_OUTPUT}"
                     VERBATIM)
         endif ()
 

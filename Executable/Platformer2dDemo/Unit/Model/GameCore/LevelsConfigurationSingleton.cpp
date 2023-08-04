@@ -1,4 +1,4 @@
-#include <Root/LevelsConfigurationSingleton.hpp>
+#include <GameCore/LevelsConfigurationSingleton.hpp>
 
 #include <StandardLayout/MappingRegistration.hpp>
 

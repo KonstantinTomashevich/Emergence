@@ -13,6 +13,7 @@ else ()
 endif ()
 
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/BuildSystem.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/CelerityNexus.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/CodeGeneration.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/GlobalOptions.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/PhysX.cmake")

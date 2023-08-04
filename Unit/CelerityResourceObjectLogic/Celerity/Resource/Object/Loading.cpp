@@ -3,6 +3,7 @@
 #include <Celerity/Resource/Object/Loading.hpp>
 #include <Celerity/Resource/Object/LoadingStateSingleton.hpp>
 #include <Celerity/Resource/Object/Messages.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Job/Dispatcher.hpp>
 
@@ -25,10 +26,11 @@ public:
     void Execute () noexcept;
 
 private:
-    void ProcessRequests (ResourceObjectLoadingStateSingleton *_state) noexcept;
+    void ProcessRequests (const WorldSingleton *_world, ResourceObjectLoadingStateSingleton *_state) noexcept;
 
-    void ProcessLoading (ResourceObjectLoadingStateSingleton *_state) noexcept;
+    void ProcessLoading (const WorldSingleton *_world, ResourceObjectLoadingStateSingleton *_state) noexcept;
 
+    FetchSingletonQuery fetchWorld;
     ModifySingletonQuery modifyState;
 
     ModifySequenceQuery modifyRequests;
@@ -47,6 +49,7 @@ LoadingProcessor::LoadingProcessor (TaskConstructor &_constructor,
                                     Resource::Object::TypeManifest _manifest) noexcept
     : TaskExecutorBase (_constructor),
 
+      fetchWorld (FETCH_SINGLETON (WorldSingleton)),
       modifyState (MODIFY_SINGLETON (ResourceObjectLoadingStateSingleton)),
 
       modifyRequests (MODIFY_SEQUENCE (ResourceObjectRequest)),
@@ -69,16 +72,21 @@ void LoadingProcessor::Execute () noexcept
     {
     }
 
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const WorldSingleton *> (*worldCursor);
+
     auto stateCursor = modifyState.Execute ();
     auto *state = static_cast<ResourceObjectLoadingStateSingleton *> (*stateCursor);
-    ProcessRequests (state);
-    ProcessLoading (state);
+
+    ProcessRequests (world, state);
+    ProcessLoading (world, state);
 }
 
-void LoadingProcessor::ProcessRequests (ResourceObjectLoadingStateSingleton *_state) noexcept
+void LoadingProcessor::ProcessRequests (const WorldSingleton *_world,
+                                        ResourceObjectLoadingStateSingleton *_state) noexcept
 {
     auto requestCursor = modifyRequests.Execute ();
-    if (!*requestCursor)
+    if (!*requestCursor || !_world->contextEscapeAllowed)
     {
         return;
     }
@@ -119,6 +127,7 @@ void LoadingProcessor::ProcessRequests (ResourceObjectLoadingStateSingleton *_st
 
     if (!loadingState->requestedObjectList.empty ())
     {
+        loadingState->ReportEscaped (_world);
         Job::Dispatcher::Global ().Dispatch (
             Job::Priority::BACKGROUND,
             [loadingState] ()
@@ -140,7 +149,8 @@ void LoadingProcessor::ProcessRequests (ResourceObjectLoadingStateSingleton *_st
     }
 }
 
-void LoadingProcessor::ProcessLoading (ResourceObjectLoadingStateSingleton *_state) noexcept
+void LoadingProcessor::ProcessLoading (const WorldSingleton *_world,
+                                       ResourceObjectLoadingStateSingleton *_state) noexcept
 {
     auto responseCursor = insertResponses.Execute ();
     for (auto iterator = _state->sharedStates.begin (); iterator != _state->sharedStates.end ();)
@@ -180,6 +190,7 @@ void LoadingProcessor::ProcessLoading (ResourceObjectLoadingStateSingleton *_sta
                 response->objectId = objectId;
             }
 
+            loadingState->ReportReturned (_world);
             iterator = Container::EraseExchangingWithLast (_state->sharedStates, iterator);
         }
         else

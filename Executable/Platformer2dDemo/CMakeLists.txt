@@ -16,8 +16,8 @@ shared_library_include (
         VirtualFileSystem=Original Warehouse=Galleon
 
         CONCRETE
-        Celerity Container Flow Handling InputStorage Math MemoryRecording RecordCollectionVisualization ResourceObject
-        Serialization TaskCollection Threading Time VisualGraph)
+        ${GAME_NAME}Base Celerity CelerityNexus Container Flow Handling InputStorage Math MemoryRecording
+        RecordCollectionVisualization ResourceObject Serialization TaskCollection Threading Time VisualGraph)
 
 if (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING)
     shared_library_include (SCOPE PUBLIC ABSTRACT CPUProfiler=None MemoryProfiler=None)
@@ -63,15 +63,27 @@ executable_copy_linked_artefacts ()
 set_target_properties ("${GAME_NAME}ResourceCooker" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}")
 
 register_executable (${GAME_NAME}Game)
-executable_include (CONCRETE ${GAME_NAME}GameApplication)
-executable_link_shared_libraries (${GAME_NAME}SharedLogic)
+executable_include (CONCRETE ${GAME_NAME}GameApplication ${GAME_NAME}Resources)
+executable_link_shared_libraries (${GAME_NAME}SharedBase)
+executable_integrate_celerity_nexus (LOGIC "${GAME_NAME}SharedLogic" MODEL "${GAME_NAME}SharedModel")
 executable_verify ()
 executable_copy_linked_artefacts ()
 
-executable_deploy_resource_mount_lists ("${GAME_OUTPUT_DIRECTORY}")
-executable_setup_resource_cooking_and_packaging (
+group_deploy_resource_mount_lists (
+        TARGETS "${GAME_NAME}Game" "${GAME_NAME}SharedLogic" "${GAME_NAME}SharedModel"
+        OUTPUT "${GAME_OUTPUT_DIRECTORY}")
+
+group_setup_resource_cooking_and_packaging (
+        NAME "${GAME_NAME}"
+        TARGETS "${GAME_NAME}Game" "${GAME_NAME}SharedLogic" "${GAME_NAME}SharedModel"
         COOKER ${GAME_NAME}ResourceCooker
         COOKING_WORKSPACE "${GAME_OUTPUT_DIRECTORY}/CookingWorkspace"
         MOUNT_LIST_DIRECTORY ${GAME_OUTPUT_DIRECTORY}
         PACKAGING_OUTPUT ${GAME_OUTPUT_DIRECTORY}Packaged)
+
+celerity_nexus_add_bootstrap_to_package (
+        NAME "${GAME_NAME}"
+        EXECUTABLE "${GAME_NAME}Game"
+        PACKAGING_OUTPUT "${GAME_OUTPUT_DIRECTORY}Packaged")
+
 set_target_properties ("${GAME_NAME}Game" PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${GAME_OUTPUT_DIRECTORY}")

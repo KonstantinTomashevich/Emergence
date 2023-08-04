@@ -1,6 +1,6 @@
 # MaterialAsset
-vertexShader: "Sprite"
-fragmentShader: "Physics2dDebug"
+vertexShader: "S_Sprite"
+fragmentShader: "S_Physics2dDebug"
 uniforms:
   - name: color
     type: 0

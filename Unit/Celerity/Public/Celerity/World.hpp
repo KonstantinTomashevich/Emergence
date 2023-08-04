@@ -3,9 +3,9 @@
 #include <CelerityApi.hpp>
 
 #include <Celerity/Event/EventTrigger.hpp>
-#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Pipeline.hpp>
 #include <Celerity/Query/ModifySingletonQuery.hpp>
+#include <Celerity/TimeSingleton.hpp>
 
 #include <CPU/Profiler.hpp>
 
@@ -38,6 +38,9 @@ struct WorldSingleton;
 /// \brief Contains configuration for WorldView initialization.
 struct CelerityApi WorldViewConfig final
 {
+    // TODO: Type enforcement seems like shady yet useful feature, that won't work well with Nexus.
+    //       Should we cut it?
+
     /// \brief Even if these types are not used by the tasks in view pipelines,
     ///        storages for them will be created in this view registry.
     /// \invariant For any path from root view to any child view, any type can not be mentioned in this
@@ -108,6 +111,14 @@ public:
     /// \brief Removes given pipeline from the world view and frees used memory.
     /// \invariant Pipeline belongs to this world view.
     void RemovePipeline (Pipeline *_pipeline) noexcept;
+
+    /// \brief Removes all existing pipelines from this view.
+    /// \warning Designed as method for frameworks, not end user. Use with care.
+    void RemoveAllPipelines () noexcept;
+
+    /// \brief Provides raw access to view local registry.
+    /// \warning Designed as method for frameworks, not end user. Use with care.
+    Warehouse::Registry &GetLocalRegistry () noexcept;
 
     EMERGENCE_DELETE_ASSIGNMENT (WorldView);
 

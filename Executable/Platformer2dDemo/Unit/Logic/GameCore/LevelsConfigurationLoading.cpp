@@ -1,7 +1,7 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 
-#include <Root/LevelsConfigurationLoading.hpp>
-#include <Root/LevelsConfigurationSingleton.hpp>
+#include <GameCore/LevelsConfigurationLoading.hpp>
+#include <GameCore/LevelsConfigurationSingleton.hpp>
 
 namespace LevelsConfigurationLoading
 {

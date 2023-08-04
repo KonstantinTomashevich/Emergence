@@ -1,3 +1,4 @@
+add_subdirectory (Base)
 add_subdirectory (GameApplication)
 add_subdirectory (Logic)
 add_subdirectory (Model)

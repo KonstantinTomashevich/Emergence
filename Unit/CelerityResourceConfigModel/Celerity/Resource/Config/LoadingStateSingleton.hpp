@@ -2,6 +2,8 @@
 
 #include <CelerityResourceConfigModelApi.hpp>
 
+#include <Celerity/Standard/ContextEscape.hpp>
+
 #include <Container/HashSet.hpp>
 #include <Container/String.hpp>
 #include <Container/Vector.hpp>
@@ -29,12 +31,11 @@ enum class ResourceConfigLoadingState : std::uint8_t
 };
 
 /// \brief Contains resource config library loading state that is shared with background job.
-class CelerityResourceConfigModelApi ResourceConfigLoadingSharedState final : public Handling::HandleableBase
+class CelerityResourceConfigModelApi ResourceConfigLoadingSharedState final
+    : public ContextEscape<ResourceConfigLoadingSharedState>
 {
 public:
-    void *operator new (std::size_t /*unused*/) noexcept;
-
-    void operator delete (void *_pointer) noexcept;
+    static constexpr const char *ALLOCATION_GROUP_NAME = "ResourceConfigLoading";
 
     ResourceConfigLoadingSharedState (StandardLayout::Mapping _configType) noexcept;
 
@@ -54,13 +55,6 @@ public:
 
     /// \brief Pool for temporary allocation of loaded config data.
     Memory::OrderedPool configPool;
-
-private:
-    /// \brief Allocation group used by ::GetHeap.
-    static Memory::Profiler::AllocationGroup GetAllocationGroup () noexcept;
-
-    /// \brief Heap for allocating instances of this state.
-    static Memory::Heap &GetHeap () noexcept;
 };
 
 /// \brief Contains loading states for resource config loading requests.

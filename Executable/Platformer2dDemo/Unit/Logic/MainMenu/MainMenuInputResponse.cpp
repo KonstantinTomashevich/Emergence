@@ -1,25 +1,22 @@
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Input/InputActionComponent.hpp>
 #include <Celerity/Input/InputSubscriptionComponent.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
-#include <Configuration/WorldStates.hpp>
+#include <GameCore/GameStateSingleton.hpp>
+#include <GameCore/LevelsConfigurationSingleton.hpp>
 
 #include <MainMenu/InputActions.hpp>
 #include <MainMenu/MainMenuInputResponse.hpp>
 #include <MainMenu/MainMenuSingleton.hpp>
-
-#include <Root/LevelSelectionSingleton.hpp>
-#include <Root/LevelsConfigurationSingleton.hpp>
 
 namespace MainMenuInputResponse
 {
 class Controller final : public Emergence::Celerity::TaskExecutorBase<Controller>
 {
 public:
-    Controller (Emergence::Celerity::TaskConstructor &_constructor,
-                const WorldStateRedirectionHandle &_redirectionHandle) noexcept;
+    Controller (Emergence::Celerity::TaskConstructor &_constructor) noexcept;
 
     void Execute () noexcept;
 
@@ -29,13 +26,11 @@ private:
     Emergence::Celerity::FetchSingletonQuery fetchLevelsConfiguration;
 
     Emergence::Celerity::InsertLongTermQuery insertInputSubscription;
-    Emergence::Celerity::ModifySingletonQuery modifyLevelSelection;
+    Emergence::Celerity::ModifySingletonQuery modifyGameState;
     Emergence::Celerity::FetchValueQuery fetchInputActionByObjectId;
-    WorldStateRedirectionHandle redirectionHandle;
 };
 
-Controller::Controller (Emergence::Celerity::TaskConstructor &_constructor,
-                        const WorldStateRedirectionHandle &_redirectionHandle) noexcept
+Controller::Controller (Emergence::Celerity::TaskConstructor &_constructor) noexcept
     : TaskExecutorBase (_constructor),
 
       fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
@@ -43,9 +38,8 @@ Controller::Controller (Emergence::Celerity::TaskConstructor &_constructor,
       fetchLevelsConfiguration (FETCH_SINGLETON (LevelsConfigurationSingleton)),
 
       insertInputSubscription (INSERT_LONG_TERM (Emergence::Celerity::InputSubscriptionComponent)),
-      modifyLevelSelection (MODIFY_SINGLETON (LevelSelectionSingleton)),
-      fetchInputActionByObjectId (FETCH_VALUE_1F (Emergence::Celerity::InputActionComponent, objectId)),
-      redirectionHandle (_redirectionHandle)
+      modifyGameState (MODIFY_SINGLETON (GameStateSingleton)),
+      fetchInputActionByObjectId (FETCH_VALUE_1F (Emergence::Celerity::InputActionComponent, objectId))
 {
     _constructor.DependOn (Emergence::Celerity::Input::Checkpoint::ACTION_COMPONENT_READ_ALLOWED);
 }
@@ -67,6 +61,9 @@ void Controller::Execute () noexcept
         mainMenu->uiListenerObjectId = subscription->objectId;
     }
 
+    auto gameStateCursor = modifyGameState.Execute ();
+    auto *gameState = static_cast<GameStateSingleton *> (*gameStateCursor);
+
     for (auto actionCursor = fetchInputActionByObjectId.Execute (&mainMenu->uiListenerObjectId);
          const auto *action = static_cast<const Emergence::Celerity::InputActionComponent *> (*actionCursor);
          ++actionCursor)
@@ -77,11 +74,8 @@ void Controller::Execute () noexcept
             const auto *levelsConfiguration =
                 static_cast<const LevelsConfigurationSingleton *> (*levelsConfigurationCursor);
 
-            auto levelSelectionCursor = modifyLevelSelection.Execute ();
-            auto *levelSelection = static_cast<LevelSelectionSingleton *> (*levelSelectionCursor);
-            levelSelection->selectedLevelName = levelsConfiguration->tutorialLevelName;
-
-            redirectionHandle.RequestRedirect (WorldStates::PLATFORMER);
+            gameState->request.state = GameState::PLATFORMER_LOADING;
+            gameState->request.levelName = levelsConfiguration->tutorialLevelName;
             break;
         }
 
@@ -92,27 +86,23 @@ void Controller::Execute () noexcept
                 static_cast<const LevelsConfigurationSingleton *> (*levelsConfigurationCursor);
             EMERGENCE_ASSERT (levelsConfiguration->campaignLevelCount > 0u);
 
-            auto levelSelectionCursor = modifyLevelSelection.Execute ();
-            auto *levelSelection = static_cast<LevelSelectionSingleton *> (*levelSelectionCursor);
-
-            levelSelection->selectedLevelName = Emergence::Memory::UniqueString {
+            gameState->request.state = GameState::PLATFORMER_LOADING;
+            gameState->request.levelName = Emergence::Memory::UniqueString {
                 EMERGENCE_BUILD_STRING (levelsConfiguration->campaignLevelPrefix, "0")};
-            redirectionHandle.RequestRedirect (WorldStates::PLATFORMER);
+
             break;
         }
 
         if (action->action.id == MainMenuInputActions::GetQuitAction ().id)
         {
-            redirectionHandle.RequestRedirect (GameState::TERMINATION_REDIRECT);
+            gameState->request.state = GameState::TERMINATED;
             break;
         }
     }
 }
 
-void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder,
-                        const WorldStateRedirectionHandle &_redirectionHandle) noexcept
+void AddToNormalUpdate (Emergence::Celerity::PipelineBuilder &_pipelineBuilder) noexcept
 {
-    _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"MainMenuController"})
-        .SetExecutor<Controller> (_redirectionHandle);
+    _pipelineBuilder.AddTask (Emergence::Memory::UniqueString {"MainMenuController"}).SetExecutor<Controller> ();
 }
 } // namespace MainMenuInputResponse

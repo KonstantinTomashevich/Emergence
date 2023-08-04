@@ -5,13 +5,12 @@
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Resource/Object/Messages.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
+#include <Celerity/Assembly/Assembly.hpp>
 
 #include <LevelLoading/LevelLoading.hpp>
 #include <LevelLoading/LevelLoadingSingleton.hpp>
 
 #include <LoadingAnimation/LoadingAnimation.hpp>
-
-#include <Log/Log.hpp>
 
 namespace LevelLoading
 {
@@ -68,6 +67,7 @@ LevelLoader::LevelLoader (Emergence::Celerity::TaskConstructor &_constructor) no
     _constructor.DependOn (Checkpoint::STARTED);
     _constructor.DependOn (LoadingAnimation::Checkpoint::FINISHED);
     _constructor.MakeDependencyOf (Checkpoint::FINISHED);
+    _constructor.MakeDependencyOf (Emergence::Celerity::Assembly::Checkpoint::STARTED);
 }
 
 void LevelLoader::Execute () noexcept

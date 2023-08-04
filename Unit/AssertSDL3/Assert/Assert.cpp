@@ -17,33 +17,62 @@
 
 namespace Emergence
 {
-static bool interactiveAssertEnabled = false;
-static std::atomic_flag interactiveAssertLock;
+namespace
+{
+bool &IsInteractiveAssertEnabled ()
+{
+    static bool interactiveAssertEnabled = false;
+    return interactiveAssertEnabled;
+}
 
-static Memory::Profiler::AllocationGroup allocationGroup {Memory::Profiler::AllocationGroup {
-    Memory::Profiler::AllocationGroup::Root (), Memory::UniqueString {"InteractiveAssert"}}};
+std::atomic_flag &GetInteractiveAssertLock ()
+{
+    static std::atomic_flag interactiveAssertLock;
+    return interactiveAssertLock;
+}
+
+Memory::Profiler::AllocationGroup &GetInteractiveAssertAllocationGroup ()
+{
+    static Memory::Profiler::AllocationGroup allocationGroup {Memory::Profiler::AllocationGroup {
+        Memory::Profiler::AllocationGroup::Root (), Memory::UniqueString {"InteractiveAssert"}}};
+    return allocationGroup;
+}
 
 struct FileSkipData
 {
-    Container::HashSet<std::size_t> lines {allocationGroup};
+    Container::HashSet<std::size_t> lines {GetInteractiveAssertAllocationGroup ()};
 };
 
-static Container::HashMap<Container::String, FileSkipData> assertSkipsPerFile {allocationGroup};
+Container::HashMap<Container::String, FileSkipData> &GetAssertSkipsPerFile ()
+{
+    static Container::HashMap<Container::String, FileSkipData> assertSkipsPerFile {
+        GetInteractiveAssertAllocationGroup ()};
+    return assertSkipsPerFile;
+}
+
+} // namespace
 
 void SetIsAssertInteractive (bool _interactive) noexcept
 {
-    interactiveAssertEnabled = _interactive;
+    IsInteractiveAssertEnabled () = _interactive;
 }
 
 void ReportCriticalError (const char *_expression, const char *_file, std::size_t _line) noexcept
 {
     EMERGENCE_LOG (CRITICAL_ERROR, "Expression: ", _expression, ". File: ", _file, ". Line: ", _line);
-    if (interactiveAssertEnabled)
+#if !defined(EMERGENCE_FALLBACK_TO_CXX_20)
+    for (const std::stacktrace_entry &entry : std::stacktrace::current ())
     {
-        AtomicFlagGuard interactiveAssertGuard {interactiveAssertLock};
-        auto iterator = assertSkipsPerFile.find (_file);
+        EMERGENCE_LOG (CRITICAL_ERROR, std::to_string (entry).c_str ());
+    }
+#endif
 
-        if (iterator != assertSkipsPerFile.end () && iterator->second.lines.contains (_line))
+    if (IsInteractiveAssertEnabled ())
+    {
+        AtomicFlagGuard interactiveAssertGuard {GetInteractiveAssertLock ()};
+        auto iterator = GetAssertSkipsPerFile ().find (_file);
+
+        if (iterator != GetAssertSkipsPerFile ().end () && iterator->second.lines.contains (_line))
         {
             return;
         }
@@ -92,7 +121,7 @@ void ReportCriticalError (const char *_expression, const char *_file, std::size_
 
         if (resultButtonId == BUTTON_SKIP_ALL_OCCURRENCES)
         {
-            assertSkipsPerFile[_file].lines.emplace (_line);
+            GetAssertSkipsPerFile ()[_file].lines.emplace (_line);
             return;
         }
 

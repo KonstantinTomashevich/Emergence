@@ -3,6 +3,7 @@
 #include <CelerityLocaleModelApi.hpp>
 
 #include <Celerity/Locale/LocaleConfiguration.hpp>
+#include <Celerity/Standard/ContextEscape.hpp>
 
 #include <Handling/Handle.hpp>
 #include <Handling/HandleableBase.hpp>
@@ -25,25 +26,16 @@ enum class LocaleLoadingState : std::uint8_t
 };
 
 /// \brief Contains locale loading state that is shared with background job.
-class CelerityLocaleModelApi LocaleLoadingSharedState final : public Handling::HandleableBase
+class CelerityLocaleModelApi LocaleLoadingSharedState final : public ContextEscape<LocaleLoadingSharedState>
 {
 public:
-    void *operator new (std::size_t /*unused*/) noexcept;
-
-    void operator delete (void *_pointer) noexcept;
+    static constexpr const char *ALLOCATION_GROUP_NAME = "LocaleLoading";
 
     /// \brief Describes in which state locale loading is right now.
     std::atomic<LocaleLoadingState> loadingState = LocaleLoadingState::LOADING;
 
     /// \brief Configuration that is currently being loaded from resources.
     LocaleConfiguration configurationInLoading;
-
-private:
-    /// \brief Allocation group used by ::GetHeap.
-    static Memory::Profiler::AllocationGroup GetAllocationGroup () noexcept;
-
-    /// \brief Heap for allocating instances of this state.
-    static Memory::Heap &GetHeap () noexcept;
 };
 
 /// \brief Stores global configuration and state of localization routine.

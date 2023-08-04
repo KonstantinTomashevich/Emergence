@@ -22,6 +22,8 @@ END_MUTING_WARNINGS
 
 namespace Emergence::Celerity
 {
+// TODO: Might have issues with hot reloading. Research.
+
 class CelerityPhysics3dModelPhysXApi ProfiledAllocator final : public physx::PxAllocatorCallback
 {
 public:

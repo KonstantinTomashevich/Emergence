@@ -23,10 +23,11 @@ public:
     void Execute () noexcept;
 
 private:
-    void SyncLocaleRequest (LocaleSingleton *_locale) noexcept;
+    void SyncLocaleRequest (const WorldSingleton *_world, LocaleSingleton *_locale) noexcept;
 
-    void UpdateLocaleLoading (LocaleSingleton *_locale) noexcept;
+    void UpdateLocaleLoading (const WorldSingleton *_world, LocaleSingleton *_locale) noexcept;
 
+    FetchSingletonQuery fetchWorld;
     ModifySingletonQuery modifyLocale;
     InsertLongTermQuery insertLocalizedString;
     RemoveAscendingRangeQuery removeLocalizedString;
@@ -38,6 +39,7 @@ LocalizationSynchronizer::LocalizationSynchronizer (TaskConstructor &_constructo
                                                     Resource::Provider::ResourceProvider *_resourceProvider) noexcept
     : TaskExecutorBase (_constructor),
 
+      fetchWorld (FETCH_SINGLETON (WorldSingleton)),
       modifyLocale (MODIFY_SINGLETON (LocaleSingleton)),
       insertLocalizedString (INSERT_LONG_TERM (LocalizedString)),
       removeLocalizedString (REMOVE_ASCENDING_RANGE (LocalizedString, key)),
@@ -50,13 +52,17 @@ LocalizationSynchronizer::LocalizationSynchronizer (TaskConstructor &_constructo
 
 void LocalizationSynchronizer::Execute () noexcept
 {
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const WorldSingleton *> (*worldCursor);
+
     auto localeCursor = modifyLocale.Execute ();
     auto *locale = static_cast<LocaleSingleton *> (*localeCursor);
-    SyncLocaleRequest (locale);
-    UpdateLocaleLoading (locale);
+
+    SyncLocaleRequest (world, locale);
+    UpdateLocaleLoading (world, locale);
 }
 
-void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noexcept
+void LocalizationSynchronizer::SyncLocaleRequest (const WorldSingleton *_world, LocaleSingleton *_locale) noexcept
 {
     if (_locale->targetLocale != _locale->loadedLocale && !*_locale->loadingLocale)
     {
@@ -66,7 +72,14 @@ void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noex
             return;
         }
 
+        if (!_world->contextEscapeAllowed)
+        {
+            return;
+        }
+
         _locale->sharedState->loadingState = LocaleLoadingState::LOADING;
+        _locale->sharedState->ReportEscaped (_world);
+
         Job::Dispatcher::Global ().Dispatch (
             Job::Priority::BACKGROUND,
             [targetLocale {_locale->targetLocale}, capturedResourceProvider {resourceProvider},
@@ -99,7 +112,7 @@ void LocalizationSynchronizer::SyncLocaleRequest (LocaleSingleton *_locale) noex
     }
 }
 
-void LocalizationSynchronizer::UpdateLocaleLoading (LocaleSingleton *_locale) noexcept
+void LocalizationSynchronizer::UpdateLocaleLoading (const WorldSingleton *_world, LocaleSingleton *_locale) noexcept
 {
     if (*_locale->loadingLocale && _locale->sharedState->loadingState != LocaleLoadingState::LOADING)
     {
@@ -124,6 +137,7 @@ void LocalizationSynchronizer::UpdateLocaleLoading (LocaleSingleton *_locale) no
             _locale->loadedLocale = _locale->loadingLocale;
             _locale->loadingLocale = {};
             _locale->sharedState->configurationInLoading.strings.clear ();
+            _locale->sharedState->ReportReturned (_world);
         }
         else
         {

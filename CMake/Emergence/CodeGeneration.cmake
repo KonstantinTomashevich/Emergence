@@ -32,7 +32,7 @@ endfunction ()
 # - EXPORT_MACRO: name of the macro that is only added to targets that export definitions of declared API.
 # - OUTPUT_FILE: path to the output file.
 function (generate_api_header)
-    cmake_parse_arguments ("GENERATE" "" "API_MACRO;EXPORT_MACRO;OUTPUT_FILE" "" ${ARGV})
+    cmake_parse_arguments (GENERATE "" "API_MACRO;EXPORT_MACRO;OUTPUT_FILE" "" ${ARGV})
     if (DEFINED GENERATE_UNPARSED_ARGUMENTS OR
             NOT DEFINED GENERATE_API_MACRO OR
             NOT DEFINED GENERATE_EXPORT_MACRO OR

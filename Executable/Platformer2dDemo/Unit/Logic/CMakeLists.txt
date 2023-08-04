@@ -7,8 +7,9 @@ concrete_require (
         ABSTRACT CelerityPhysics2dLogic CelerityUILogic Log
 
         CONCRETE_INTERFACE
-        ${GAME_NAME}Model CelerityLocaleLogic CelerityPhysics2dDebugDrawLogic CelerityRender2dLogic
-        CelerityResourceObjectLogic CelerityTransformLogic CelerityResourceObjectLogic Serialization Time)
+        ${GAME_NAME}Base ${GAME_NAME}Model CelerityLocaleLogic CelerityNexus CelerityPhysics2dDebugDrawLogic
+        CelerityRender2dLogic CelerityResourceObjectLogic CelerityTransformLogic CelerityResourceObjectLogic
+        Serialization Time)
 
 concrete_require (
         SCOPE PUBLIC

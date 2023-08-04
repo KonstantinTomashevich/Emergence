@@ -130,6 +130,41 @@ function (find_linked_shared_libraries)
     set ("${SEARCH_OUTPUT}" "${LIBRARIES}" PARENT_SCOPE)
 endfunction ()
 
+# Setups custom target for copying shared library to target directory for specified user.
+# Arguments:
+# - LIBRARY: shared library to copy.
+# - USER: user target to which we add copy target as dependency.
+# - OUTPUT: output directory to which shared library should be copied.
+function (setup_shared_library_copy)
+    cmake_parse_arguments (COPY "" "LIBRARY;USER;OUTPUT" "" ${ARGV})
+    if (DEFINED SEARCH_UNPARSED_ARGUMENTS OR
+            NOT DEFINED COPY_LIBRARY OR
+            NOT DEFINED COPY_USER OR
+            NOT DEFINED COPY_OUTPUT)
+        message (FATAL_ERROR "Incorrect function arguments!")
+    endif ()
+
+    set (CUSTOM_TARGET_NAME "Copy${COPY_LIBRARY}For${COPY_USER}")
+    string (REPLACE "::" "_" CUSTOM_TARGET_NAME "${CUSTOM_TARGET_NAME}")
+
+    if (UNIX)
+        add_custom_target ("${CUSTOM_TARGET_NAME}"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_SONAME_FILE:${COPY_LIBRARY}> "${COPY_OUTPUT}"
+                COMMENT "Copying \"${COPY_LIBRARY}\" for \"${COPY_USER}\"."
+                COMMAND_EXPAND_LISTS VERBATIM)
+    else ()
+        add_custom_target ("${CUSTOM_TARGET_NAME}"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:${COPY_LIBRARY}> "${COPY_OUTPUT}"
+                COMMENT "Copying \"${COPY_LIBRARY}\" for \"${COPY_USER}\"."
+                COMMAND_EXPAND_LISTS VERBATIM)
+    endif ()
+
+    add_dependencies ("${CUSTOM_TARGET_NAME}" "${COPY_LIBRARY}")
+    add_dependencies ("${COPY_USER}" "${CUSTOM_TARGET_NAME}")
+endfunction ()
+
 define_property (TARGET PROPERTY UNIT_TARGET_TYPE
         BRIEF_DOCS "Type of the registered unit target."
         FULL_DOCS "Supported values: Abstract, Concrete, ConcreteInterface, Interface.")
@@ -427,7 +462,7 @@ define_property (TARGET PROPERTY IMPLEMENTATION_REMAP
 # - NAME: name of the implementation.
 # - PARTS: list of concrete units that form implementation of this abstract unit.
 function (abstract_register_implementation)
-    cmake_parse_arguments ("IMPLEMENTATION" "" "NAME" "PARTS" ${ARGN})
+    cmake_parse_arguments (IMPLEMENTATION "" "NAME" "PARTS" ${ARGN})
     if (DEFINED IMPLEMENTATION_UNPARSED_ARGUMENTS OR
             NOT DEFINED IMPLEMENTATION_NAME OR
             NOT DEFINED IMPLEMENTATION_PARTS)
@@ -459,7 +494,7 @@ endfunction ()
 # - ABSTRACT: name of the abstract unit.
 # - OUTPUT: name of the output variable.
 function (abstract_get_implementations)
-    cmake_parse_arguments ("SEARCH" "" "ABSTRACT;OUTPUT" "" ${ARGV})
+    cmake_parse_arguments (SEARCH "" "ABSTRACT;OUTPUT" "" ${ARGV})
     if (DEFINED SEARCH_UNPARSED_ARGUMENTS OR
             NOT DEFINED SEARCH_ABSTRACT OR
             NOT DEFINED SEARCH_OUTPUT)
@@ -656,20 +691,9 @@ endfunction ()
 function (executable_copy_linked_artefacts)
     find_linked_shared_libraries (TARGET "${ARTEFACT_NAME}" OUTPUT REQUIRED_LIBRARIES)
     foreach (LIBRARY_TARGET ${REQUIRED_LIBRARIES})
-        if (UNIX)
-            add_custom_command (
-                    TARGET "${ARTEFACT_NAME}" POST_BUILD
-                    COMMAND
-                    ${CMAKE_COMMAND} -E copy_if_different
-                    $<TARGET_SONAME_FILE:${LIBRARY_TARGET}> $<TARGET_FILE_DIR:${ARTEFACT_NAME}>
-                    COMMAND_EXPAND_LISTS)
-        else ()
-            add_custom_command (
-                    TARGET "${ARTEFACT_NAME}" POST_BUILD
-                    COMMAND
-                    ${CMAKE_COMMAND} -E copy_if_different
-                    $<TARGET_FILE:${LIBRARY_TARGET}> $<TARGET_FILE_DIR:${ARTEFACT_NAME}>
-                    COMMAND_EXPAND_LISTS)
-        endif ()
+        setup_shared_library_copy (
+                LIBRARY "${LIBRARY_TARGET}"
+                USER "${ARTEFACT_NAME}"
+                OUTPUT "$<TARGET_FILE_DIR:${ARTEFACT_NAME}>")
     endforeach ()
 endfunction ()

@@ -4,13 +4,14 @@
 
 #include <Application/Settings.hpp>
 
-#include <Celerity/World.hpp>
+#include <Celerity/Nexus/Nexus.hpp>
+
+#include <Core/NexusUserContext.hpp>
 
 #include <Memory/Recording/StreamSerializer.hpp>
 
 #include <Resource/Provider/ResourceProvider.hpp>
 
-class GameState;
 struct SDL_Window;
 
 class Application final
@@ -35,7 +36,9 @@ private:
 
     void InitWindow () noexcept;
 
-    void InitGameState () noexcept;
+    void InitVirtualFileSystem () noexcept;
+
+    void InitNexus () noexcept;
 
     void EventLoop () noexcept;
 
@@ -43,17 +46,16 @@ private:
 
     Settings settings;
 
-    GameState *gameState = nullptr;
-    Emergence::Memory::Heap gameStateHeap {Emergence::Memory::Profiler::AllocationGroup {
-        Emergence::Memory::Profiler::AllocationGroup::Root (), Emergence::Memory::UniqueString {"GameState"}}};
+    Emergence::Celerity::Nexus *nexus = nullptr;
+    NexusUserContext nexusUserContext;
+    Emergence::Memory::Heap nexusHeap {Emergence::Memory::Profiler::AllocationGroup {
+        Emergence::Memory::Profiler::AllocationGroup::Root (), Emergence::Memory::UniqueString {"Nexus"}}};
+
     SDL_Window *window = nullptr;
 
     std::ofstream memoryEventOutput;
     Emergence::Memory::Recording::StreamSerializer memoryEventSerializer;
     Emergence::Memory::Profiler::EventObserver memoryEventObserver;
-
-    Emergence::VirtualFileSystem::Context virtualFileSystem;
-    Emergence::Resource::Provider::ResourceProvider resourceProvider;
 
     std::uint64_t sdlInitTimeNs = 0u;
     std::uint64_t sdlTicksAfterInit = 0u;

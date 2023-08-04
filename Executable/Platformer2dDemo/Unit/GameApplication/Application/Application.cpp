@@ -7,22 +7,13 @@
 
 #include <Assert/Assert.hpp>
 
-#include <Configuration/ResourceProviderTypes.hpp>
-#include <Configuration/WorldStates.hpp>
+#include <Core/PipelineNames.hpp>
 
 #include <CPU/Profiler.hpp>
 
 #include <Log/Log.hpp>
 
-#include <Framework/GameState.hpp>
-
-#include <Modules/MainMenu.hpp>
-#include <Modules/Platformer.hpp>
-#include <Modules/Root.hpp>
-
 #include <Render/Backend/Configuration.hpp>
-
-#include <Resource/Provider/Helpers.hpp>
 
 #include <Serialization/Yaml.hpp>
 
@@ -47,8 +38,7 @@ static Emergence::Memory::Profiler::EventObserver StartMemoryRecording (
 
 Application::Application () noexcept
     : memoryEventOutput ("MemoryRecording.track", std::ios::binary),
-      memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput)),
-      resourceProvider (&virtualFileSystem, GetResourceTypesRegistry (), GetPatchableTypesRegistry ())
+      memoryEventObserver (StartMemoryRecording (memoryEventSerializer, memoryEventOutput))
 {
     Emergence::Log::GlobalLogger::Init (Emergence::Log::Level::ERROR,
                                         {Emergence::Log::Sinks::StandardOut {{Emergence::Log::Level::INFO}}});
@@ -60,38 +50,18 @@ Application::Application () noexcept
         sdlInitTimeNs = Emergence::Time::NanosecondsSinceStartup ();
         Emergence::ReportCriticalError ("SDL initialization", __FILE__, __LINE__);
     }
-
-    const Emergence::VirtualFileSystem::Entry resourcesDirectory {
-        virtualFileSystem.CreateDirectory (virtualFileSystem.GetRoot (), "Resources")};
-
-    Emergence::VirtualFileSystem::MountConfigurationList configurationList;
-    if (!Emergence::VirtualFileSystem::FetchMountConfigurationList (".", "CoreResources", configurationList) &&
-        !Emergence::VirtualFileSystem::FetchMountConfigurationList ("..", "CoreResources", configurationList))
-    {
-        Emergence::ReportCriticalError ("Failed to fetch \"CoreResources\" mount list!", __FILE__, __LINE__);
-    }
-
-    if (!Emergence::VirtualFileSystem::MountConfigurationListAt (virtualFileSystem, resourcesDirectory,
-                                                                 configurationList))
-    {
-        Emergence::ReportCriticalError ("Failed to mount \"CoreResources\" mount list!", __FILE__, __LINE__);
-    }
-
-    if (Emergence::Resource::Provider::AddMountedDirectoriesAsSources (resourceProvider, resourcesDirectory,
-                                                                       configurationList) !=
-        Emergence::Resource::Provider::SourceOperationResponse::SUCCESSFUL)
-    {
-        Emergence::ReportCriticalError ("Failed to add directories from \"CoreResources\" to resource provider!",
-                                        __FILE__, __LINE__);
-    }
 }
 
 Application::~Application () noexcept
 {
-    if (gameState)
+    if (nexus)
     {
-        gameState->~GameState ();
-        gameStateHeap.Release (gameState, sizeof (GameState));
+        // We need to manually deallocate Any's before their destructors are unloaded.
+        nexusUserContext.assetReferenceBindingList.Reset ();
+        nexusUserContext.assetReferenceBindingEventMap.Reset ();
+
+        nexus->~Nexus ();
+        nexusHeap.Release (nexus, sizeof (Emergence::Celerity::Nexus));
     }
 
     if (window)
@@ -107,7 +77,8 @@ void Application::Run () noexcept
 {
     LoadSettings ();
     InitWindow ();
-    InitGameState ();
+    InitVirtualFileSystem ();
+    InitNexus ();
     EventLoop ();
 }
 
@@ -171,26 +142,61 @@ void Application::InitWindow () noexcept
     Emergence::Render::Backend::Init (config, nativeWindowHandle, nativeDisplayType, false);
 }
 
-void Application::InitGameState () noexcept
+void Application::InitVirtualFileSystem () noexcept
 {
-    gameState = new (gameStateHeap.Acquire (sizeof (GameState), alignof (GameState)))
-        GameState {&resourceProvider,
-                   {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, Modules::Root::GetViewConfig ()},
-                   Modules::Root::Initializer};
+    nexusUserContext.resourcesRoot = {nexusUserContext.virtualFileSystem.CreateDirectory (
+        nexusUserContext.virtualFileSystem.GetRoot (), "Resources")};
 
-    WorldStateDefinition mainMenuState;
-    mainMenuState.name = WorldStates::MAIN_MENU;
-    mainMenuState.modules.emplace_back () = {Modules::MainMenu::GetName (), Modules::MainMenu::GetViewConfig (),
-                                             Modules::MainMenu::Initializer};
-    gameState->AddWorldStateDefinition (mainMenuState);
+    if (!Emergence::VirtualFileSystem::FetchMountConfigurationList (".", "CoreResources",
+                                                                    nexusUserContext.resourcesMount) &&
+        !Emergence::VirtualFileSystem::FetchMountConfigurationList ("..", "CoreResources",
+                                                                    nexusUserContext.resourcesMount))
+    {
+        Emergence::ReportCriticalError ("Failed to fetch \"CoreResources\" mount list!", __FILE__, __LINE__);
+    }
 
-    WorldStateDefinition platformerState;
-    platformerState.name = WorldStates::PLATFORMER;
-    platformerState.modules.emplace_back () = {Modules::Platformer::GetName (), Modules::Platformer::GetViewConfig (),
-                                               Modules::Platformer::Initializer};
-    gameState->AddWorldStateDefinition (platformerState);
+    if (!Emergence::VirtualFileSystem::MountConfigurationListAt (
+            nexusUserContext.virtualFileSystem, nexusUserContext.resourcesRoot, nexusUserContext.resourcesMount))
+    {
+        Emergence::ReportCriticalError ("Failed to mount \"CoreResources\" mount list!", __FILE__, __LINE__);
+    }
+}
 
-    gameState->ConstructWorldStateRedirectionHandle ().RequestRedirect (WorldStates::MAIN_MENU);
+void Application::InitNexus () noexcept
+{
+    Emergence::Celerity::NexusBootstrap bootstrap;
+    if (std::ifstream nexusBootstrapSibling {"CelerityNexusBootstrap.yaml"})
+    {
+        if (!Emergence::Serialization::Yaml::DeserializeObject (
+                nexusBootstrapSibling, &bootstrap, Emergence::Celerity::NexusBootstrap::Reflect ().mapping, {}))
+        {
+            Emergence::ReportCriticalError ("Failed to deserialize \"CelerityNexusBootstrap.yaml\"!", __FILE__,
+                                            __LINE__);
+        }
+    }
+    else
+    {
+        Emergence::ReportCriticalError ("Failed to find CelerityNexus bootstrap file!", __FILE__, __LINE__);
+    }
+
+    nexus = new (nexusHeap.Acquire (sizeof (Emergence::Celerity::Nexus), alignof (Emergence::Celerity::Nexus)))
+        Emergence::Celerity::Nexus {
+            bootstrap, "GameWorld"_us, {{1.0f / 120.0f, 1.0f / 60.0f, 1.0f / 30.0f}, {}}, &nexusUserContext};
+
+    nexus->GetRootNode ()->ScheduleBootstrap (
+        {false,
+         {
+             {PipelineNames::ROOT_NORMAL, Emergence::Celerity::PipelineType::NORMAL},
+         }});
+
+    nexusUserContext.gameStateNode = nexus->CreateChildNode (nexus->GetRootNode (), "GameState"_us);
+    nexusUserContext.gameStateNode->ScheduleBootstrap (
+        {false,
+         {
+             {PipelineNames::GAME_ROOT_NORMAL, Emergence::Celerity::PipelineType::NORMAL},
+         }});
+
+    nexusUserContext.gameWorldNode = nexus->CreateChildNode (nexusUserContext.gameStateNode, "GameWorld"_us);
 }
 
 void Application::EventLoop () noexcept
@@ -201,8 +207,6 @@ void Application::EventLoop () noexcept
     while (running)
     {
         SDL_Event event;
-        Emergence::InputStorage::FrameInputAccumulator *inputAccumulator = gameState->GetFrameInputAccumulator ();
-
         while (SDL_PollEvent (&event))
         {
             if (event.type == SDL_EVENT_QUIT ||
@@ -220,7 +224,7 @@ void Application::EventLoop () noexcept
                                                        Emergence::InputStorage::KeyState::UP,
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
+                nexusUserContext.inputAccumulator.RecordEvent ({SDLTicksToTime (event.key.timestamp), inputEvent});
             }
             else if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN || event.type == SDL_EVENT_MOUSE_BUTTON_UP)
             {
@@ -253,7 +257,7 @@ void Application::EventLoop () noexcept
                     event.button.clicks,
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.button.timestamp), inputEvent});
+                nexusUserContext.inputAccumulator.RecordEvent ({SDLTicksToTime (event.button.timestamp), inputEvent});
             }
             else if (event.type == SDL_EVENT_MOUSE_MOTION)
             {
@@ -264,7 +268,7 @@ void Application::EventLoop () noexcept
                     static_cast<std::int32_t> (event.motion.y),
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.motion.timestamp), inputEvent});
+                nexusUserContext.inputAccumulator.RecordEvent ({SDLTicksToTime (event.motion.timestamp), inputEvent});
             }
             else if (event.type == SDL_EVENT_MOUSE_WHEEL)
             {
@@ -273,24 +277,26 @@ void Application::EventLoop () noexcept
                     event.wheel.y,
                 };
 
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.wheel.timestamp), inputEvent});
+                nexusUserContext.inputAccumulator.RecordEvent ({SDLTicksToTime (event.wheel.timestamp), inputEvent});
             }
             else if (event.type == SDL_EVENT_TEXT_INPUT)
             {
                 Emergence::InputStorage::TextInputEvent inputEvent;
                 static_assert (sizeof (inputEvent.utf8Value) >= sizeof (event.text.text));
                 strcpy (inputEvent.utf8Value.data (), event.text.text);
-                inputAccumulator->RecordEvent ({SDLTicksToTime (event.text.timestamp), inputEvent});
+                nexusUserContext.inputAccumulator.RecordEvent ({SDLTicksToTime (event.text.timestamp), inputEvent});
             }
         }
 
-        gameState->ExecuteFrame ();
+        nexus->Update ();
+        nexusUserContext.inputAccumulator.Clear ();
+
         while (const Emergence::Memory::Profiler::Event *memoryEvent = memoryEventObserver.NextEvent ())
         {
             memoryEventSerializer.SerializeEvent (*memoryEvent);
         }
 
-        running &= !gameState->IsTerminated ();
+        running &= !nexusUserContext.terminateRequested;
         Emergence::CPU::Profiler::MarkFrameEnd ();
     }
 }

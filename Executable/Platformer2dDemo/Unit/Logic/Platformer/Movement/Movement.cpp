@@ -64,7 +64,6 @@ private:
     static void ApplyMovementState (const Context &_context) noexcept;
 
     Emergence::Celerity::FetchSingletonQuery fetchTime;
-    Emergence::Celerity::FetchSingletonQuery fetchWorld;
     Emergence::Celerity::FetchSingletonQuery fetchMovementConfiguration;
     Emergence::Celerity::FetchSingletonQuery fetchPhysicsWorld;
 
@@ -84,7 +83,6 @@ MovementProcessor::MovementProcessor (Emergence::Celerity::TaskConstructor &_con
     : TaskExecutorBase (_constructor),
 
       fetchTime (FETCH_SINGLETON (Emergence::Celerity::TimeSingleton)),
-      fetchWorld (FETCH_SINGLETON (Emergence::Celerity::WorldSingleton)),
       fetchMovementConfiguration (FETCH_SINGLETON (MovementConfigurationSingleton)),
       fetchPhysicsWorld (FETCH_SINGLETON (Emergence::Celerity::PhysicsWorld2dSingleton)),
 
@@ -109,14 +107,6 @@ MovementProcessor::MovementProcessor (Emergence::Celerity::TaskConstructor &_con
 
 void MovementProcessor::Execute () noexcept
 {
-    auto worldCursor = fetchWorld.Execute ();
-    const auto *world = static_cast<const Emergence::Celerity::WorldSingleton *> (*worldCursor);
-
-    if (world->updateMode != Emergence::Celerity::WorldUpdateMode::SIMULATING)
-    {
-        return;
-    }
-
     Context context;
     auto timeCursor = fetchTime.Execute ();
     context.time = static_cast<const Emergence::Celerity::TimeSingleton *> (*timeCursor);

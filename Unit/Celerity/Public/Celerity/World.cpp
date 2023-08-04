@@ -1,7 +1,7 @@
-#include <Celerity/TimeSingleton.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/Pipeline.hpp>
+#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/World.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Memory/Profiler/AllocationGroup.hpp>
 
@@ -54,6 +54,24 @@ void WorldView::RemovePipeline (Pipeline *_pipeline) noexcept
 
     // Received pipeline from another world?
     EMERGENCE_ASSERT (false);
+}
+
+void WorldView::RemoveAllPipelines () noexcept
+{
+    normalPipeline = nullptr;
+    fixedPipeline = nullptr;
+
+    for (auto iterator = pipelinePool.BeginAcquired (); iterator != pipelinePool.EndAcquired (); ++iterator)
+    {
+        static_cast<Pipeline *> (*iterator)->~Pipeline ();
+    }
+
+    pipelinePool.Clear ();
+}
+
+Warehouse::Registry &WorldView::GetLocalRegistry () noexcept
+{
+    return localRegistry;
 }
 
 WorldView::EventSchemeInstance::EventSchemeInstance (

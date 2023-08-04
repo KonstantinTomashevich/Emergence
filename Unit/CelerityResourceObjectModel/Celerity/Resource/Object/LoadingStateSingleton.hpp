@@ -2,6 +2,8 @@
 
 #include <CelerityResourceObjectModelApi.hpp>
 
+#include <Celerity/Standard/ContextEscape.hpp>
+
 #include <Container/HashSet.hpp>
 
 #include <Handling/Handle.hpp>
@@ -14,12 +16,11 @@
 namespace Emergence::Celerity
 {
 /// \brief Contains resource object library loading state that is shared with background job.
-class CelerityResourceObjectModelApi ResourceObjectLoadingSharedState final : public Handling::HandleableBase
+class CelerityResourceObjectModelApi ResourceObjectLoadingSharedState final
+    : public ContextEscape<ResourceObjectLoadingSharedState>
 {
 public:
-    void *operator new (std::size_t /*unused*/) noexcept;
-
-    void operator delete (void *_pointer) noexcept;
+    static constexpr const char *ALLOCATION_GROUP_NAME = "ResourceObjectLoading";
 
     ResourceObjectLoadingSharedState (Resource::Provider::ResourceProvider *_resourceProvider,
                                       Resource::Object::TypeManifest _typeManifest) noexcept;
@@ -44,13 +45,6 @@ public:
     /// \brief List of objects that were requested to be loaded.
     /// \details Used to avoid requesting the same object several times.
     Container::Vector<Memory::UniqueString> requestedObjectList {GetAllocationGroup ()};
-
-private:
-    /// \brief Allocation group used by ::GetHeap.
-    static Memory::Profiler::AllocationGroup GetAllocationGroup () noexcept;
-
-    /// \brief Heap for allocating instances of this state.
-    static Memory::Heap &GetHeap () noexcept;
 };
 
 /// \brief Contains loading states for resource object loading requests.

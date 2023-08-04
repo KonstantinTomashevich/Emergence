@@ -42,6 +42,8 @@ public:
 
     [[nodiscard]] bool IsLongTermContainerAllocated (const StandardLayout::Mapping &_typeMapping) const noexcept;
 
+    void SetGarbageCollectionEnabled (bool _enabled) noexcept;
+
     void SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typeMapping, bool _enabled) noexcept;
 
     [[nodiscard]] Memory::UniqueString GetName () const noexcept;
@@ -74,6 +76,8 @@ private:
     Container::TypedOrderedPool<SingletonContainer> singleton;
     Container::TypedOrderedPool<ShortTermContainer> shortTerm;
     Container::TypedOrderedPool<LongTermContainer> longTerm;
+
+    bool garbageCollectionEnabled = true;
     Container::HashSet<StandardLayout::Mapping> garbageCollectionDisabled;
 };
 } // namespace Emergence::Galleon

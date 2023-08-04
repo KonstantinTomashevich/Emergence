@@ -84,7 +84,7 @@ namespace Emergence::Warehouse
 /// \par Garbage collection
 /// \parblock
 /// If there is no prepared queries for object type, object storage will be automatically deallocated.
-/// You can disable automatic garbage collection on per type basis, see ::SetGarbageCollectionEnabled.
+/// You can disable automatic garbage collection both globally and on per type basis, see ::SetGarbageCollectionEnabled.
 /// \endparblock
 ///
 /// \par Singletons
@@ -182,6 +182,11 @@ public:
 
     /// \return Whether registry has any prepared queries associated with given type.
     [[nodiscard]] bool IsTypeUsed (const StandardLayout::Mapping &_typeMapping) const noexcept;
+
+    /// \brief Sets whether garbage collection is globally enabled for all types.
+    /// \details Call for specific type can disable garbage collection for if global garbage collection is enabled,
+    ///          but you cannot enable garbage collection for specific type when global garbage collection is disabled.
+    void SetGarbageCollectionEnabled (bool _enabled) noexcept;
 
     /// \brief Sets whether objects of given type are automatically
     ///        deallocated when there is no queries that access them.

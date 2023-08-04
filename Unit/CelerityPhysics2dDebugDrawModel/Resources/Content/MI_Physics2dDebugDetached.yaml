@@ -1,5 +1,5 @@
 # MaterialInstanceAsset
-material: Physics2dDebug
+material: M_Physics2dDebug
 uniforms:
   - name: color
     type: 0

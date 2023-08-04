@@ -25,6 +25,8 @@
 
 #include <Configuration/ResourceProviderTypes.hpp>
 
+#include <GameCore/LevelsConfigurationSingleton.hpp>
+
 #include <Resource/Object/Object.hpp>
 
 #include <Platformer/Animation/CharacterAnimationConfiguration.hpp>
@@ -37,8 +39,6 @@
 #include <Platformer/Movement/MovementConfiguration.hpp>
 #include <Platformer/Spawn/SpawnComponent.hpp>
 #include <Platformer/Team/TeamComponent.hpp>
-
-#include <Root/LevelsConfigurationSingleton.hpp>
 
 const Emergence::Container::MappingRegistry &GetResourceTypesRegistry () noexcept
 {

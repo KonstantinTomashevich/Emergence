@@ -37,19 +37,22 @@ CargoDeck::~CargoDeck () noexcept
     for (SingletonContainer &container : singleton)
     {
         EMERGENCE_ASSERT (container.GetReferenceCount () == 0u);
-        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping ()));
+        EMERGENCE_ASSERT (!garbageCollectionEnabled ||
+                          garbageCollectionDisabled.contains (container.GetTypeMapping ()));
     }
 
     for (ShortTermContainer &container : shortTerm)
     {
         EMERGENCE_ASSERT (container.GetReferenceCount () == 0u);
-        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping ()));
+        EMERGENCE_ASSERT (!garbageCollectionEnabled ||
+                          garbageCollectionDisabled.contains (container.GetTypeMapping ()));
     }
 
     for (LongTermContainer &container : longTerm)
     {
         EMERGENCE_ASSERT (container.GetReferenceCount () == 0u);
-        EMERGENCE_ASSERT (garbageCollectionDisabled.contains (container.GetTypeMapping ()));
+        EMERGENCE_ASSERT (!garbageCollectionEnabled ||
+                          garbageCollectionDisabled.contains (container.GetTypeMapping ()));
     }
 #endif
 }
@@ -108,32 +111,87 @@ bool CargoDeck::IsLongTermContainerAllocated (const StandardLayout::Mapping &_ty
            longTerm.End ();
 }
 
+void CargoDeck::SetGarbageCollectionEnabled (bool _enabled) noexcept
+{
+    garbageCollectionEnabled = _enabled;
+    if (garbageCollectionEnabled)
+    {
+        for (auto iterator = singleton.Begin (); iterator != singleton.End ();)
+        {
+            SingletonContainer &container = *iterator;
+            if (container.GetReferenceCount () == 0u &&
+                !garbageCollectionDisabled.contains (container.GetTypeMapping ()))
+            {
+                ++iterator;
+                DetachContainer (&container);
+            }
+            else
+            {
+                ++iterator;
+            }
+        }
+
+        for (auto iterator = shortTerm.Begin (); iterator != shortTerm.End ();)
+        {
+            ShortTermContainer &container = *iterator;
+            if (container.GetReferenceCount () == 0u &&
+                !garbageCollectionDisabled.contains (container.GetTypeMapping ()))
+            {
+                ++iterator;
+                DetachContainer (&container);
+            }
+            else
+            {
+                ++iterator;
+            }
+        }
+
+        for (auto iterator = longTerm.Begin (); iterator != longTerm.End ();)
+        {
+            LongTermContainer &container = *iterator;
+            if (container.GetReferenceCount () == 0u &&
+                !garbageCollectionDisabled.contains (container.GetTypeMapping ()))
+            {
+                ++iterator;
+                DetachContainer (&container);
+            }
+            else
+            {
+                ++iterator;
+            }
+        }
+    }
+}
+
 void CargoDeck::SetGarbageCollectionEnabled (const StandardLayout::Mapping &_typeMapping, bool _enabled) noexcept
 {
     if (_enabled)
     {
         garbageCollectionDisabled.erase (_typeMapping);
-        auto singletonIterator =
-            Container::FindIf (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping});
-
-        if (singletonIterator != singleton.End () && (*singletonIterator).GetReferenceCount () == 0u)
+        if (garbageCollectionEnabled)
         {
-            DetachContainer (&*singletonIterator);
-        }
+            auto singletonIterator =
+                Container::FindIf (singleton.Begin (), singleton.End (), TypeMappingPredicate {_typeMapping});
 
-        auto shortTermIterator =
-            Container::FindIf (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping});
+            if (singletonIterator != singleton.End () && (*singletonIterator).GetReferenceCount () == 0u)
+            {
+                DetachContainer (&*singletonIterator);
+            }
 
-        if (shortTermIterator != shortTerm.End () && (*shortTermIterator).GetReferenceCount () == 0u)
-        {
-            DetachContainer (&*shortTermIterator);
-        }
+            auto shortTermIterator =
+                Container::FindIf (shortTerm.Begin (), shortTerm.End (), TypeMappingPredicate {_typeMapping});
 
-        auto longTermIterator =
-            Container::FindIf (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping});
-        if (longTermIterator != longTerm.End () && (*longTermIterator).GetReferenceCount () == 0u)
-        {
-            DetachContainer (&*longTermIterator);
+            if (shortTermIterator != shortTerm.End () && (*shortTermIterator).GetReferenceCount () == 0u)
+            {
+                DetachContainer (&*shortTermIterator);
+            }
+
+            auto longTermIterator =
+                Container::FindIf (longTerm.Begin (), longTerm.End (), TypeMappingPredicate {_typeMapping});
+            if (longTermIterator != longTerm.End () && (*longTermIterator).GetReferenceCount () == 0u)
+            {
+                DetachContainer (&*longTermIterator);
+            }
         }
     }
     else
@@ -149,7 +207,7 @@ Memory::UniqueString CargoDeck::GetName () const noexcept
 
 void CargoDeck::DetachContainer (SingletonContainer *_container) noexcept
 {
-    if (!garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
+    if (garbageCollectionEnabled && !garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
     {
         singleton.Release (*_container);
     }
@@ -157,7 +215,7 @@ void CargoDeck::DetachContainer (SingletonContainer *_container) noexcept
 
 void CargoDeck::DetachContainer (ShortTermContainer *_container) noexcept
 {
-    if (!garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
+    if (garbageCollectionEnabled && !garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
     {
         shortTerm.Release (*_container);
     }
@@ -165,7 +223,7 @@ void CargoDeck::DetachContainer (ShortTermContainer *_container) noexcept
 
 void CargoDeck::DetachContainer (LongTermContainer *_container) noexcept
 {
-    if (!garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
+    if (garbageCollectionEnabled && !garbageCollectionDisabled.contains (_container->GetTypeMapping ()))
     {
         longTerm.Release (*_container);
     }

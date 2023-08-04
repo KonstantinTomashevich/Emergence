@@ -3,19 +3,22 @@
 #include <CelerityUIModelImGUIApi.hpp>
 
 #include <Celerity/Asset/Asset.hpp>
-#include <Celerity/Asset/LoadingSharedState.hpp>
+#include <Celerity/Standard/ContextEscape.hpp>
 #include <Celerity/Asset/UI/Font.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 
 namespace Emergence::Celerity
 {
-class CelerityUIModelImGUIApi FontLoadingSharedState final : public LoadingSharedState<FontLoadingSharedState>
+class CelerityUIModelImGUIApi FontLoadingSharedState final : public ContextEscape<FontLoadingSharedState>
 {
 public:
     static constexpr const char *ALLOCATION_GROUP_NAME = "FontLoading";
 
     EMERGENCE_STATIONARY_DATA_TYPE (FontLoadingSharedState);
+
+    /// \brief Asset loading state is used as return value for processed asset loading jobs.
+    std::atomic<AssetState> state {AssetState::LOADING};
 
     FontAsset asset;
 

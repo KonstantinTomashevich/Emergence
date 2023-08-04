@@ -45,7 +45,10 @@ struct CelerityApi OnChangeAutomatedEventSeed : public ClearableEventSeed
 class CelerityApi EventRegistrar final
 {
 public:
-    EventRegistrar (World *_world) noexcept;
+    /// \brief Constructs event registrar for given world and start registration routine.
+    /// \details `unsafe` flag informs  logic that it is okay that world already has other event scheme:
+    ///          user is aware of that and will manually update pipelines accordingly.
+    EventRegistrar (World *_world, bool unsafe = false) noexcept;
 
     EventRegistrar (const EventRegistrar &_other) = delete;
 

@@ -1394,6 +1394,8 @@ void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
     }
 }
 
+// TODO: This allocation implementation causes problems when hot reloading.
+
 static Memory::Heap box2dHeap {Memory::Profiler::AllocationGroup {"Physics2d::Box2d"_us}};
 
 void *Box2dProfiledAllocation (std::int32_t _size) noexcept

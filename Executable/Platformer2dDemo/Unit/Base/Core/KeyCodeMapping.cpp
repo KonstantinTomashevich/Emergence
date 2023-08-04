@@ -1,4 +1,4 @@
-#include <Application/KeyCodeMapping.hpp>
+#include <Core/KeyCodeMapping.hpp>
 
 #include <SDL3/SDL_keycode.h>
 

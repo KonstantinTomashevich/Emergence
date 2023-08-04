@@ -3,8 +3,9 @@
 #include <Celerity/Asset/Asset.hpp>
 #include <Celerity/Asset/AssetManagement.hpp>
 #include <Celerity/Asset/Events.hpp>
-#include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/PipelineBuilder.hpp>
+#include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Log/Log.hpp>
 
@@ -12,11 +13,12 @@ namespace Emergence::Celerity
 {
 /// \brief Syntax sugar for implementing asset managers that use separate loading state.
 /// \details This class provides simple loading routine for managers that rely on background
-///          loading processing through state object with shared state (see LoadingSharedState).
+///          loading processing through context scape routine with finalization.
 ///
 ///          Asset type specific logic is done through CRTP. The successor class must:
 ///          * Have `using AssetType = YourAssetType;` declaration.
 ///          * Have `using LoadingState = YourLoadingState;` declaration.
+///            Loading state must have `std::atomic<AssetState> assetType` field.
 ///          * Have `AssetState StartLoading (LoadingState *_loadingState) noexcept;` method.
 ///          * Have `AssetState TryFinishLoading (LoadingState *_loadingState) noexcept;` method.
 template <typename Successor>
@@ -32,6 +34,8 @@ private:
 
     void ProcessUnloading () noexcept;
 
+    FetchSingletonQuery fetchWorld;
+
     InsertShortTermQuery insertAssetStateEvent;
     FetchSequenceQuery fetchAssetRemovedEvents;
     FetchValueQuery fetchAssetByTypeNumberAndState;
@@ -44,7 +48,9 @@ private:
 template <typename Successor>
 StatefulAssetManagerBase<Successor>::StatefulAssetManagerBase (
     TaskConstructor &_constructor, const StandardLayout::Mapping &_stateUpdateEvent) noexcept
-    : insertAssetStateEvent (_constructor.InsertShortTerm (_stateUpdateEvent)),
+    : fetchWorld (FETCH_SINGLETON (WorldSingleton)),
+
+      insertAssetStateEvent (_constructor.InsertShortTerm (_stateUpdateEvent)),
       fetchAssetRemovedEvents (FETCH_SEQUENCE (AssetRemovedNormalEvent)),
       fetchAssetByTypeNumberAndState (FETCH_VALUE_2F (Asset, typeNumber, state)),
 
@@ -66,6 +72,9 @@ void StatefulAssetManagerBase<Successor>::Execute () noexcept
 template <typename Successor>
 void StatefulAssetManagerBase<Successor>::ProcessLoading () noexcept
 {
+    auto worldCursor = fetchWorld.Execute ();
+    const auto *world = static_cast<const WorldSingleton *> (*worldCursor);
+
     struct
     {
         StandardLayout::Mapping mapping = Successor::AssetType::Reflect ().mapping;
@@ -87,12 +96,16 @@ void StatefulAssetManagerBase<Successor>::ProcessLoading () noexcept
                 state = static_cast<Successor *> (this)->TryFinishLoading (loadingState);
                 if (state != AssetState::LOADING)
                 {
+                    // We're reporting the return only after everything is loaded, because
+                    // we're usually unable to correctly reload shared state in case of hot reload.
+                    loadingState->sharedState->ReportReturned (world);
+
                     ~loadingStateCursor;
                 }
             }
         }
 
-        if (needsInitialization)
+        if (needsInitialization && world->contextEscapeAllowed)
         {
             {
                 // If we're reloading the asset, unload old one first.
@@ -102,6 +115,7 @@ void StatefulAssetManagerBase<Successor>::ProcessLoading () noexcept
                 auto *loadingState = static_cast<typename Successor::LoadingState *> (++loadingStateCursor);
                 loadingState->assetId = asset->id;
 
+                loadingState->sharedState->ReportEscaped (world);
                 state = static_cast<Successor *> (this)->StartLoading (loadingState);
             }
 
@@ -110,6 +124,10 @@ void StatefulAssetManagerBase<Successor>::ProcessLoading () noexcept
             {
                 auto loadingStateCursor = removeLoadingStateById.Execute (&asset->id);
                 EMERGENCE_ASSERT (loadingStateCursor.ReadConst ());
+                const auto *loadingState =
+                    static_cast<const typename Successor::LoadingState *> (loadingStateCursor.ReadConst ());
+
+                loadingState->sharedState->ReportReturned (world);
                 ~loadingStateCursor;
             }
         }
