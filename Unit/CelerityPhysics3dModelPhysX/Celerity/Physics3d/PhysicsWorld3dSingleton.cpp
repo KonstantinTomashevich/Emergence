@@ -36,6 +36,7 @@ const PhysicsWorld3dSingleton::Reflection &PhysicsWorld3dSingleton::Reflect () n
         EMERGENCE_MAPPING_REGISTER_REGULAR (toleranceSpeed);
         EMERGENCE_MAPPING_REGISTER_REGULAR (simulationMaxThreads);
         EMERGENCE_MAPPING_REGISTER_REGULAR (enableMemoryProfiling);
+        EMERGENCE_MAPPING_REGISTER_REGULAR (simulating);
         EMERGENCE_MAPPING_REGISTER_REGULAR (gravity);
         EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (collisionMasks);
         EMERGENCE_MAPPING_REGISTER_REGULAR (enableRemoteDebugger);

@@ -27,6 +27,7 @@ changelist:
           x: 5.0
           y: 3.75
         layer: 0
+        visibilityMask: 1
 
   - component:
       type: Transform2dComponent
@@ -54,6 +55,7 @@ changelist:
           x: 5.0
           y: 3.75
         layer: 0
+        visibilityMask: 1
 
   - component:
       type: Transform2dComponent
@@ -81,6 +83,7 @@ changelist:
           x: 5.0
           y: 3.75
         layer: 0
+        visibilityMask: 1
 
   - component:
       type: UINode

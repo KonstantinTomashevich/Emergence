@@ -21,6 +21,9 @@ struct CelerityPhysics2dModelApi PhysicsWorld2dSingleton final
     /// \invariant Can not be changed after first fixed update.
     bool enableMemoryProfiling = false;
 
+    /// \brief Whether physics simulation should be enabled and running.
+    bool simulating = true;
+
     /// \brief Global world gravity.
     /// \details Can be changed from fixed pipeline.
     Math::Vector2f gravity {0.0f, -9.81f};
@@ -62,6 +65,7 @@ struct CelerityPhysics2dModelApi PhysicsWorld2dSingleton final
     struct CelerityPhysics2dModelApi Reflection final
     {
         StandardLayout::FieldId enableMemoryProfiling;
+        StandardLayout::FieldId simulating;
         StandardLayout::FieldId gravity;
         std::array<StandardLayout::FieldId, 32u> collisionMasks;
         StandardLayout::Mapping mapping;

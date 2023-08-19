@@ -37,7 +37,7 @@
 
 #include <LoadingAnimation/LoadingAnimation.hpp>
 
-#include <MainMenu/MainMenuInputResponse.hpp>
+#include <MainMenu/MainMenuManagement.hpp>
 
 #include <MainMenuLoading/LoadingOrchestration.hpp>
 
@@ -46,6 +46,7 @@
 #include <Platformer/Control/PlayerControl.hpp>
 #include <Platformer/Layer/LayerSetup.hpp>
 #include <Platformer/LooseCascadeRemovers.hpp>
+#include <Platformer/PlatformerManagement.hpp>
 #include <Platformer/Movement/Movement.hpp>
 #include <Platformer/Spawn/Spawn.hpp>
 #include <PlatformerLoading/LoadingOrchestration.hpp>
@@ -152,7 +153,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuReadyNorma
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToNormalUpdate (_builder);
     Emergence::Celerity::TransformVisualSync::Add2dToNormalUpdate (_builder);
     Emergence::Celerity::UI::AddToNormalUpdate (_builder, &context->inputAccumulator, GetKeyCodeMapping ());
-    MainMenuInputResponse::AddToNormalUpdate (_builder);
+    MainMenuManagement::AddToNormalUpdate (_builder);
 
     _builder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,
                                       Emergence::Celerity::UI::Checkpoint::HIERARCHY_CLEANUP_STARTED);
@@ -161,12 +162,18 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuReadyNorma
 Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerLoadingFixed (
     Emergence::Celerity::NexusNode * /*unused*/, Emergence::Celerity::PipelineBuilder &_builder)
 {
+    // Mock input checkpoints for PlayerControl.
+    _builder.AddCheckpoint (Emergence::Celerity::Input::Checkpoint::ACTION_DISPATCH_STARTED);
+    _builder.AddCheckpoint (Emergence::Celerity::Input::Checkpoint::CUSTOM_ACTION_COMPONENT_INSERT_ALLOWED);
+    _builder.AddCheckpoint (Emergence::Celerity::Input::Checkpoint::ACTION_COMPONENT_READ_ALLOWED);
+
     Emergence::Celerity::Assembly::AddToFixedUpdate (_builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes (),
                                                      MAX_ASSEMBLY_TIME_NS);
-    // TODO: We need physics here because it uses on add events for initialization. Rework?
     Emergence::Celerity::Physics2dSimulation::AddToFixedUpdate (_builder);
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (_builder);
     LooseCascadeRemovers::AddToFixedPipeline (_builder);
+    PlayerControl::AddToFixedUpdate (_builder); // Needed to react to player spawn during loading.
+    Spawn::AddToFixedUpdate (_builder); // Needed to spawn initial level mobs during loading.
 
     _builder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,
                                       Emergence::Celerity::Physics2dSimulation::Checkpoint::STARTED);
@@ -226,6 +233,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerGameNorm
     Emergence::Celerity::UI::AddToNormalUpdate (_builder, &context->inputAccumulator, GetKeyCodeMapping ());
     Camera::AddToNormalUpdate (_builder);
     LayerSetup::AddToNormalUpdate (_builder);
+    PlatformerManagement::AddToNormalUpdate (_builder);
 
     _builder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,
                                       Emergence::Celerity::UI::Checkpoint::HIERARCHY_CLEANUP_STARTED);

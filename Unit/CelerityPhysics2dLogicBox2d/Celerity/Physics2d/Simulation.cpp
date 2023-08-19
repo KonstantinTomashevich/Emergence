@@ -1061,6 +1061,11 @@ void SimulationExecutor::Execute ()
     auto physicsWorldCursor = fetchPhysicsWorld.Execute ();
     const auto *physicsWorld = static_cast<const PhysicsWorld2dSingleton *> (*physicsWorldCursor);
 
+    if (!physicsWorld->simulating)
+    {
+        return;
+    }
+
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const TimeSingleton *> (*timeCursor);
 

@@ -116,6 +116,7 @@ void SubmissionAgent::SetSampler (UniformId _uniform, std::uint8_t _stage, Textu
 
 SubmissionAgent::SubmissionAgent (void *_pointer) noexcept
 {
+    EMERGENCE_ASSERT (_pointer);
     block_cast<bgfx::Encoder *> (data) = static_cast<bgfx::Encoder *> (_pointer);
 }
 

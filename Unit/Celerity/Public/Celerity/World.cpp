@@ -85,9 +85,7 @@ WorldView::EventSchemeInstance::EventSchemeInstance (
 /// It's expected that user will not have a lot of pipelines, therefore no need to waste memory on large pool pages.
 static constexpr std::size_t PIPELINES_ON_PAGE = 4u;
 
-WorldView::WorldView (World *_world,
-                      WorldView *_parent,
-                      Memory::UniqueString _name) noexcept
+WorldView::WorldView (World *_world, WorldView *_parent, Memory::UniqueString _name) noexcept
     : world (_world),
       parent (_parent),
       name (_name),
@@ -345,8 +343,8 @@ WorldView *World::CreateView (WorldView *_parent, Memory::UniqueString _name) no
     auto placeholder =
         Memory::Profiler::AllocationGroup {_parent->childrenHeap.GetAllocationGroup (), _name}.PlaceOnTop ();
 
-    auto *view = new (_parent->childrenHeap.Acquire (sizeof (WorldView), alignof (WorldView)))
-        WorldView (this, _parent, _name);
+    auto *view =
+        new (_parent->childrenHeap.Acquire (sizeof (WorldView), alignof (WorldView))) WorldView (this, _parent, _name);
 
     _parent->childrenViews.emplace_back (view);
     return view;
@@ -431,79 +429,48 @@ void World::TimeUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
     }
 
     EMERGENCE_ASSERT (_time->timeSpeed >= 0.0f);
-    float updateModeTimeScale = 1.0f;
-
-    switch (_world->updateMode)
-    {
-    case WorldUpdateMode::SIMULATING:
-        updateModeTimeScale = 1.0f;
-        break;
-    case WorldUpdateMode::FROZEN:
-        updateModeTimeScale = 0.0f;
-        break;
-    }
-
-    const auto scaledTimeDeltaNs =
-        static_cast<std::uint64_t> (static_cast<float> (realTimeDeltaNs) * updateModeTimeScale * _time->timeSpeed);
+    const auto scaledTimeDeltaNs = static_cast<std::uint64_t> (static_cast<float> (realTimeDeltaNs) * _time->timeSpeed);
     _time->normalDurationS = static_cast<float> (scaledTimeDeltaNs) * 1e-9f;
     _time->normalTimeNs += scaledTimeDeltaNs;
 }
 
 void World::FixedUpdate (TimeSingleton *_time, WorldSingleton *_world) noexcept
 {
-    switch (_world->updateMode)
+    if (_time->fixedTimeNs > _time->normalTimeNs)
     {
-    case WorldUpdateMode::SIMULATING:
-    {
-        if (_time->fixedTimeNs > _time->normalTimeNs)
-        {
-            // We are ahead of normal time, no need to do anything.
-            _world->fixedUpdateHappened = false;
-            return;
-        }
-
-        // Adjust fixed update step to avoid death spiral.
-        // Full frame time should be consistently lower than simulation step.
-        // We also add small epsilon in order to take possible VSync waits into account.
-        constexpr float VSYNC_EPSILON = 1e-3f;
-        const float minimumRealStepTime = _time->averageFullFrameRealDurationS.Get () - VSYNC_EPSILON;
-
-        EMERGENCE_ASSERT (!_time->targetFixedFrameDurationsS.Empty ());
-        std::size_t selectedStepIndex = 0u;
-
-        while (_time->targetFixedFrameDurationsS[selectedStepIndex] < minimumRealStepTime &&
-               selectedStepIndex + 1u < _time->targetFixedFrameDurationsS.GetCount ())
-        {
-            ++selectedStepIndex;
-        }
-
-        // We do not need to take time scaling into account,
-        // because it affects fixed updates by slowing down normal time.
-        _time->fixedDurationS = _time->targetFixedFrameDurationsS[selectedStepIndex];
-        const auto fixedDurationNs = static_cast<std::uint64_t> (_time->fixedDurationS * 1e9f);
-
-        // Catch up to normal time.
-        while (_time->fixedTimeNs <= _time->normalTimeNs)
-        {
-            rootView.ExecuteFixedPipeline ();
-            _time->fixedTimeNs += fixedDurationNs;
-        }
-
-        _world->fixedUpdateHappened = true;
-        break;
+        // We are ahead of normal time, no need to do anything.
+        _world->fixedUpdateHappened = false;
+        return;
     }
 
-    case WorldUpdateMode::FROZEN:
-    {
-        // Fixed pipeline is executed each frame with zero time
-        // step to compensate for changes made by other pipelines.
-        _time->fixedDurationS = 0.0f;
+    // Adjust fixed update step to avoid death spiral.
+    // Full frame time should be consistently lower than simulation step.
+    // We also add small epsilon in order to take possible VSync waits into account.
+    constexpr float VSYNC_EPSILON = 1e-3f;
+    const float minimumRealStepTime = _time->averageFullFrameRealDurationS.Get () - VSYNC_EPSILON;
 
+    EMERGENCE_ASSERT (!_time->targetFixedFrameDurationsS.Empty ());
+    std::size_t selectedStepIndex = 0u;
+
+    while (_time->targetFixedFrameDurationsS[selectedStepIndex] < minimumRealStepTime &&
+           selectedStepIndex + 1u < _time->targetFixedFrameDurationsS.GetCount ())
+    {
+        ++selectedStepIndex;
+    }
+
+    // We do not need to take time scaling into account,
+    // because it affects fixed updates by slowing down normal time.
+    _time->fixedDurationS = _time->targetFixedFrameDurationsS[selectedStepIndex];
+    const auto fixedDurationNs = static_cast<std::uint64_t> (_time->fixedDurationS * 1e9f);
+
+    // Catch up to normal time.
+    while (_time->fixedTimeNs <= _time->normalTimeNs)
+    {
         rootView.ExecuteFixedPipeline ();
-        _world->fixedUpdateHappened = true;
-        break;
+        _time->fixedTimeNs += fixedDurationNs;
     }
-    }
+
+    _world->fixedUpdateHappened = true;
 }
 
 void World::EnsureViewIsOwned (WorldView *_view) noexcept

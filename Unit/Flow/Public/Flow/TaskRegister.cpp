@@ -408,14 +408,14 @@ bool TaskGraph::Verify () const noexcept
                     {
                         builder.Append ("First task reads and second task writes ");
                         appendCollision (readWriteCollision);
-                        builder.Append (".");
+                        builder.Append (". ");
                     }
 
                     if (writeReadCollision.any ())
                     {
                         builder.Append ("First task writes and second task reads ");
                         appendCollision (writeReadCollision);
-                        builder.Append (".");
+                        builder.Append (". ");
                     }
 
                     if (writeWriteCollision.any ())

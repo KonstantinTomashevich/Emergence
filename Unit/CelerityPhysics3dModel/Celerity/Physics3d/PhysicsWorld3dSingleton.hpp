@@ -34,6 +34,9 @@ struct CelerityPhysics3dModelApi PhysicsWorld3dSingleton final
     /// \invariant Can not be changed after first fixed update.
     bool enableMemoryProfiling = false;
 
+    /// \brief Whether physics simulation should be enabled and running.
+    bool simulating = true;
+
     /// \brief Global world gravity.
     /// \details Can be changed from fixed pipeline.
     Math::Vector3f gravity {0.0f, -9.81f, 0.0f};
@@ -74,6 +77,7 @@ struct CelerityPhysics3dModelApi PhysicsWorld3dSingleton final
         StandardLayout::FieldId toleranceSpeed;
         StandardLayout::FieldId simulationMaxThreads;
         StandardLayout::FieldId enableMemoryProfiling;
+        StandardLayout::FieldId simulating;
         StandardLayout::FieldId gravity;
         std::array<StandardLayout::FieldId, 32u> collisionMasks;
         StandardLayout::FieldId enableRemoteDebugger;

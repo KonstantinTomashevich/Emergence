@@ -9,35 +9,17 @@
 
 namespace Emergence::Celerity
 {
-/// \brief Defines how time is processed and how normal and fixed pipelines are executed.
-enum class WorldUpdateMode
-{
-    /// \brief Default update mode.
-    /// \details - Time is accumulated with no additional scale.
-    ///          - Normal pipeline is executed each update.
-    ///          - Time "produced" by normal pipeline is used to "feed" and execute fixed pipeline.
-    SIMULATING = 0u,
-
-    /// \brief Update mode for loading and pause screens.
-    /// \details - Time is completely frozen.
-    ///          - Normal pipeline is executed each frame with zero time step.
-    ///          - Fixed pipeline is executed each frame with zero time step to compensate for changes made by
-    ///            normal and custom, for example loading, pipelines. Fixed pipeline should not advance simulation
-    ///            in any way.
-    FROZEN // TODO: Seems like a problem for editors and such. Can we cut this feature out?
-};
-
 /// \brief Singleton for world<->tasks communication and global utility like id generation.
 /// \warning This singleton is modified by World outside of pipeline execution,
 ///          therefore OnChange events do not work with it.
 struct CelerityApi WorldSingleton final
 {
+    // TODO: Right now field below is only used for death spiral detection algorithm. But it looks sketchy.
+    //       Maybe, rework death spiral detection algorithm and get rid of it?
+
     /// \brief Indicates whether current normal update was separated from previous one by one or more fixed updates.
     /// \warning Access outside of normal update routine leads to undefined behaviour.
     bool fixedUpdateHappened = false;
-
-    /// \brief Current update mode for the game world.
-    WorldUpdateMode updateMode = WorldUpdateMode::SIMULATING;
 
     /// \brief Count of existing context escapes that are currently being used outside of Celerity.
     std::atomic_uintptr_t contextEscapeCounter = 0u;
@@ -56,13 +38,9 @@ struct CelerityApi WorldSingleton final
     struct CelerityApi Reflection final
     {
         StandardLayout::FieldId fixedUpdateHappened;
-        StandardLayout::FieldId updateMode;
         StandardLayout::Mapping mapping;
     };
 
     static const Reflection &Reflect () noexcept;
 };
-
-// TODO: We need to split Celerity and Celerity extensions into Model and Logic parts.
-//       For example, tools need model all the time, but almost never need logic.
 } // namespace Emergence::Celerity

@@ -24,7 +24,6 @@ public:
 
 private:
     Emergence::Celerity::ModifySingletonQuery modifyGameState;
-    Emergence::Celerity::ModifySingletonQuery modifyWorld;
     Emergence::Celerity::NexusNode *gameNode = nullptr;
     bool *terminateFlag = nullptr;
 };
@@ -35,7 +34,6 @@ GameStateManager::GameStateManager (Emergence::Celerity::TaskConstructor &_const
     : TaskExecutorBase (_constructor),
 
       modifyGameState (MODIFY_SINGLETON (GameStateSingleton)),
-      modifyWorld (MODIFY_SINGLETON (Emergence::Celerity::WorldSingleton)),
       gameNode (_gameNode),
       terminateFlag (_terminateFlag)
 {
@@ -46,9 +44,6 @@ void GameStateManager::Execute () noexcept
 {
     auto gameStateCursor = modifyGameState.Execute ();
     auto *gameState = static_cast<GameStateSingleton *> (*gameStateCursor);
-
-    auto worldCursor = modifyWorld.Execute ();
-    auto *world = static_cast<Emergence::Celerity::WorldSingleton *> (*worldCursor);
 
     // If there is not predefined game state, start loading main menu.
     if (gameState->state == GameState::NONE)
@@ -64,7 +59,6 @@ void GameStateManager::Execute () noexcept
     case GameState::MAIN_MENU_LOADING:
         EMERGENCE_ASSERT (gameState->state == GameState::NONE || gameState->state == GameState::PLATFORMER_GAME);
         gameState->state = GameState::MAIN_MENU_LOADING;
-        world->updateMode = Emergence::Celerity::WorldUpdateMode::FROZEN;
         gameNode->ScheduleBootstrap (
             {false,
              {
@@ -76,7 +70,6 @@ void GameStateManager::Execute () noexcept
     case GameState::MAIN_MENU:
         EMERGENCE_ASSERT (gameState->state == GameState::MAIN_MENU_LOADING);
         gameState->state = GameState::MAIN_MENU;
-        world->updateMode = Emergence::Celerity::WorldUpdateMode::SIMULATING;
         gameNode->ScheduleBootstrap (
             {true,
              {
@@ -88,7 +81,6 @@ void GameStateManager::Execute () noexcept
     case GameState::PLATFORMER_LOADING:
         EMERGENCE_ASSERT (gameState->state == GameState::MAIN_MENU || gameState->state == GameState::PLATFORMER_GAME);
         gameState->state = GameState::PLATFORMER_LOADING;
-        world->updateMode = Emergence::Celerity::WorldUpdateMode::FROZEN;
         gameNode->ScheduleBootstrap (
             {false,
              {
@@ -100,7 +92,6 @@ void GameStateManager::Execute () noexcept
     case GameState::PLATFORMER_GAME:
         EMERGENCE_ASSERT (gameState->state == GameState::PLATFORMER_LOADING);
         gameState->state = GameState::PLATFORMER_GAME;
-        world->updateMode = Emergence::Celerity::WorldUpdateMode::SIMULATING;
         gameNode->ScheduleBootstrap (
             {true,
              {
