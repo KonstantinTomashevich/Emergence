@@ -58,7 +58,6 @@ const PhysicsWorld2dSingleton::Reflection &PhysicsWorld2dSingleton::Reflect () n
     static Reflection reflection = [] ()
     {
         EMERGENCE_MAPPING_REGISTRATION_BEGIN (PhysicsWorld2dSingleton);
-        EMERGENCE_MAPPING_REGISTER_REGULAR (enableMemoryProfiling);
         EMERGENCE_MAPPING_REGISTER_REGULAR (simulating);
         EMERGENCE_MAPPING_REGISTER_REGULAR (gravity);
         EMERGENCE_MAPPING_REGISTER_REGULAR_ARRAY (collisionMasks);

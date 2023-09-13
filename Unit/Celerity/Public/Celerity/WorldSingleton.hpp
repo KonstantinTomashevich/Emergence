@@ -16,6 +16,7 @@ struct CelerityApi WorldSingleton final
 {
     // TODO: Right now field below is only used for death spiral detection algorithm. But it looks sketchy.
     //       Maybe, rework death spiral detection algorithm and get rid of it?
+    //       It is actually connected to time management that is planned to be updated in the future.
 
     /// \brief Indicates whether current normal update was separated from previous one by one or more fixed updates.
     /// \warning Access outside of normal update routine leads to undefined behaviour.

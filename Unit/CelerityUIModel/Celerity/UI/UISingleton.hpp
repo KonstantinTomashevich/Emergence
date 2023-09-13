@@ -13,11 +13,6 @@ namespace Emergence::Celerity
 /// \brief Contains common parameters for UI extension.
 struct CelerityUIModelApi UISingleton final
 {
-    /// \brief Whether Emergence MemoryProfiler should be enabled for UI allocations.
-    /// \details Enabling MemoryProfiler can increase memory usage or decrease performance.
-    /// \invariant Can not be changed after first normal update.
-    bool enableMemoryProfiling = false;
-
     /// \brief Atomic counter for generating unique ids for UI nodes.
     /// \invariant Do not access directly, use ::GenerateNodeId.
     std::atomic_uintptr_t nodeIdCounter = 0u;
@@ -28,7 +23,6 @@ struct CelerityUIModelApi UISingleton final
 
     struct CelerityUIModelApi Reflection final
     {
-        StandardLayout::FieldId enableMemoryProfiling;
         StandardLayout::Mapping mapping;
     };
 

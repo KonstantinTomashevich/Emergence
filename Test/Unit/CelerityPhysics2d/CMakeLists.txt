@@ -13,10 +13,10 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
     register_executable (TestCelerityPhysics2d${IMPLEMENTATION})
     executable_include (
             ABSTRACT
-            Assert=SDL3 CelerityPhysics2dLogic=${IMPLEMENTATION} CelerityPhysics2dModel=${IMPLEMENTATION}
-            CPUProfiler=None Hashing=XXHash JobDispatcher=Original Log=SPDLog Memory=Original MemoryProfiler=Original
-            RecordCollection=Pegasus ResourceProvider=Original StandardLayoutMapping=Original TaskExecutor=Parallel
-            VirtualFileSystem=Original Warehouse=Galleon
+            Assert=SDL3 Box2dAdapter=Profiled CelerityPhysics2dLogic=${IMPLEMENTATION}
+            CelerityPhysics2dModel=${IMPLEMENTATION} CPUProfiler=None Hashing=XXHash JobDispatcher=Original Log=SPDLog
+            Memory=Original MemoryProfiler=Original RecordCollection=Pegasus ResourceProvider=Original
+            StandardLayoutMapping=Original TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
 
             CONCRETE
             Celerity CelerityPhysics2dTests CelerityTransformLogic CelerityTransformModel Container Flow Handling Math

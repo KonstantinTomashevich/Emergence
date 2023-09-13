@@ -1,7 +1,6 @@
 #include <API/Common/BlockCast.hpp>
 #include <API/Common/MuteWarnings.hpp>
 
-#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Physics2d/Box2dAccessSingleton.hpp>
 #include <Celerity/Physics2d/CollisionContact2d.hpp>
 #include <Celerity/Physics2d/CollisionShape2dComponent.hpp>
@@ -12,6 +11,7 @@
 #include <Celerity/Physics2d/Simulation.hpp>
 #include <Celerity/Physics2d/TriggerContact2d.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
@@ -55,16 +55,6 @@ static const Memory::UniqueString EXECUTE_SIMULATION {"Physics2d::ExecuteSimulat
 
 // NOTE: Every task must register physics world singleton modify access if it works directly with Box2d objects.
 //       It allows us to be sure that there is no multithreaded Box2d calls.
-
-static void *Box2dProfiledAllocation (std::int32_t _size) noexcept;
-
-static void Box2dProfiledFree (void *_memory) noexcept;
-
-static void *Box2dEffectiveAllocation (std::int32_t _size) noexcept;
-
-static void Box2dEffectiveFree (void *_memory) noexcept;
-
-static void Box2dLog (const char *_information) noexcept;
 
 static b2Vec2 ToBox2d (const Math::Vector2f &_vector) noexcept;
 
@@ -149,16 +139,6 @@ void WorldUpdater::EnsurePhysicsWorldReady (const PhysicsWorld2dSingleton *_phys
 
     if (!box2dWorld)
     {
-        if (_physicsWorld->enableMemoryProfiling)
-        {
-            SetBox2dAllocators (Box2dProfiledAllocation, Box2dProfiledFree);
-        }
-        else
-        {
-            SetBox2dAllocators (Box2dEffectiveAllocation, Box2dEffectiveFree);
-        }
-
-        SetBox2dLogger (Box2dLog);
         box2dWorld = new (b2Alloc (sizeof (b2World))) b2World {ToBox2d (_physicsWorld->gravity)};
         UpdateBox2dWorld (_physicsWorld);
     }
@@ -1397,38 +1377,6 @@ void SimulationExecutor::SyncKinematicAndDynamicBodies () noexcept
         body->additiveAngularImpulse = 0.0f;
         syncTransform (body);
     }
-}
-
-// TODO: This allocation implementation causes problems when hot reloading.
-
-static Memory::Heap box2dHeap {Memory::Profiler::AllocationGroup {"Physics2d::Box2d"_us}};
-
-void *Box2dProfiledAllocation (std::int32_t _size) noexcept
-{
-    auto *memory = static_cast<uintptr_t *> (box2dHeap.Acquire (_size + sizeof (uintptr_t), sizeof (uintptr_t)));
-    *memory = _size;
-    return memory + 1u;
-}
-
-void Box2dProfiledFree (void *_memory) noexcept
-{
-    uintptr_t *acquiredMemory = static_cast<uintptr_t *> (_memory) - 1u;
-    box2dHeap.Release (acquiredMemory, *acquiredMemory + sizeof (uintptr_t));
-}
-
-void *Box2dEffectiveAllocation (std::int32_t _size) noexcept
-{
-    return malloc (_size);
-}
-
-void Box2dEffectiveFree (void *_memory) noexcept
-{
-    free (_memory);
-}
-
-void Box2dLog (const char *_information) noexcept
-{
-    EMERGENCE_LOG (INFO, "Physics2d::Box2d: ", _information);
 }
 
 b2Vec2 ToBox2d (const Math::Vector2f &_vector) noexcept

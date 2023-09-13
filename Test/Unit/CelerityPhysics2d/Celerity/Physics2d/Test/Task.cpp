@@ -76,9 +76,6 @@ void Configurator::Execute ()
         auto worldCursor = modifyPhysicsWorld.Execute ();
         auto *physicsWorld = static_cast<PhysicsWorld2dSingleton *> (*worldCursor);
 
-        // Enable memory profiling to check that it's not breaking anything.
-        physicsWorld->enableMemoryProfiling = true;
-
         for (std::size_t group = 0u; group < physicsWorld->collisionMasks.size (); ++group)
         {
             physicsWorld->collisionMasks[group] = 1u << group;

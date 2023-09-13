@@ -16,11 +16,6 @@ struct CelerityPhysics2dModelApi PhysicsWorld2dSingleton final
 {
     EMERGENCE_STATIONARY_DATA_TYPE (PhysicsWorld2dSingleton);
 
-    /// \brief Whether Emergence MemoryProfiler should be enabled for physics allocations.
-    /// \details Enabling MemoryProfiler can increase memory usage or decrease performance.
-    /// \invariant Can not be changed after first fixed update.
-    bool enableMemoryProfiling = false;
-
     /// \brief Whether physics simulation should be enabled and running.
     bool simulating = true;
 
@@ -64,7 +59,6 @@ struct CelerityPhysics2dModelApi PhysicsWorld2dSingleton final
 
     struct CelerityPhysics2dModelApi Reflection final
     {
-        StandardLayout::FieldId enableMemoryProfiling;
         StandardLayout::FieldId simulating;
         StandardLayout::FieldId gravity;
         std::array<StandardLayout::FieldId, 32u> collisionMasks;

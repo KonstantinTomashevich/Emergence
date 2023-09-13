@@ -165,6 +165,17 @@ function (setup_shared_library_copy)
     add_dependencies ("${COPY_USER}" "${CUSTOM_TARGET_NAME}")
 endfunction ()
 
+# Utility function that adds all child directories of current directory as subdirectories.
+# Useful for flat directory structure where it is better to just add everything than list lots entries by hand.
+function (add_all_subdirectories)
+    file (GLOB RELATIVES "*")
+    foreach (RELATIVE ${RELATIVES})
+        if (IS_DIRECTORY "${RELATIVE}")
+            add_subdirectory ("${RELATIVE}")
+        endif ()
+    endforeach ()
+endfunction ()
+
 define_property (TARGET PROPERTY UNIT_TARGET_TYPE
         BRIEF_DOCS "Type of the registered unit target."
         FULL_DOCS "Supported values: Abstract, Concrete, ConcreteInterface, Interface.")

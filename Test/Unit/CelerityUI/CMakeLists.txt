@@ -40,9 +40,9 @@ foreach (IMPLEMENTATION ${IMPLEMENTATIONS})
             ABSTRACT
             Assert=SDL3 CelerityUILogic=${IMPLEMENTATION} CelerityUIModel=${IMPLEMENTATION}
             CelerityUITestsImplementationStrings=${IMPLEMENTATION} CPUProfiler=None Hashing=XXHash
-            JobDispatcher=Original Log=SPDLog Memory=Original MemoryProfiler=Original RecordCollection=Pegasus
-            RenderBackend=BGFX ResourceProvider=Original StandardLayoutMapping=Original TaskExecutor=Parallel
-            VirtualFileSystem=Original Warehouse=Galleon
+            ImGUIAdapter=Profiled JobDispatcher=Original Log=SPDLog Memory=Original MemoryProfiler=Original
+            RecordCollection=Pegasus RenderBackend=BGFX ResourceProvider=Original StandardLayoutMapping=Original
+            TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
 
             CONCRETE
             Celerity CelerityAssetLogic CelerityAssetModel CelerityInputLogic CelerityInputModel CelerityLocaleLogic

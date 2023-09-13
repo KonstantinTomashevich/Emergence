@@ -11,18 +11,22 @@ shared_library_include (
         SCOPE PUBLIC
 
         ABSTRACT
-        Assert=SDL3 Hashing=XXHash JobDispatcher=Original Log=SPDLog Memory=Original RecordCollection=Pegasus
-        RenderBackend=BGFX ResourceProvider=Original StandardLayoutMapping=Original TaskExecutor=Parallel
-        VirtualFileSystem=Original Warehouse=Galleon
+        Assert=SDL3 Hashing=XXHash JobDispatcher=Original Log=SPDLog
+        Memory=Original RecordCollection=Pegasus RenderBackend=BGFX ResourceProvider=Original
+        StandardLayoutMapping=Original TaskExecutor=Parallel VirtualFileSystem=Original Warehouse=Galleon
 
         CONCRETE
         ${GAME_NAME}Base Celerity CelerityNexus Container Flow Handling InputStorage Math MemoryRecording
         RecordCollectionVisualization ResourceObject Serialization TaskCollection Threading Time VisualGraph)
 
 if (EMERGENCE_PLATFORMED_2D_GAME_SHIPPING)
-    shared_library_include (SCOPE PUBLIC ABSTRACT CPUProfiler=None MemoryProfiler=None)
+    shared_library_include (
+            SCOPE PUBLIC ABSTRACT
+            Box2dAdapter=Efficient CPUProfiler=None ImGUIAdapter=Efficient MemoryProfiler=None)
 else ()
-    shared_library_include (SCOPE PUBLIC ABSTRACT CPUProfiler=Tracy MemoryProfiler=Original)
+    shared_library_include (
+            SCOPE PUBLIC ABSTRACT
+            Box2dAdapter=Profiled CPUProfiler=Tracy ImGUIAdapter=Profiled MemoryProfiler=Original)
 endif ()
 
 shared_library_verify ()

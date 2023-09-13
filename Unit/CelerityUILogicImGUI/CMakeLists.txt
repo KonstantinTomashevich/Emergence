@@ -4,7 +4,7 @@ concrete_sources ("*.cpp")
 
 concrete_require (
         SCOPE PRIVATE
-        ABSTRACT CelerityUIModel JobDispatcher Log
+        ABSTRACT CelerityUIModel ImGUIAdapter JobDispatcher Log
         CONCRETE_INTERFACE
         CelerityAssetLogic CelerityLocaleLogic CelerityRenderFoundationLogic CelerityInputLogic CelerityUIModelImGUI
         THIRD_PARTY ImGUI)

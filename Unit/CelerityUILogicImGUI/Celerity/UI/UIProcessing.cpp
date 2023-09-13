@@ -28,9 +28,9 @@
 #include <Celerity/UI/UIStyle.hpp>
 #include <Celerity/UI/WindowControl.hpp>
 
-#include <InputStorage/Keyboard.hpp>
-
 #include <imgui.h>
+
+#include <InputStorage/Keyboard.hpp>
 
 #include <Log/Log.hpp>
 
@@ -41,30 +41,6 @@
 namespace Emergence::Celerity::UIProcessing
 {
 using namespace Memory::Literals;
-
-static Memory::Heap &GetImGUIHeap ()
-{
-    static Memory::Heap heap {
-        Memory::Profiler::AllocationGroup {Memory::Profiler::AllocationGroup::Top (), "ImGUI"_us}};
-    return heap;
-}
-
-static void *ImGuiProfiledAllocate (std::size_t _amount, void * /*unused*/)
-{
-    auto *memory = static_cast<std::uintptr_t *> (
-        GetImGUIHeap ().Acquire (_amount + sizeof (std::uintptr_t), alignof (std::uintptr_t)));
-    *memory = static_cast<std::uintptr_t> (_amount);
-    return memory + 1u;
-}
-
-static void ImGUiProfiledFree (void *_pointer, void * /*unused*/)
-{
-    if (_pointer)
-    {
-        auto *memory = static_cast<std::uintptr_t *> (_pointer) - 1u;
-        GetImGUIHeap ().Release (memory, *memory);
-    }
-}
 
 struct NodeInfo final
 {
@@ -525,8 +501,6 @@ private:
     StyleApplier styleApplier;
 
     Container::HashMap<InputStorage::KeyCode, ImGuiKey> keyMap {Memory::Profiler::AllocationGroup {"KeyMap"_us}};
-
-    bool shouldSetupMemoryAllocators = true;
 };
 
 UIProcessor::UIProcessor (TaskConstructor &_constructor,
@@ -827,19 +801,6 @@ UIProcessor::UIProcessor (TaskConstructor &_constructor,
 
 void UIProcessor::Execute ()
 {
-    if (shouldSetupMemoryAllocators)
-    {
-        auto uiCursor = fetchUI.Execute ();
-        const auto *ui = static_cast<const UISingleton *> (*uiCursor);
-
-        if (ui->enableMemoryProfiling)
-        {
-            ImGui::SetAllocatorFunctions (ImGuiProfiledAllocate, ImGUiProfiledFree, nullptr);
-        }
-
-        shouldSetupMemoryAllocators = false;
-    }
-
     auto timeCursor = fetchTime.Execute ();
     const auto *time = static_cast<const TimeSingleton *> (*timeCursor);
 
