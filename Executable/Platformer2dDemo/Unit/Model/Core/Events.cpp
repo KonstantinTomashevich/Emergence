@@ -19,7 +19,7 @@
 #include <Platformer/Events.hpp>
 
 extern "C" Platformer2dDemoModelApi void __cdecl RegisterAllEvents (Emergence::Celerity::Nexus *_nexus,
-                                                            Emergence::Celerity::EventRegistrar &_registrar)
+                                                                    Emergence::Celerity::EventRegistrar &_registrar)
 {
     auto *context = static_cast<NexusUserContext *> (_nexus->GetUserContext ());
     auto &assetReferenceBindingList =
