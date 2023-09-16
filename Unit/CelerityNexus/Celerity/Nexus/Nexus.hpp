@@ -12,6 +12,12 @@
 
 namespace Emergence::Celerity
 {
+// TODO: Currently Nexus is left as an experimental framework for hot reload support.
+//       Its development is frozen due to potential breaking changes in Emergence architecture (moving from Celerity
+//       to even more threading-friendly framework) or potential pause in Emergence development due to pure C related
+//       research (that might trigger full migration to new pure C project).
+//       Therefore, there is no documentation for now.
+
 using namespace Memory::Literals;
 
 class Nexus;

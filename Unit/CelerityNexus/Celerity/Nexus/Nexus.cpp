@@ -473,7 +473,8 @@ void Nexus::ExecuteEventRegistrar (void *_modelHandle) noexcept
 
 void Nexus::ReloadModel ([[maybe_unused]] void *_modelHandle) noexcept
 {
-    // TODO: Implement.
+    ReportCriticalError ("CelerityNexus: Model reloading is not yet supported!", __FILE__, __LINE__);
+    // TODO: We need to patch all the patches so they point to the right mapping.
 }
 } // namespace Celerity
 

@@ -110,4 +110,7 @@ input from UI to game logic. `CelerityRenderFoundation` is used to render the UI
 
 ## Extension list: Frameworks
 
-Currently, there is no frameworks, but new framework, centered on hot reload, is planned.
+### CelerityNexus
+
+`CelerityNexus` is an experimental framework which primary goal is to bring hot reload support to `Celerity`.
+Currently, it is left in an intermediate state with logic hot reload support and without model hot reload.
