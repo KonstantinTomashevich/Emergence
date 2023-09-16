@@ -7,30 +7,30 @@ namespace Emergence::Handling
 /// \brief Describes Handle requirements for its parameter Type.
 template <typename Type>
 concept Handleable = requires (Type _object) {
-                         /// \brief Increments reference counter.
-                         {
-                             _object.RegisterReference ()
-                         } noexcept;
+    /// \brief Increments reference counter.
+    {
+        _object.RegisterReference ()
+    } noexcept;
 
-                         /// \brief Decrements reference counter.
-                         {
-                             _object.UnregisterReference ()
-                         } noexcept;
+    /// \brief Decrements reference counter.
+    {
+        _object.UnregisterReference ()
+    } noexcept;
 
-                         /// \return Reference counter value.
-                         {
-                             _object.GetReferenceCount ()
-                             } noexcept -> std::convertible_to<std::uintptr_t>;
-                     };
+    /// \return Reference counter value.
+    {
+        _object.GetReferenceCount ()
+    } noexcept -> std::convertible_to<std::uintptr_t>;
+};
 
 /// \brief When there is no references to object, callback will be called instead of object deletion.
 /// \details In some cases, Handle is used to provide reference counting, not to fully control object lifetime.
 template <typename Type>
 concept HasLastReferenceUnregisteredCallback = requires (Type _object) {
-                                                   {
-                                                       _object.LastReferenceUnregistered ()
-                                                   } noexcept;
-                                               };
+    {
+        _object.LastReferenceUnregistered ()
+    } noexcept;
+};
 
 /// \brief Strong reference to given object.
 /// \details ::Type must be Handleable, but requirement is expressed using static asserts in methods that directly use

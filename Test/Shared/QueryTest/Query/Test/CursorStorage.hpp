@@ -89,24 +89,24 @@ struct CursorStorage : public Context::Extension::ObjectStorage<CursorData<Curso
 
 template <typename T>
 concept ReturnsEditablePointer = requires (T _cursor) {
-                                     {
-                                         *_cursor
-                                         } -> std::convertible_to<void *>;
-                                 };
+    {
+        *_cursor
+    } -> std::convertible_to<void *>;
+};
 
 template <typename T>
 concept AllowsObjectDeletion = requires (T _cursor) {
-                                   {
-                                       ~_cursor
-                                   };
-                               };
+    {
+        ~_cursor
+    };
+};
 
 template <typename T>
 concept Movable = requires (T _cursor) {
-                      {
-                          ++_cursor
-                          } -> std::convertible_to<T &>;
-                  };
+    {
+        ++_cursor
+    } -> std::convertible_to<T &>;
+};
 
 template <typename Cursor>
 void AddObject (CursorStorage<Cursor> &_storage,

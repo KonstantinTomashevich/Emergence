@@ -126,10 +126,10 @@ void DefaultDestructor (void *_address)
 /// \brief Checks that type has static `Reflect` method for reflection-based logic.
 template <typename T>
 concept HasReflection = requires (T) {
-                            {
-                                T::Reflect ()
-                            };
-                        };
+    {
+        T::Reflect ()
+    };
+};
 
 template <typename>
 struct IsVector
