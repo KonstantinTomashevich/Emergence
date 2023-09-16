@@ -1,8 +1,6 @@
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Input/Input.hpp>
 #include <Celerity/Input/InputActionComponent.hpp>
-#include <Celerity/TimeSingleton.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/Physics2d/CollisionContact2d.hpp>
 #include <Celerity/Physics2d/CollisionShape2dComponent.hpp>
 #include <Celerity/Physics2d/Events.hpp>
@@ -10,8 +8,10 @@
 #include <Celerity/Physics2d/RigidBody2dComponent.hpp>
 #include <Celerity/Physics2d/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Log/Log.hpp>
 

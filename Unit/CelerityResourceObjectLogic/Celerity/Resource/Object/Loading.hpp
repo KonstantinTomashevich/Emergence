@@ -25,6 +25,6 @@ struct CelerityResourceObjectLogicApi Checkpoint final
 /// \brief Adds tasks that execute loading pipeline: process requests and integrate
 ///        Resource::Object::LibraryLoader with Celerity::Assembly.
 CelerityResourceObjectLogicApi void AddToLoadingPipeline (PipelineBuilder &_builder,
-                                                     Resource::Provider::ResourceProvider *_resourceProvider,
-                                                     Resource::Object::TypeManifest _typeManifest) noexcept;
+                                                          Resource::Provider::ResourceProvider *_resourceProvider,
+                                                          Resource::Object::TypeManifest _typeManifest) noexcept;
 } // namespace Emergence::Celerity::ResourceObjectLoading

@@ -11,5 +11,5 @@ namespace Emergence::Celerity::Rendering2d
 /// \brief Adds tasks that update rendering data and perform rendering.
 /// \details There is no checkpoints, because tasks are inserted into RenderPipelineFoundation.
 CelerityRender2dLogicApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                                            const Math::AxisAlignedBox2d &_worldBounds) noexcept;
+                                                 const Math::AxisAlignedBox2d &_worldBounds) noexcept;
 } // namespace Emergence::Celerity::Rendering2d

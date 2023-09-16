@@ -14,6 +14,6 @@ namespace Emergence::Celerity::Sprite2dUvAnimationManagement
 ///
 /// \param _eventMap Event map generated as a result of asset events binding.
 CelerityRender2dLogicApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                                            Resource::Provider::ResourceProvider *_resourceProvider,
-                                            const AssetReferenceBindingEventMap &_eventMap) noexcept;
+                                                 Resource::Provider::ResourceProvider *_resourceProvider,
+                                                 const AssetReferenceBindingEventMap &_eventMap) noexcept;
 } // namespace Emergence::Celerity::Sprite2dUvAnimationManagement

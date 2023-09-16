@@ -10,10 +10,10 @@ BEGIN_MUTING_PADDING_WARNING
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
 #include <Celerity/Assembly/Test/Task.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Container/StringBuilder.hpp>
 

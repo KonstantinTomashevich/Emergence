@@ -27,6 +27,6 @@ struct CelerityAssetLogicApi Checkpoint final
 
 /// \brief Adds asset management checkpoints and tasks to normal update pipeline.
 CelerityAssetLogicApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                                         const AssetReferenceBindingList &_bindingList,
-                                         const AssetReferenceBindingEventMap &_bindingEvents) noexcept;
+                                              const AssetReferenceBindingList &_bindingList,
+                                              const AssetReferenceBindingEventMap &_bindingEvents) noexcept;
 } // namespace Emergence::Celerity::AssetManagement

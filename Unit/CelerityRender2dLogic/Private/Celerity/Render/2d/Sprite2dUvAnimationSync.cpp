@@ -1,6 +1,5 @@
 #include <limits>
 
-#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Render/2d/Batching2d.hpp>
 #include <Celerity/Render/2d/Batching2dSingleton.hpp>
@@ -12,6 +11,7 @@
 #include <Celerity/Render/2d/Sprite2dUvAnimationSync.hpp>
 #include <Celerity/Render/2d/WorldRendering2d.hpp>
 #include <Celerity/Render/Foundation/RenderPipelineFoundation.hpp>
+#include <Celerity/TimeSingleton.hpp>
 
 namespace Emergence::Celerity::Sprite2dUvAnimationSync
 {

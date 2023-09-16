@@ -57,7 +57,8 @@ struct MemoryProfilerApi Event final
 
 /// \brief Creates new EventType::MARKER event, associated with given group.
 /// \details Thread safe.
-MemoryProfilerApi void AddMarker (UniqueString _markerId, const AllocationGroup &_group = AllocationGroup::Root ()) noexcept;
+MemoryProfilerApi void AddMarker (UniqueString _markerId,
+                                  const AllocationGroup &_group = AllocationGroup::Root ()) noexcept;
 
 /// \brief State of allocation group, that was captured during Capture::Start.
 class MemoryProfilerApi CapturedAllocationGroup final

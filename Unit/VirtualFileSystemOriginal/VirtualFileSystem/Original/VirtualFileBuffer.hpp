@@ -54,15 +54,15 @@ public:
     static constexpr std::uint64_t CHUNK_SIZE_MULTIPLIER = 4u;
 
     VirtualFileWriteBuffer (Original::VirtualFileData *_file) noexcept;
-    
+
     VirtualFileWriteBuffer (const VirtualFileWriteBuffer &_other) = delete;
-    
+
     VirtualFileWriteBuffer (VirtualFileWriteBuffer &&_other) = delete;
 
     ~VirtualFileWriteBuffer () noexcept override;
-    
+
     EMERGENCE_DELETE_ASSIGNMENT (VirtualFileWriteBuffer);
-    
+
 protected:
     int_type overflow (int_type _character) override;
 };

@@ -109,7 +109,8 @@ void FixedInputProcessor::Execute () noexcept
 class NormalInputProcessor final : public TaskExecutorBase<NormalInputProcessor>, public InputProcessorBase
 {
 public:
-    NormalInputProcessor (TaskConstructor &_constructor, InputStorage::FrameInputAccumulator *_inputAccumulator) noexcept;
+    NormalInputProcessor (TaskConstructor &_constructor,
+                          InputStorage::FrameInputAccumulator *_inputAccumulator) noexcept;
 
     void Execute () noexcept;
 

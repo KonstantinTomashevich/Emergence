@@ -14,6 +14,6 @@ namespace Emergence::Celerity::FontManagement
 ///
 /// \param _eventMap Event map generated as a result of asset events binding.
 CelerityUILogicApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                                      Resource::Provider::ResourceProvider *_resourceProvider,
-                                      const AssetReferenceBindingEventMap &_eventMap) noexcept;
+                                           Resource::Provider::ResourceProvider *_resourceProvider,
+                                           const AssetReferenceBindingEventMap &_eventMap) noexcept;
 } // namespace Emergence::Celerity::FontManagement

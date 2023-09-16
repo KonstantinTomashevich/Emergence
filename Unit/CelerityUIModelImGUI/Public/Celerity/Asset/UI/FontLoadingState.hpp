@@ -3,8 +3,8 @@
 #include <CelerityUIModelImGUIApi.hpp>
 
 #include <Celerity/Asset/Asset.hpp>
-#include <Celerity/Standard/ContextEscape.hpp>
 #include <Celerity/Asset/UI/Font.hpp>
+#include <Celerity/Standard/ContextEscape.hpp>
 
 #include <StandardLayout/Mapping.hpp>
 

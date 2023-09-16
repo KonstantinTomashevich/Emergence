@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <CelerityPhysics2dModelApi.hpp>
 #include <array>
 #include <thread>

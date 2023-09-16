@@ -1,5 +1,5 @@
-#include <API/Common/Implementation/Iterator.hpp>
 #include <API/Common/BlockCast.hpp>
+#include <API/Common/Implementation/Iterator.hpp>
 
 #include <Assert/Assert.hpp>
 

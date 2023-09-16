@@ -4,13 +4,13 @@
 #include <Celerity/Assembly/Events.hpp>
 #include <Celerity/Assembly/PrototypeAssemblyComponent.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformVisualSync.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Container/HashMap.hpp>
 

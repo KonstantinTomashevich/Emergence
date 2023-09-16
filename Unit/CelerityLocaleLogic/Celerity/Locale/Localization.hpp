@@ -22,5 +22,5 @@ struct CelerityLocaleLogicApi Checkpoint final
 
 /// \brief Adds tasks for localization management and synchronization.
 CelerityLocaleLogicApi void AddToNormalUpdate (PipelineBuilder &_builder,
-                                          Resource::Provider::ResourceProvider *_resourceProvider) noexcept;
+                                               Resource::Provider::ResourceProvider *_resourceProvider) noexcept;
 } // namespace Emergence::Celerity::Localization

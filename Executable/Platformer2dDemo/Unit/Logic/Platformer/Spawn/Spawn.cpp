@@ -2,13 +2,13 @@
 
 #include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
-#include <Celerity/TimeSingleton.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
 #include <Celerity/Transform/TransformWorldAccessor.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <Platformer/Events.hpp>
 #include <Platformer/Layer/LayerSetupComponent.hpp>

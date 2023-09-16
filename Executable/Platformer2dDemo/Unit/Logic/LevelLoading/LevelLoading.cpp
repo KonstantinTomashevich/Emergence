@@ -1,11 +1,11 @@
+#include <Celerity/Assembly/Assembly.hpp>
 #include <Celerity/Assembly/AssemblyDescriptor.hpp>
 #include <Celerity/Assembly/PrototypeAssemblyComponent.hpp>
 #include <Celerity/Assembly/PrototypeComponent.hpp>
-#include <Celerity/WorldSingleton.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
 #include <Celerity/Resource/Object/Messages.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
-#include <Celerity/Assembly/Assembly.hpp>
+#include <Celerity/WorldSingleton.hpp>
 
 #include <LevelLoading/LevelLoading.hpp>
 #include <LevelLoading/LevelLoadingSingleton.hpp>

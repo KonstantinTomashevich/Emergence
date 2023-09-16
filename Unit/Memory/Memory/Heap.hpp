@@ -153,11 +153,11 @@ private:
 } // namespace Emergence::Memory
 
 /// \brief Shortcut for DefaultAllocationGroup specialization for given type.
-#define EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP(Api, Type)                                                                \
+#define EMERGENCE_MEMORY_DEFAULT_ALLOCATION_GROUP(Api, Type)                                                           \
     namespace Emergence::Memory                                                                                        \
     {                                                                                                                  \
     template <>                                                                                                        \
-    struct Api DefaultAllocationGroup<Type>                                                                                \
+    struct Api DefaultAllocationGroup<Type>                                                                            \
     {                                                                                                                  \
         static Profiler::AllocationGroup Get () noexcept;                                                              \
     };                                                                                                                 \

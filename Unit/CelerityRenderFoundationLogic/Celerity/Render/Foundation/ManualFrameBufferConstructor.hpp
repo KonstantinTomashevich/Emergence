@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include <CelerityRenderFoundationLogicApi.hpp>
 #include <Celerity/Asset/ManualAssetConstructor.hpp>
+#include <CelerityRenderFoundationLogicApi.hpp>
 
 #include <Render/Backend/Texture.hpp>
 

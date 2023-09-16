@@ -14,6 +14,6 @@ namespace Emergence::Celerity::MaterialInstanceManagement
 ///
 /// \param _eventMap Event map generated as a result of asset events binding.
 CelerityRenderFoundationLogicApi void AddToNormalUpdate (PipelineBuilder &_pipelineBuilder,
-                                                    Resource::Provider::ResourceProvider *_resourceProvider,
-                                                    const AssetReferenceBindingEventMap &_eventMap) noexcept;
+                                                         Resource::Provider::ResourceProvider *_resourceProvider,
+                                                         const AssetReferenceBindingEventMap &_eventMap) noexcept;
 } // namespace Emergence::Celerity::MaterialInstanceManagement

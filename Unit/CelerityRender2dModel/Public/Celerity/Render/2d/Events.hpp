@@ -1,10 +1,9 @@
 #pragma once
 
-
-#include <CelerityRender2dModelApi.hpp>
 #include <Celerity/Event/EventRegistrar.hpp>
 #include <Celerity/Event/Macro.generated.hpp>
 #include <Celerity/Standard/UniqueId.hpp>
+#include <CelerityRender2dModelApi.hpp>
 
 namespace Emergence::Celerity
 {

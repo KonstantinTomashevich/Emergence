@@ -46,8 +46,8 @@
 #include <Platformer/Control/PlayerControl.hpp>
 #include <Platformer/Layer/LayerSetup.hpp>
 #include <Platformer/LooseCascadeRemovers.hpp>
-#include <Platformer/PlatformerManagement.hpp>
 #include <Platformer/Movement/Movement.hpp>
+#include <Platformer/PlatformerManagement.hpp>
 #include <Platformer/Spawn/Spawn.hpp>
 #include <PlatformerLoading/LoadingOrchestration.hpp>
 
@@ -173,7 +173,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerLoadingF
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (_builder);
     LooseCascadeRemovers::AddToFixedPipeline (_builder);
     PlayerControl::AddToFixedUpdate (_builder); // Needed to react to player spawn during loading.
-    Spawn::AddToFixedUpdate (_builder); // Needed to spawn initial level mobs during loading.
+    Spawn::AddToFixedUpdate (_builder);         // Needed to spawn initial level mobs during loading.
 
     _builder.AddCheckpointDependency (Emergence::Celerity::Assembly::Checkpoint::FINISHED,
                                       Emergence::Celerity::Physics2dSimulation::Checkpoint::STARTED);

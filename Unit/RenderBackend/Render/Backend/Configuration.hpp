@@ -48,7 +48,10 @@ RenderBackendApi Memory::Profiler::AllocationGroup GetSharedAllocationGroup () n
 
 /// \brief Initializes rendering backend.
 /// \invariant Must be called only once per application execution.
-RenderBackendApi bool Init (const Config &_config, void *_nativeWindowHandle, void *_nativeDisplayType, bool _profileMemory) noexcept;
+RenderBackendApi bool Init (const Config &_config,
+                            void *_nativeWindowHandle,
+                            void *_nativeDisplayType,
+                            bool _profileMemory) noexcept;
 
 /// \return Last config passed to ::Init or ::Update.
 RenderBackendApi const Config &GetCurrentConfig () noexcept;

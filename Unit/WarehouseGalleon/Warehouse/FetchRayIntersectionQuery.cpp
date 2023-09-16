@@ -1,5 +1,5 @@
-#include <API/Common/Implementation/Cursor.hpp>
 #include <API/Common/BlockCast.hpp>
+#include <API/Common/Implementation/Cursor.hpp>
 
 #include <Galleon/LongTermContainer.hpp>
 

@@ -1,7 +1,6 @@
 #include <API/Common/BlockCast.hpp>
 #include <API/Common/MuteWarnings.hpp>
 
-#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Physics3d/CollisionShape3dComponent.hpp>
 #include <Celerity/Physics3d/DynamicsMaterial3d.hpp>
 #include <Celerity/Physics3d/Events.hpp>
@@ -12,6 +11,7 @@
 #include <Celerity/Physics3d/RigidBody3dComponent.hpp>
 #include <Celerity/Physics3d/Simulation.hpp>
 #include <Celerity/PipelineBuilderMacros.hpp>
+#include <Celerity/TimeSingleton.hpp>
 #include <Celerity/Transform/Events.hpp>
 #include <Celerity/Transform/TransformComponent.hpp>
 #include <Celerity/Transform/TransformHierarchyCleanup.hpp>
