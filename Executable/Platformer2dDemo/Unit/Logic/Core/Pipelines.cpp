@@ -68,7 +68,7 @@ void MockRootCheckpoints (Emergence::Celerity::PipelineBuilder &_builder)
 }
 } // namespace
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineRootNormal (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelineRootNormal (
     Emergence::Celerity::NexusNode *_node, Emergence::Celerity::PipelineBuilder &_builder)
 {
     auto *context = static_cast<NexusUserContext *> (_node->GetNexus ()->GetUserContext ());
@@ -98,7 +98,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineRootNormal (
                                       Emergence::Celerity::AssetManagement::Checkpoint::STARTED);
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineGameRootNormal (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelineGameRootNormal (
     Emergence::Celerity::NexusNode *_node, Emergence::Celerity::PipelineBuilder &_builder)
 {
     auto *context = static_cast<NexusUserContext *> (_node->GetNexus ()->GetUserContext ());
@@ -106,7 +106,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineGameRootNormal (
     LevelsConfigurationLoading::AddToNormalUpdate (_builder, &context->resourceProvider.value ());
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuLoadingFixed (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelineMainMenuLoadingFixed (
     Emergence::Celerity::NexusNode * /*unused*/, Emergence::Celerity::PipelineBuilder &_builder)
 {
     Emergence::Celerity::Assembly::AddToFixedUpdate (_builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes (),
@@ -115,7 +115,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuLoadingFix
     Emergence::Celerity::TransformHierarchyCleanup::Add2dToFixedUpdate (_builder);
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuLoadingNormal (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelineMainMenuLoadingNormal (
     Emergence::Celerity::NexusNode * /*unused*/, Emergence::Celerity::PipelineBuilder &_builder)
 {
     MockRootCheckpoints (_builder);
@@ -133,13 +133,13 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuLoadingNor
                                       Emergence::Celerity::RenderPipelineFoundation::Checkpoint::RENDER_STARTED);
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuReadyFixed (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelineMainMenuReadyFixed (
     Emergence::Celerity::NexusNode *_node, Emergence::Celerity::PipelineBuilder &_builder)
 {
     BuildPipelineMainMenuLoadingFixed (_node, _builder);
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuReadyNormal (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelineMainMenuReadyNormal (
     Emergence::Celerity::NexusNode *_node, Emergence::Celerity::PipelineBuilder &_builder)
 {
     auto *context = static_cast<NexusUserContext *> (_node->GetNexus ()->GetUserContext ());
@@ -159,7 +159,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelineMainMenuReadyNorma
                                       Emergence::Celerity::UI::Checkpoint::HIERARCHY_CLEANUP_STARTED);
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerLoadingFixed (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelinePlatformerLoadingFixed (
     Emergence::Celerity::NexusNode * /*unused*/, Emergence::Celerity::PipelineBuilder &_builder)
 {
     // Mock input checkpoints for PlayerControl.
@@ -179,7 +179,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerLoadingF
                                       Emergence::Celerity::Physics2dSimulation::Checkpoint::STARTED);
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerLoadingNormal (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelinePlatformerLoadingNormal (
     Emergence::Celerity::NexusNode * /*unused*/, Emergence::Celerity::PipelineBuilder &_builder)
 {
     MockRootCheckpoints (_builder);
@@ -197,7 +197,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerLoadingN
     PlatformerLoadingOrchestration::AddToNormalUpdate (_builder);
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerGameFixed (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelinePlatformerGameFixed (
     Emergence::Celerity::NexusNode * /*unused*/, Emergence::Celerity::PipelineBuilder &_builder)
 {
     Emergence::Celerity::Assembly::AddToFixedUpdate (_builder, GetAssemblerCustomKeys (), GetFixedAssemblerTypes (),
@@ -215,7 +215,7 @@ Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerGameFixe
                                       Emergence::Celerity::Physics2dSimulation::Checkpoint::STARTED);
 }
 
-Platformer2dDemoLogicApi extern "C" __cdecl void BuildPipelinePlatformerGameNormal (
+extern "C" Platformer2dDemoLogicApi void __cdecl BuildPipelinePlatformerGameNormal (
     Emergence::Celerity::NexusNode *_node, Emergence::Celerity::PipelineBuilder &_builder)
 {
     auto *context = static_cast<NexusUserContext *> (_node->GetNexus ()->GetUserContext ());

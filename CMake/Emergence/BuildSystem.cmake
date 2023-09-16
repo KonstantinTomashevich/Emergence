@@ -150,13 +150,13 @@ function (setup_shared_library_copy)
     if (UNIX)
         add_custom_target ("${CUSTOM_TARGET_NAME}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_SONAME_FILE:${COPY_LIBRARY}> "${COPY_OUTPUT}"
+                $<TARGET_SONAME_FILE:${COPY_LIBRARY}> "${COPY_OUTPUT}/$<TARGET_SONAME_FILE_NAME:${COPY_LIBRARY}>"
                 COMMENT "Copying \"${COPY_LIBRARY}\" for \"${COPY_USER}\"."
                 COMMAND_EXPAND_LISTS VERBATIM)
     else ()
         add_custom_target ("${CUSTOM_TARGET_NAME}"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:${COPY_LIBRARY}> "${COPY_OUTPUT}"
+                $<TARGET_FILE:${COPY_LIBRARY}> "${COPY_OUTPUT}/$<TARGET_FILE_NAME:${COPY_LIBRARY}>"
                 COMMENT "Copying \"${COPY_LIBRARY}\" for \"${COPY_USER}\"."
                 COMMAND_EXPAND_LISTS VERBATIM)
     endif ()
