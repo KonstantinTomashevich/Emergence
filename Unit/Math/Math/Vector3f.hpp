@@ -10,7 +10,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (float) MathApi Vector3f final
+struct MathApi alignas (float) Vector3f final
 {
     static const Vector3f ZERO;
     static const Vector3f ONE;

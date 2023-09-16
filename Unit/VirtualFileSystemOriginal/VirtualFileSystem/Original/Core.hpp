@@ -82,7 +82,13 @@ struct VirtualFileChunk final
     VirtualFileChunk *previous = nullptr;
     std::uint64_t size = 0u;
     std::uint64_t used = 0u;
+
+#if defined(_MSVC_STL_VERSION)
+    // For some reason updated MSVC compiler doesn't like this zero size array.
+    std::uint8_t data[1u];
+#else
     std::uint8_t data[0u];
+#endif
 };
 
 static_assert (std::is_trivially_destructible_v<VirtualFileChunk>);

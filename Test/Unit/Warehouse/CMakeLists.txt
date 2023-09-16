@@ -18,6 +18,11 @@ register_concrete (WarehouseTests)
 concrete_include (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Private")
 concrete_sources ("Private/*.cpp")
 
+if (MSVC)
+    # Scenario object is too big for MSVC without this flag.
+    concrete_compile_options (PRIVATE /bigobj)
+endif()
+
 concrete_require (
         SCOPE PRIVATE
         ABSTRACT Warehouse WarehouseTestsVisualization

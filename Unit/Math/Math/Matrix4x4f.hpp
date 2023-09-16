@@ -13,7 +13,7 @@ namespace Emergence::Math
 {
 struct Transform3d;
 
-struct alignas (sizeof (float) * 4u) MathApi Matrix4x4f final
+struct MathApi alignas (sizeof (float) * 4u) Matrix4x4f final
 {
     static const Matrix4x4f ZERO;
     static const Matrix4x4f IDENTITY;

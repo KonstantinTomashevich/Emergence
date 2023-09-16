@@ -37,6 +37,10 @@ function (add_common_compile_options)
                     /wd4200
                     # Anonymous structs increase readability in some cases.
                     /wd4201
+                    # Warning about dll interface seems to have lots of false positives for structs and std classes.
+                    /wd4251
+                    # Same as above.
+                    /wd4275
                     # Assignments inside conditional statements increase readability in some cases.
                     /wd4706)
         else ()

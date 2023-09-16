@@ -13,7 +13,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (sizeof (float) * 4u) MathApi Transform3d final
+struct MathApi alignas (sizeof (float) * 4u) Transform3d final
 {
     Transform3d (const NoInitializationFlag &_guard) noexcept;
 

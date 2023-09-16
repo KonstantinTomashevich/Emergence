@@ -12,7 +12,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (float) MathApi Transform2d final
+struct MathApi alignas (float) Transform2d final
 {
     Transform2d (const NoInitializationFlag &_guard) noexcept;
 

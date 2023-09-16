@@ -11,7 +11,7 @@
 
 namespace Emergence::Math
 {
-struct alignas (sizeof (float) * 4u) MathApi Quaternion final
+struct MathApi alignas (sizeof (float) * 4u) Quaternion final
 {
     static const Quaternion IDENTITY;
 
