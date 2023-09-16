@@ -46,9 +46,9 @@ class CelerityApi EventRegistrar final
 {
 public:
     /// \brief Constructs event registrar for given world and start registration routine.
-    /// \details `unsafe` flag informs  logic that it is okay that world already has other event scheme:
+    /// \details `_unsafe` flag informs  logic that it is okay that world already has other event scheme:
     ///          user is aware of that and will manually update pipelines accordingly.
-    EventRegistrar (World *_world, bool unsafe = false) noexcept;
+    EventRegistrar (World *_world, bool _unsafe = false) noexcept;
 
     EventRegistrar (const EventRegistrar &_other) = delete;
 

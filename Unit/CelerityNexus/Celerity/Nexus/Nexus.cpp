@@ -471,6 +471,7 @@ void Nexus::ExecuteEventRegistrar (void *_modelHandle) noexcept
     function (this, eventRegistrar);
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static): It is an experimental API stub anyway.
 void Nexus::ReloadModel ([[maybe_unused]] void *_modelHandle) noexcept
 {
     ReportCriticalError ("CelerityNexus: Model reloading is not yet supported!", __FILE__, __LINE__);

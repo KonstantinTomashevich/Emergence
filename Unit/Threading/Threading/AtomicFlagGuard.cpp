@@ -17,11 +17,11 @@ AtomicFlagGuard::~AtomicFlagGuard () noexcept
     UnlockAtomicFlag (flag);
 }
 
-static const char *lockSectionName = "AtomicFlagLock";
+static const char *const LOCK_SECTION_NAME = "AtomicFlagLock";
 
 void LockAtomicFlag (std::atomic_flag &_flag) noexcept
 {
-    static CPU::Profiler::SectionDefinition lockSection {lockSectionName, 0xFF990000u};
+    static CPU::Profiler::SectionDefinition lockSection {LOCK_SECTION_NAME, 0xFF990000u};
     CPU::Profiler::SectionInstance section {lockSection};
 
     while (_flag.test_and_set (std::memory_order_acquire))

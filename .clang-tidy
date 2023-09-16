@@ -29,6 +29,8 @@
 #
 # Unfortunately, we need to, I hope temporary, disable modernize-use-nullptr
 # as it crashes clang-tidy from Visual Studio locally.
+#
+# We disable misc-use-anonymous-namespace as there is nothing wrong with using stack.
 Checks: >
   -*,
   bugprone-*,
@@ -50,6 +52,7 @@ Checks: >
   -misc-const-correctness,
   -misc-no-recursion,
   -misc-non-private-member-variables-in-classes,
+  -misc-use-anonymous-namespace,
   modernize-*,
   -modernize-avoid-c-arrays,
   -modernize-replace-disallow-copy-and-assign-macro,
