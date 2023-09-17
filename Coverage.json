@@ -168,15 +168,21 @@
       "Reason": "The bigger function is only used in visual tests and therefore is not being executed on CI."
     },
     {
-      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/Core.cpp",
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/MountConfiguration.cpp",
+      "Action": "Exclude",
+      "Reason": "This file contains only reflection registration that is not used inside tests and should be trivial enough to be uncovered."
+    },
+    {
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/Original/Core.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 70.0,
       "Reason": "Core has lots of error handling logic that isn't fully covered by tests yet."
     },
     {
-      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/MountConfiguration.cpp",
-      "Action": "Exclude",
-      "Reason": "This file contains only reflection registration that is not used inside tests and should be trivial enough to be uncovered."
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/Original/VirtualFileBuffer.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
+      "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
     },
     {
       "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/PackageBuilder.cpp",
@@ -194,12 +200,6 @@
       "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/Writer.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 50.0,
-      "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
-    },
-    {
-      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/VirtualFileBuffer.cpp",
-      "Action": "CustomMinimumCoverage",
-      "MinimumLinesCoveragePerFilePercent": 60.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
     },
     {
