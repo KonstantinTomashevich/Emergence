@@ -1,0 +1,5 @@
+register_abstract (CPUProfiler)
+abstract_include ("${CMAKE_CURRENT_SOURCE_DIR}")
+abstract_require (INTERFACE APICommon)
+abstract_register_implementation (NAME None PARTS CPUProfilerNone)
+abstract_register_implementation (NAME Tracy PARTS CPUProfilerTracy)

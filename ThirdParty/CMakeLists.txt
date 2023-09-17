@@ -14,6 +14,7 @@ set (BOX2D_BUILD_TESTBED OFF)
 
 set (BOX2D_USER_SETTINGS ON CACHE BOOL "We use double-set with cache to override third party project options for good.")
 set (BOX2D_USER_SETTINGS ON)
+set (BUILD_SHARED_LIBS ON)
 
 add_subdirectory (box2d)
 target_sources (box2d PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Box2dSettingsInjection/b2_user_settings.cpp")
@@ -28,6 +29,8 @@ add_custom_target (InjectBox2dUserSettingsHeader
 add_dependencies (box2d InjectBox2dUserSettingsHeader)
 add_dependencies (BuildTimeCodeGeneration InjectBox2dUserSettingsHeader)
 
+unset (BUILD_SHARED_LIBS)
+
 # CGLM
 add_subdirectory (cglm)
 
@@ -39,21 +42,41 @@ target_include_directories (DebugBreak INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/de
 add_subdirectory (doctest)
 
 # ImGUI
-# ImGUI is not using CMake, therefore we need to add our own library target.
-add_library (ImGUI STATIC
+# ImGUI is not using CMake, therefore we need to add our own library targets:
+# - Shared library without backend implementation.
+# - Static with SDL3 backend implementation for tools.
+add_library (ImGUI SHARED
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_draw.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_tables.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_widgets.cpp")
 
-target_include_directories (ImGUI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
+file (MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ImGUI/Generated")
+generate_api_header (
+        API_MACRO ImGUIApi
+        EXPORT_MACRO ImGUIImplementation
+        OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/ImGUI/Generated/ImGUIApi.h")
+
+target_compile_definitions (ImGUI PRIVATE "ImGUIImplementation")
+target_compile_definitions (ImGUI PUBLIC "IMGUI_USER_CONFIG=<EmergenceImGUIConfig.hpp>")
+
+target_include_directories (ImGUI  PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ImGUISettingsInjection"
+        "${CMAKE_CURRENT_BINARY_DIR}/ImGUI/Generated")
 
 add_library (SDL3ImGUI STATIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_draw.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_tables.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_widgets.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_sdl3.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends/imgui_impl_sdlrenderer3.cpp")
 
-target_include_directories (SDL3ImGUI PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
-target_link_libraries (SDL3ImGUI PUBLIC ImGUI SDL3::SDL3)
+target_include_directories (SDL3ImGUI PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui"
+        "${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends")
+target_link_libraries (SDL3ImGUI PUBLIC SDL3::SDL3)
 
 # SDL3
 # TODO: Takes ~75% configuration time on CI. Can it be optimized somehow?

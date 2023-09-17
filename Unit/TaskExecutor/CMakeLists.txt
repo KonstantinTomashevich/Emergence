@@ -1,0 +1,5 @@
+register_abstract (TaskExecutor)
+abstract_include ("${CMAKE_CURRENT_SOURCE_DIR}")
+abstract_require (CONCRETE_INTERFACE TaskCollection INTERFACE APICommon)
+abstract_register_implementation (NAME Parallel PARTS TaskExecutorParallel)
+abstract_register_implementation (NAME Sequential PARTS TaskExecutorSequential)

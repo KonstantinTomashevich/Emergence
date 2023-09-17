@@ -1,0 +1,5 @@
+register_concrete (CelerityNexus)
+concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+concrete_sources ("*.cpp")
+concrete_require (SCOPE PRIVATE ABSTRACT Log THIRD_PARTY SDL3::SDL3)
+concrete_require (SCOPE PUBLIC CONCRETE_INTERFACE Celerity)

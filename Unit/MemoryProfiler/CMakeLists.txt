@@ -1,0 +1,5 @@
+register_abstract (MemoryProfiler)
+abstract_include ("${CMAKE_CURRENT_SOURCE_DIR}")
+abstract_require (ABSTRACT Memory INTERFACE APICommon)
+abstract_register_implementation (NAME None PARTS MemoryProfilerNone)
+abstract_register_implementation (NAME Original PARTS MemoryProfilerOriginal)

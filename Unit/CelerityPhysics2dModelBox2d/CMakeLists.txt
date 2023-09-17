@@ -1,0 +1,5 @@
+register_concrete (CelerityPhysics2dModelBox2d)
+concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+concrete_sources ("*.cpp")
+concrete_require (SCOPE PUBLIC THIRD_PARTY box2d)
+concrete_implements_abstract (CelerityPhysics2dModel)

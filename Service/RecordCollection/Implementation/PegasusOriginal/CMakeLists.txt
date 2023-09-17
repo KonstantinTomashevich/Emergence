@@ -1,5 +1,0 @@
-sober_implementation_begin (PegasusOriginal)
-    sober_implementation_setup_target (OBJECT ${SOBER_TEST_RUNNER_STUB_SOURCE})
-    sober_naming_variant_target (Pegasus Original PEGASUS_LIBRARY_TARGET)
-    sober_implementation_link_library ("${PEGASUS_LIBRARY_TARGET}")
-sober_implementation_end ()

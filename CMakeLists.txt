@@ -12,11 +12,12 @@ else ()
     set (CMAKE_CXX_STANDARD 23)
 endif ()
 
-include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Sober/Sober.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/BuildSystem.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/CelerityNexus.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/CodeGeneration.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/GlobalOptions.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/PhysX.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/Resource.cmake")
-include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/Utility.cmake")
 
 # Must be called from root CMakeLists.txt, otherwise CTest configuration won't be placed into binary root.
 enable_testing ()
@@ -25,9 +26,6 @@ enable_testing ()
 add_custom_target (BuildTimeCodeGeneration COMMENT "Generate all code that is usually generated during build process.")
 
 add_subdirectory (ThirdParty)
-add_subdirectory (Service)
-add_subdirectory (Library)
+add_subdirectory (Unit)
 add_subdirectory (Test)
 add_subdirectory (Executable)
-
-sober_post_link_object_libraries ()

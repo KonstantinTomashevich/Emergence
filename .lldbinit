@@ -1,0 +1,1 @@
+type summary add --python-script "return '(UniqueString) ' + valobj.EvaluateExpression('*reinterpret_cast<char **>(&data)').GetSummary()" Emergence::Memory::UniqueString

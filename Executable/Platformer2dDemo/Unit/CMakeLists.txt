@@ -1,0 +1,6 @@
+add_subdirectory (Base)
+add_subdirectory (GameApplication)
+add_subdirectory (Logic)
+add_subdirectory (Model)
+add_subdirectory (ResourceCookerApplication)
+add_subdirectory (Resources)

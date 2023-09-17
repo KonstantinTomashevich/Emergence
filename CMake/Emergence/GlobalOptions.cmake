@@ -37,6 +37,10 @@ function (add_common_compile_options)
                     /wd4200
                     # Anonymous structs increase readability in some cases.
                     /wd4201
+                    # Warning about dll interface seems to have lots of false positives for structs and std classes.
+                    /wd4251
+                    # Same as above.
+                    /wd4275
                     # Assignments inside conditional statements increase readability in some cases.
                     /wd4706)
         else ()
@@ -81,3 +85,8 @@ endfunction ()
 # service APIs to request additional memory for service iterators. Therefore they are disabled.
 # We add this flag even to ThirdParty compilation to avoid link-time mismatches.
 add_compile_definitions (_ITERATOR_DEBUG_LEVEL=0)
+
+# Position independent code should be generated when one shared library depends on another shared library.
+# We use this feature in Emergence in order to create shared libraries with hot reload support that depend
+# on base shared library with symbols that cannot be reloaded.
+set (CMAKE_POSITION_INDEPENDENT_CODE ON)

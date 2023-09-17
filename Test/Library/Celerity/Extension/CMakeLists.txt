@@ -1,7 +1,0 @@
-add_subdirectory (Assembly)
-add_subdirectory (Asset)
-add_subdirectory (Input)
-add_subdirectory (Localization)
-add_subdirectory (Render2d)
-add_subdirectory (ResourceConfig)
-add_subdirectory (Transform)

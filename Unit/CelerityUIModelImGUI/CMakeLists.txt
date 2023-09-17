@@ -1,0 +1,6 @@
+register_concrete (CelerityUIModelImGUI)
+concrete_include (PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Public")
+concrete_sources ("Public/*.cpp" "Resources/Shaders/*.sc")
+concrete_require (SCOPE PRIVATE THIRD_PARTY ImGUI)
+concrete_implements_abstract (CelerityUIModel)
+register_default_resource_usage_scheme ()

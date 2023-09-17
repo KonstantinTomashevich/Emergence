@@ -1,3 +1,3 @@
 # ContextExtension
 
-This library contains independent extensions for declarative testing contexts, that solve common cases.
+This unit contains independent extensions for declarative testing contexts, that solve common cases.

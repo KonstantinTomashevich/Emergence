@@ -1,0 +1,5 @@
+register_concrete (ImGUIAdapterProfiled)
+concrete_include (PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+concrete_sources ("*.cpp")
+concrete_require (SCOPE PRIVATE ABSTRACT Memory THIRD_PARTY ImGUI)
+concrete_implements_abstract (ImGUIAdapter)

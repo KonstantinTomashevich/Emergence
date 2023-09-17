@@ -1,8 +1,0 @@
-add_subdirectory (Celerity)
-add_subdirectory (Container)
-add_subdirectory (Flow)
-add_subdirectory (Handling)
-add_subdirectory (MemoryRecording)
-add_subdirectory (ResourceCooking)
-add_subdirectory (ResourceObject)
-add_subdirectory (Serialization)

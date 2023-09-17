@@ -1,6 +1,0 @@
-sober_implementation_begin (Doctest)
-    file (GLOB_RECURSE HEADERS *.hpp)
-    sober_implementation_setup_target (INTERFACE "${HEADERS}")
-    sober_implementation_link_library (doctest)
-    sober_implementation_include_directory ("${CMAKE_CURRENT_SOURCE_DIR}")
-sober_implementation_end ()

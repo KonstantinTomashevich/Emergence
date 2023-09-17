@@ -1,6 +1,0 @@
-sober_service_begin (Testing)
-    sober_service_require_implementation_headers ()
-    sober_service_include_directory ("${CMAKE_CURRENT_SOURCE_DIR}/API")
-    sober_service_add_implementation ("${CMAKE_CURRENT_SOURCE_DIR}/Implementation/Doctest")
-    sober_service_set_default_implementation (Doctest)
-sober_service_end ()
