@@ -13,7 +13,7 @@
       "Reason": "There is no sense to scan dependency coverage."
     },
     {
-      "Prefix": "./Unit/Assert/Implementation/",
+      "Prefix": "./Unit/AssertSDL3/",
       "Action": "Exclude",
       "Reason": "Assert should not be triggered during tests, therefore its coverage will be zero."
     },
@@ -68,7 +68,7 @@
       "Reason": "For now, only simple returns are uncovered (file is very small), therefore it is ok to lower coverage requirement."
     },
     {
-      "Prefix": "./Unit/Math",
+      "Prefix": "./Unit/Math/",
       "Action": "Exclude",
       "Reason": "Math classes and methods are not tested separately from other libraries. Should be changed later."
     },
