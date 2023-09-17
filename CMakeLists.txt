@@ -12,7 +12,11 @@ else ()
     set (CMAKE_CXX_STANDARD 23)
 endif ()
 
-include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/BuildSystem.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeUnitFramework/CodeGeneration.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeUnitFramework/Core.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeUnitFramework/Product.cmake")
+include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/CMakeUnitFramework/Unit.cmake")
+
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/CelerityNexus.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/CodeGeneration.cmake")
 include ("${CMAKE_CURRENT_SOURCE_DIR}/CMake/Emergence/GlobalOptions.cmake")

@@ -73,3 +73,6 @@
 [submodule "ThirdParty/tracy"]
 	path = ThirdParty/tracy
 	url = https://github.com/wolfpld/tracy.git
+[submodule "CMake/CMakeUnitFramework"]
+	path = CMake/CMakeUnitFramework
+	url = https://github.com/KonstantinTomashevich/CMakeUnitFramework
