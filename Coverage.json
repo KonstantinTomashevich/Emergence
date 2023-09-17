@@ -51,10 +51,21 @@
       "Reason": "We expect our tests to never throw exceptions, therefore exception mock is uncovered."
     },
     {
+      "Prefix": "./Unit/Container/Container/Any.cpp",
+      "Action": "Exclude",
+      "Reason": "This is an experimental helper for CelerityNexus and therefore isn't covered at all."
+    },
+    {
       "Prefix": "./Unit/Container/Container/MappingRegistry.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 60.0,
       "Reason": "For now, only simple returns are uncovered (file is very small), therefore it is ok to lower coverage requirement."
+    },
+    {
+      "Prefix": "./Unit/Galleon/Galleon/CargoDeck.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 40.0,
+      "Reason": "There were some of crucial experimental features for CelerityNexus that aren't covered by tests."
     },
     {
       "Prefix": "./Unit/InputStorage/InputStorage/FrameInputAccumulator.cpp",
@@ -77,6 +88,12 @@
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 49.0,
       "Reason": "Default destructor call isn't covered for some reason, perhaps because it has only one static instance."
+    },
+    {
+      "Prefix": "./Unit/MemoryRecording/Memory/Recording/StreamDeserializer.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 70.0,
+      "Reason": "Only generic assignment operator isn't really covered and it seems too verbose to cover it."
     },
     {
       "Prefix": "./Unit/Pegasus/Private/Pegasus/RecordUtility.hpp",
@@ -151,6 +168,12 @@
       "Reason": "The bigger function is only used in visual tests and therefore is not being executed on CI."
     },
     {
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/Core.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 70.0,
+      "Reason": "Core has lots of error handling logic that isn't fully covered by tests yet."
+    },
+    {
       "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/MountConfiguration.cpp",
       "Action": "Exclude",
       "Reason": "This file contains only reflection registration that is not used inside tests and should be trivial enough to be uncovered."
@@ -171,6 +194,12 @@
       "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/Writer.cpp",
       "Action": "CustomMinimumCoverage",
       "MinimumLinesCoveragePerFilePercent": 50.0,
+      "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
+    },
+    {
+      "Prefix": "./Unit/VirtualFileSystemOriginal/VirtualFileSystem/VirtualFileBuffer.cpp",
+      "Action": "CustomMinimumCoverage",
+      "MinimumLinesCoveragePerFilePercent": 60.0,
       "Reason": "This class has a lots of error handling logic that isn't covered because we're almost never writing negative tests for now."
     },
     {

@@ -90,20 +90,29 @@ for ($Index = 0; $Index -lt $Files.Count; ++$Index)
     $Excluded = 0
     [Double]$MinimumCoverageForFile = $MinimumCoveragePercent
 
-    foreach ($Rule in $Rules)
+    # TODO: For some reason clang reports lines of struct declaration with api macro as executable lines,
+    #       making lots of headers uncovered. Therefore we hardcode this temporary (I hope) exclusion.
+    if ($FileName.EndsWith(".hpp"))
     {
-        if ( $FileName.StartsWith($Rule.Prefix))
+        $Excluded = 1
+    }
+    else
+    {
+        foreach ($Rule in $Rules)
         {
-            if ($Rule.Action -eq "Exclude")
+            if ( $FileName.StartsWith($Rule.Prefix))
             {
-                $Excluded = 1
-            }
-            elseif ($Rule.Action -eq "CustomMinimumCoverage")
-            {
-                $MinimumCoverageForFile = $Rule.MinimumLinesCoveragePerFilePercent
-            }
+                if ($Rule.Action -eq "Exclude")
+                {
+                    $Excluded = 1
+                }
+                elseif ($Rule.Action -eq "CustomMinimumCoverage")
+                {
+                    $MinimumCoverageForFile = $Rule.MinimumLinesCoveragePerFilePercent
+                }
 
-            break
+                break
+            }
         }
     }
 
